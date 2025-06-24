@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord Enseignant - Edusco{% endblock %}
+{% block page_title %}Tableau de bord Enseignant{% endblock %}
+{% block breadcrumb %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>4</h3>
+                <p>Mes groupes</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                Voir mes groupes <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>120</h3>
+                <p>Étudiants</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                Voir mes étudiants <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>8</h3>
+                <p>Matières</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                Voir mes matières <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>15</h3>
+                <p>Notes à saisir</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                Saisir les notes <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-calendar mr-1"></i>
+                    Mon emploi du temps
+                </h3>
+            </div>
+            <div class="card-body">
+                <p>Votre emploi du temps sera affiché ici.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-tasks mr-1"></i>
+                    Tâches à faire
+                </h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Saisir les notes du groupe A</li>
+                    <li class="list-group-item">Justifier les absences</li>
+                    <li class="list-group-item">Préparer les évaluations</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
