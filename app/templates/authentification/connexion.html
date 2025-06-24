@@ -15,35 +15,51 @@
             <p class="login-box-msg">Connectez-vous pour accéder à la plateforme</p>
             
             <form method="post">
+                {{ formulaire.hidden_tag() }}
+                
                 <div class="input-group mb-3">
-                    <input type="email" class="form-control" placeholder="Email" name="email" required>
+                    {{ formulaire.email(class="form-control", placeholder="Email") }}
                     <div class="input-group-append">
                         <div class="input-group-text">
                             <span class="fas fa-envelope"></span>
                         </div>
                     </div>
                 </div>
+                {% if formulaire.email.errors %}
+                    <div class="text-danger mb-2">
+                        {% for error in formulaire.email.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
                 
                 <div class="input-group mb-3">
-                    <input type="password" class="form-control" placeholder="Mot de passe" name="password" required>
+                    {{ formulaire.mot_de_passe(class="form-control", placeholder="Mot de passe") }}
                     <div class="input-group-append">
                         <div class="input-group-text">
                             <span class="fas fa-lock"></span>
                         </div>
                     </div>
                 </div>
+                {% if formulaire.mot_de_passe.errors %}
+                    <div class="text-danger mb-2">
+                        {% for error in formulaire.mot_de_passe.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
                 
                 <div class="row">
                     <div class="col-8">
                         <div class="icheck-primary">
-                            <input type="checkbox" id="remember" name="remember">
-                            <label for="remember">
+                            {{ formulaire.se_souvenir() }}
+                            <label for="{{ formulaire.se_souvenir.id }}">
                                 Se souvenir de moi
                             </label>
                         </div>
                     </div>
                     <div class="col-4">
-                        <button type="submit" class="btn btn-primary btn-block">Connexion</button>
+                        {{ formulaire.bouton_connexion(class="btn btn-primary btn-block") }}
                     </div>
                 </div>
             </form>
