@@ -15,6 +15,8 @@ from app.models.academique import AnneeAcademique, Semestre, UniteEnseignement, 
 from app.extensions import db
 from datetime import datetime
 from sqlalchemy.sql import func
+from app.services.notification import ServiceNotification
+from app.services.pedagogique import ServicePedagogique
 
 @bp.route('/dashboard')
 @login_required
@@ -24,7 +26,15 @@ def dashboard():
     """Tableau de bord administrateur"""
     stats = ServiceAcademique.obtenir_statistiques_generales()
     annee_active = ServiceAcademique.obtenir_annee_active()
-    return render_template('admin/dashboard.html', stats=stats, annee_active=annee_active)
+    
+    # Récupérer les notifications récentes
+    notifications = ServiceNotification.get_all_notifications()
+    notifications_recentes = sorted(notifications, key=lambda x: x.date_creation, reverse=True)[:5]
+    
+    return render_template('admin/dashboard.html', 
+                         stats=stats, 
+                         annee_active=annee_active,
+                         notifications=notifications_recentes)
 
 @bp.route('/')
 def index():
@@ -727,4 +737,87 @@ def rapport_etudiant(etudiant_id):
                          etudiant=etudiant,
                          notes=notes,
                          absences=absences,
-                         resultats=resultats) 
+                         resultats=resultats)
+
+# Routes pour les notifications
+@bp.route('/notifications')
+@login_required
+@administrateur_requis
+def notifications():
+    """Afficher la liste des notifications"""
+    notifications = ServiceNotification.get_all_notifications()
+    return render_template('admin/notifications/liste.html', notifications=notifications)
+
+@bp.route('/notifications/<int:notification_id>/marquer-lue')
+@login_required
+@administrateur_requis
+def marquer_notification_lue(notification_id):
+    """Marquer une notification comme lue"""
+    success = ServiceNotification.marquer_lue(notification_id)
+    if success:
+        flash('Notification marquée comme lue', 'success')
+    else:
+        flash('Erreur lors du marquage de la notification', 'error')
+    return redirect(url_for('admin.notifications'))
+
+@bp.route('/notifications/<int:notification_id>/supprimer')
+@login_required
+@administrateur_requis
+def supprimer_notification(notification_id):
+    """Supprimer une notification"""
+    success = ServiceNotification.supprimer_notification(notification_id)
+    if success:
+        flash('Notification supprimée avec succès', 'success')
+    else:
+        flash('Erreur lors de la suppression de la notification', 'error')
+    return redirect(url_for('admin.notifications'))
+
+@bp.route('/notifications/envoyer', methods=['GET', 'POST'])
+@login_required
+@administrateur_requis
+def envoyer_notification():
+    """Envoyer une notification à un utilisateur ou groupe d'utilisateurs"""
+    if request.method == 'POST':
+        destinataire_type = request.form.get('destinataire_type')
+        destinataire_id = request.form.get('destinataire_id')
+        titre = request.form.get('titre')
+        message = request.form.get('message')
+        envoyer_email = request.form.get('envoyer_email') == 'on'
+        
+        if destinataire_type == 'utilisateur':
+            success = ServiceNotification.creer_notification(
+                utilisateur_id=destinataire_id,
+                titre=titre,
+                message=message,
+                envoyer_email=envoyer_email
+            )
+        elif destinataire_type == 'groupe':
+            # Envoyer à tous les étudiants d'un groupe
+            success = ServiceNotification.creer_notification_groupe(
+                groupe_id=destinataire_id,
+                titre=titre,
+                message=message,
+                envoyer_email=envoyer_email
+            )
+        else:
+            # Envoyer à tous les utilisateurs
+            success = ServiceNotification.creer_notification_globale(
+                titre=titre,
+                message=message,
+                envoyer_email=envoyer_email
+            )
+        
+        if success:
+            flash('Notification envoyée avec succès', 'success')
+        else:
+            flash('Erreur lors de l\'envoi de la notification', 'error')
+        
+        return redirect(url_for('admin.notifications'))
+    
+    # Récupérer les listes pour le formulaire
+    utilisateurs = Utilisateur.query.all()
+    groupes = Groupe.query.all()
+    
+    return render_template('admin/notifications/envoyer.html', 
+                         utilisateurs=utilisateurs, 
+                         groupes=groupes) 

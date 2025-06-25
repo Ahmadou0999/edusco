@@ -29,6 +29,15 @@
 
         <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin.notifications') }}">
+                    <i class="fas fa-bell"></i>
+                    {% set non_lues = current_user.notifications|selectattr('lue', 'equalto', False)|list|length %}
+                    {% if non_lues > 0 %}
+                        <span class="badge badge-danger navbar-badge">{{ non_lues }}</span>
+                    {% endif %}
+                </a>
+            </li>
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#">
                     <i class="fas fa-user"></i> {{ current_user.prenom }} {{ current_user.nom }}
@@ -137,6 +146,13 @@
                         <a href="{{ url_for('admin.statistiques') }}" class="nav-link {% if request.endpoint == 'admin.statistiques' %}active{% endif %}">
                             <i class="nav-icon fas fa-chart-bar"></i>
                             <p>Statistiques</p>
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a href="{{ url_for('admin.notifications') }}" class="nav-link {% if request.endpoint == 'admin.notifications' %}active{% endif %}">
+                            <i class="nav-icon fas fa-bell"></i>
+                            <p>Notifications</p>
                         </a>
                     </li>
                 </ul>

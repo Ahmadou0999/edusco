@@ -2,12 +2,13 @@
 Routes d'authentification pour Edusco
 """
 
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, Blueprint
 from flask_login import login_user, logout_user, login_required, current_user
 from app.blueprints.authentification import bp
 from app.forms.authentification import FormulaireConnexion, FormulaireInscription, FormulaireChangementMotDePasse
 from app.services.authentification import ServiceAuthentification
 from app.utils.decorateurs import administrateur_requis
+from app.models.utilisateur import Notification
 
 @bp.route('/connexion', methods=['GET', 'POST'])
 def connexion():
@@ -112,4 +113,18 @@ def changer_mot_de_passe():
 @login_required
 def profil():
     """Page de profil utilisateur"""
-    return render_template('authentification/profil.html') 
+    return render_template('authentification/profil.html')
+
+bp_notifications = Blueprint('notifications', __name__, url_prefix='/notifications')
+
+@bp_notifications.route('/')
+@login_required
+def liste():
+    notifications = Notification.query.filter_by(utilisateur_id=current_user.id).order_by(Notification.date_creation.desc()).all()
+    # Marquer toutes comme lues
+    for notif in notifications:
+        if not notif.lue:
+            notif.lue = True
+    from app.extensions import db
+    db.session.commit()
+    return render_template('notifications/liste.html', notifications=notifications) 

@@ -21,6 +21,8 @@ class Utilisateur(db.Model, UserMixin):
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
     derniere_connexion = db.Column(db.DateTime)
     
+    notifications = db.relationship('Notification', back_populates='utilisateur', cascade='all, delete-orphan')
+    
     def __init__(self, email, nom, prenom, mot_de_passe, role='enseignant'):
         self.email = email
         self.nom = nom
@@ -33,4 +35,18 @@ class Utilisateur(db.Model, UserMixin):
         return bcrypt.check_password_hash(self.mot_de_passe_hash, mot_de_passe)
     
     def __repr__(self):
-        return f'<Utilisateur {self.email}>' 
+        return f'<Utilisateur {self.email}>'
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
+    titre = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    lue = db.Column(db.Boolean, default=False)
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+
+    utilisateur = db.relationship('Utilisateur', back_populates='notifications')
+
+    def __repr__(self):
+        return f'<Notification {self.titre} pour {self.utilisateur_id}>' 

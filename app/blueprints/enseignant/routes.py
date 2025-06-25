@@ -13,6 +13,7 @@ from app.utils.decorateurs import enseignant_requis
 from app.extensions import db
 from datetime import datetime, date, time
 import json
+from app.services.notification import ServiceNotification
 
 bp = Blueprint('enseignant', __name__, url_prefix='/enseignant')
 
@@ -284,4 +285,37 @@ def rapport_absences(groupe_id):
 @enseignant_requis
 def emploi_du_temps():
     """Emploi du temps de l'enseignant"""
-    return render_template('enseignant/emploi_du_temps.html') 
+    return render_template('enseignant/emploi_du_temps.html')
+
+# Routes pour les notifications
+@bp.route('/notifications')
+@login_required
+@enseignant_requis
+def notifications():
+    """Afficher les notifications de l'enseignant"""
+    notifications = ServiceNotification.get_user_notifications(current_user.id)
+    return render_template('enseignant/notifications/liste.html', notifications=notifications)
+
+@bp.route('/notifications/<int:notification_id>/marquer-lue')
+@login_required
+@enseignant_requis
+def marquer_notification_lue(notification_id):
+    """Marquer une notification comme lue"""
+    success = ServiceNotification.marquer_lue(notification_id, current_user.id)
+    if success:
+        flash('Notification marquée comme lue', 'success')
+    else:
+        flash('Erreur lors du marquage de la notification', 'error')
+    return redirect(url_for('enseignant.notifications'))
+
+@bp.route('/notifications/<int:notification_id>/supprimer')
+@login_required
+@enseignant_requis
+def supprimer_notification(notification_id):
+    """Supprimer une notification"""
+    success = ServiceNotification.supprimer_notification(notification_id, current_user.id)
+    if success:
+        flash('Notification supprimée avec succès', 'success')
+    else:
+        flash('Erreur lors de la suppression de la notification', 'error')
+    return redirect(url_for('enseignant.notifications')) 

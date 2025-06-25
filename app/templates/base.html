@@ -34,6 +34,15 @@
             <ul class="navbar-nav ml-auto">
                 {% if current_user.is_authenticated %}
                 <li class="nav-item dropdown">
+                    <a class="nav-link" href="{% if current_user.role == 'administrateur' %}{{ url_for('admin.notifications') }}{% elif current_user.role == 'enseignant' %}{{ url_for('enseignant.notifications') }}{% else %}{{ url_for('principal.notifications') }}{% endif %}">
+                        <i class="fas fa-bell"></i>
+                        {% set non_lues = current_user.notifications|selectattr('lue', 'equalto', False)|list|length %}
+                        {% if non_lues > 0 %}
+                            <span class="badge badge-danger navbar-badge">{{ non_lues }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#">
                         <i class="far fa-user"></i> {{ current_user.nom }}
                     </a>

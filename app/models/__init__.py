@@ -6,7 +6,7 @@ Ce module contient tous les modèles SQLAlchemy
 from app.extensions import db
 
 # Import des modèles utilisateur
-from .utilisateur import Utilisateur
+from .utilisateur import Utilisateur, Notification
 
 # Import des modèles académiques
 from .academique import (
@@ -27,6 +27,7 @@ ajouter_relations_pedagogiques()
 __all__ = [
     # Modèles utilisateur
     'Utilisateur',
+    'Notification',
     
     # Modèles académiques
     'AnneeAcademique',

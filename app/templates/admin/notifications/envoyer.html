@@ -1,0 +1,182 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Envoyer une Notification{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Envoyer une Notification</h1>
+        <a href="{{ url_for('admin.notifications') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Nouvelle Notification</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="notificationForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="destinataire_type" class="form-label">Type de destinataire *</label>
+                            <select class="form-select" id="destinataire_type" name="destinataire_type" required>
+                                <option value="">Sélectionner un type</option>
+                                <option value="utilisateur">Utilisateur spécifique</option>
+                                <option value="groupe">Groupe d'étudiants</option>
+                                <option value="tous">Tous les utilisateurs</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="utilisateur_select" style="display: none;">
+                            <label for="destinataire_id" class="form-label">Sélectionner l'utilisateur *</label>
+                            <select class="form-select" id="destinataire_id" name="destinataire_id">
+                                <option value="">Choisir un utilisateur</option>
+                                {% for user in utilisateurs %}
+                                    <option value="{{ user.id }}">
+                                        {{ user.nom }} {{ user.prenom }} ({{ user.role }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="groupe_select" style="display: none;">
+                            <label for="groupe_id" class="form-label">Sélectionner le groupe *</label>
+                            <select class="form-select" id="groupe_id" name="destinataire_id">
+                                <option value="">Choisir un groupe</option>
+                                {% for groupe in groupes %}
+                                    <option value="{{ groupe.id }}">
+                                        {{ groupe.nom }} - {{ groupe.annee_academique.nom if groupe.annee_academique else 'N/A' }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="titre" class="form-label">Titre *</label>
+                            <input type="text" class="form-control" id="titre" name="titre" required maxlength="100">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message *</label>
+                            <textarea class="form-control" id="message" name="message" rows="4" required maxlength="500"></textarea>
+                            <div class="form-text">
+                                <span id="char_count">0</span>/500 caractères
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="envoyer_email" name="envoyer_email">
+                                <label class="form-check-label" for="envoyer_email">
+                                    Envoyer également par email
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url_for('admin.notifications') }}" class="btn btn-secondary">
+                                Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Envoyer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Gestion du type de destinataire
+    $('#destinataire_type').change(function() {
+        const type = $(this).val();
+        
+        // Masquer tous les sélecteurs
+        $('#utilisateur_select, #groupe_select').hide();
+        $('#destinataire_id, #groupe_id').prop('required', false);
+        
+        // Afficher le bon sélecteur
+        if (type === 'utilisateur') {
+            $('#utilisateur_select').show();
+            $('#destinataire_id').prop('required', true);
+        } else if (type === 'groupe') {
+            $('#groupe_select').show();
+            $('#groupe_id').prop('required', true);
+        }
+    });
+
+    // Compteur de caractères
+    $('#message').on('input', function() {
+        const count = $(this).val().length;
+        $('#char_count').text(count);
+        
+        if (count > 450) {
+            $('#char_count').addClass('text-warning');
+        } else {
+            $('#char_count').removeClass('text-warning');
+        }
+        
+        if (count > 480) {
+            $('#char_count').removeClass('text-warning').addClass('text-danger');
+        }
+    });
+
+    // Validation du formulaire
+    $('#notificationForm').submit(function(e) {
+        const type = $('#destinataire_type').val();
+        const titre = $('#titre').val().trim();
+        const message = $('#message').val().trim();
+        
+        if (!titre) {
+            alert('Le titre est obligatoire');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!message) {
+            alert('Le message est obligatoire');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (type === 'utilisateur' && !$('#destinataire_id').val()) {
+            alert('Veuillez sélectionner un utilisateur');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (type === 'groupe' && !$('#groupe_id').val()) {
+            alert('Veuillez sélectionner un groupe');
+            e.preventDefault();
+            return false;
+        }
+        
+        return true;
+    });
+});
+</script>
+{% endblock %} 
