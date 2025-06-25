@@ -1,18 +1,19 @@
 import os
 from dotenv import load_dotenv
 
-# Charger les variables d'environnement
-load_dotenv()
+# Charger les variables d'environnement seulement si le fichier .env existe
+if os.path.exists('.env'):
+    load_dotenv()
 
 class Configuration:
     """Configuration de base pour l'application Edusco"""
     
-    # Configuration générale
+    # Configuration generale
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'cle-secrete-par-defaut-pour-developpement'
     APP_NAME = os.environ.get('APP_NAME', 'Edusco')
-    APP_DESCRIPTION = os.environ.get('APP_DESCRIPTION', 'Plateforme de gestion d\'institut supérieur')
+    APP_DESCRIPTION = os.environ.get('APP_DESCRIPTION', 'Plateforme de gestion d\'institut superieur')
     
-    # Configuration de la base de données
+    # Configuration de la base de donnees
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///edusco.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
@@ -24,18 +25,18 @@ class Configuration:
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     
     # Configuration de l'application
-    ITEMS_PAR_PAGE = 20  # Nombre d'éléments par page pour la pagination
-    UPLOAD_FOLDER = 'app/static/uploads'  # Dossier pour les fichiers uploadés
+    ITEMS_PAR_PAGE = 20  # Nombre d'elements par page pour la pagination
+    UPLOAD_FOLDER = 'app/static/uploads'  # Dossier pour les fichiers uploades
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max pour les uploads
     
-    # Configuration des rôles
+    # Configuration des roles
     ROLES = {
         'ADMIN': 'administrateur',
         'ENSEIGNANT': 'enseignant'
     }
 
 class ConfigurationDeveloppement(Configuration):
-    """Configuration pour l'environnement de développement"""
+    """Configuration pour l'environnement de developpement"""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///edusco_dev.db'
 
@@ -49,7 +50,7 @@ class ConfigurationTest(Configuration):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///edusco_test.db'
     WTF_CSRF_ENABLED = False
 
-# Configuration par défaut selon l'environnement
+# Configuration par defaut selon l'environnement
 config = {
     'development': ConfigurationDeveloppement,
     'production': ConfigurationProduction,

@@ -1,0 +1,151 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Créer un semestre - Administration{% endblock %}
+
+{% block page_title %}Nouveau semestre{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.semestres') }}">Semestres</a></li>
+<li class="breadcrumb-item active">Nouveau semestre</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations du semestre</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ formulaire.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.nom.label(class="form-label") }}
+                                {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                                {% if formulaire.nom.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.nom.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Exemple: Semestre 1, Semestre 2</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.code.label(class="form-label") }}
+                                {{ formulaire.code(class="form-control" + (" is-invalid" if formulaire.code.errors else "")) }}
+                                {% if formulaire.code.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.code.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Exemple: S1, S2</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.date_debut.label(class="form-label") }}
+                                {{ formulaire.date_debut(class="form-control" + (" is-invalid" if formulaire.date_debut.errors else ""), type="date") }}
+                                {% if formulaire.date_debut.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.date_debut.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.date_fin.label(class="form-label") }}
+                                {{ formulaire.date_fin(class="form-control" + (" is-invalid" if formulaire.date_fin.errors else ""), type="date") }}
+                                {% if formulaire.date_fin.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.date_fin.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            {{ formulaire.actif(class="custom-control-input") }}
+                            {{ formulaire.actif.label(class="custom-control-label") }}
+                        </div>
+                        <small class="form-text text-muted">Un seul semestre peut être actif à la fois</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.semestres') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Création d'un semestre</h5>
+                    <p>Un semestre définit une période d'enseignement dans l'année académique.</p>
+                    <ul class="mb-0">
+                        <li>Le code doit être unique (ex: S1, S2)</li>
+                        <li>Un seul semestre peut être actif à la fois</li>
+                        <li>Vous pourrez ajouter des UEs après la création</li>
+                        <li>Les dates doivent être dans l'année académique</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Année académique</h6>
+                    <p class="mb-0">Semestre pour l'année <strong>{{ annee_active.nom }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validation côté client pour les dates
+document.addEventListener('DOMContentLoaded', function() {
+    const dateDebut = document.getElementById('date_debut');
+    const dateFin = document.getElementById('date_fin');
+    
+    dateDebut.addEventListener('change', function() {
+        if (dateFin.value && dateDebut.value > dateFin.value) {
+            dateFin.setCustomValidity('La date de fin doit être postérieure à la date de début');
+        } else {
+            dateFin.setCustomValidity('');
+        }
+    });
+    
+    dateFin.addEventListener('change', function() {
+        if (dateDebut.value && dateFin.value < dateDebut.value) {
+            dateFin.setCustomValidity('La date de fin doit être postérieure à la date de début');
+        } else {
+            dateFin.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %} 

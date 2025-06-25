@@ -1,0 +1,162 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Créer une unité d'enseignement - Administration{% endblock %}
+
+{% block page_title %}Nouvelle unité d'enseignement{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.unites_enseignement') }}">Unités d'enseignement</a></li>
+<li class="breadcrumb-item active">Nouvelle UE</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations de l'unité d'enseignement</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ formulaire.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.code.label(class="form-label") }}
+                                {{ formulaire.code(class="form-control" + (" is-invalid" if formulaire.code.errors else "")) }}
+                                {% if formulaire.code.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.code.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Exemple: UE101, UE102</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.semestre_id.label(class="form-label") }}
+                                {{ formulaire.semestre_id(class="form-control" + (" is-invalid" if formulaire.semestre_id.errors else "")) }}
+                                {% if formulaire.semestre_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.semestre_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.nom.label(class="form-label") }}
+                        {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                        {% if formulaire.nom.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in formulaire.nom.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.description.label(class="form-label") }}
+                        {{ formulaire.description(class="form-control", rows="3") }}
+                        <small class="form-text text-muted">Description optionnelle de l'UE</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.credits.label(class="form-label") }}
+                                {{ formulaire.credits(class="form-control" + (" is-invalid" if formulaire.credits.errors else "")) }}
+                                {% if formulaire.credits.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.credits.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Nombre de crédits ECTS</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.coefficient.label(class="form-label") }}
+                                {{ formulaire.coefficient(class="form-control" + (" is-invalid" if formulaire.coefficient.errors else "")) }}
+                                {% if formulaire.coefficient.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.coefficient.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Coefficient pour le calcul de la moyenne</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.unites_enseignement') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Création d'une UE</h5>
+                    <p>Une unité d'enseignement regroupe plusieurs matières connexes.</p>
+                    <ul class="mb-0">
+                        <li>Le code doit être unique (ex: UE101)</li>
+                        <li>Les crédits déterminent le poids de l'UE</li>
+                        <li>Le coefficient influence la moyenne générale</li>
+                        <li>Vous pourrez ajouter des matières après la création</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Année académique</h6>
+                    <p class="mb-0">UE pour l'année <strong>{{ annee_active.nom }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validation côté client
+document.addEventListener('DOMContentLoaded', function() {
+    const credits = document.getElementById('credits');
+    const coefficient = document.getElementById('coefficient');
+    
+    credits.addEventListener('input', function() {
+        if (this.value < 0) {
+            this.setCustomValidity('Le nombre de crédits doit être positif');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    coefficient.addEventListener('input', function() {
+        if (this.value <= 0) {
+            this.setCustomValidity('Le coefficient doit être positif');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %} 

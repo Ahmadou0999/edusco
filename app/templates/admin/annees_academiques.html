@@ -1,0 +1,119 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Années académiques - Administration{% endblock %}
+
+{% block page_title %}Gestion des années académiques{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Années académiques</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Liste des années académiques</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.creer_annee_academique') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Nouvelle année
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if annees %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Date début</th>
+                                <th>Date fin</th>
+                                <th>Statut</th>
+                                <th>Semestres</th>
+                                <th>Étudiants</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for annee in annees %}
+                            <tr>
+                                <td>
+                                    <strong>{{ annee.nom }}</strong>
+                                    {% if annee.active %}
+                                        <span class="badge badge-success ml-2">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ annee.date_debut.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ annee.date_fin.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    {% if annee.active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ annee.semestres|length }} semestre(s)</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-primary">{{ annee.etudiants|length }} étudiant(s)</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('admin.modifier_annee_academique', annee_id=annee.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if not annee.active %}
+                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                                onclick="activerAnnee({{ annee.id }})" title="Activer">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                        {% if annee.semestres|length == 0 and annee.etudiants|length == 0 %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="supprimerAnnee({{ annee.id }})" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune année académique</h5>
+                    <p class="text-muted">Commencez par créer une année académique.</p>
+                    <a href="{{ url_for('admin.creer_annee_academique') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer la première année
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function activerAnnee(anneeId) {
+    if (confirm('Êtes-vous sûr de vouloir activer cette année académique ?')) {
+        // TODO: Implémenter l'activation via AJAX
+        window.location.href = `/admin/annees-academiques/${anneeId}/activer`;
+    }
+}
+
+function supprimerAnnee(anneeId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette année académique ? Cette action est irréversible.')) {
+        // TODO: Implémenter la suppression via AJAX
+        window.location.href = `/admin/annees-academiques/${anneeId}/supprimer`;
+    }
+}
+</script>
+{% endblock %} 

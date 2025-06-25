@@ -1,0 +1,253 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Créer un enseignant - Administration{% endblock %}
+
+{% block page_title %}Nouvel enseignant{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.enseignants') }}">Enseignants</a></li>
+<li class="breadcrumb-item active">Nouvel enseignant</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations de l'enseignant</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ formulaire.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.matricule.label(class="form-label") }}
+                                {{ formulaire.matricule(class="form-control" + (" is-invalid" if formulaire.matricule.errors else "")) }}
+                                {% if formulaire.matricule.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.matricule.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Exemple: ENS001, ENS002</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.statut.label(class="form-label") }}
+                                {{ formulaire.statut(class="form-control" + (" is-invalid" if formulaire.statut.errors else "")) }}
+                                {% if formulaire.statut.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.statut.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.nom.label(class="form-label") }}
+                                {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                                {% if formulaire.nom.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.nom.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.prenom.label(class="form-label") }}
+                                {{ formulaire.prenom(class="form-control" + (" is-invalid" if formulaire.prenom.errors else "")) }}
+                                {% if formulaire.prenom.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.prenom.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.date_naissance.label(class="form-label") }}
+                                {{ formulaire.date_naissance(class="form-control" + (" is-invalid" if formulaire.date_naissance.errors else ""), type="date") }}
+                                {% if formulaire.date_naissance.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.date_naissance.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.sexe.label(class="form-label") }}
+                                {{ formulaire.sexe(class="form-control" + (" is-invalid" if formulaire.sexe.errors else "")) }}
+                                {% if formulaire.sexe.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.sexe.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.lieu_naissance.label(class="form-label") }}
+                        {{ formulaire.lieu_naissance(class="form-control") }}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.adresse.label(class="form-label") }}
+                        {{ formulaire.adresse(class="form-control", rows="3") }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.telephone.label(class="form-label") }}
+                                {{ formulaire.telephone(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.email.label(class="form-label") }}
+                                {{ formulaire.email(class="form-control" + (" is-invalid" if formulaire.email.errors else "")) }}
+                                {% if formulaire.email.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.specialite.label(class="form-label") }}
+                                {{ formulaire.specialite(class="form-control") }}
+                                <small class="form-text text-muted">Domaine de spécialisation</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.grade.label(class="form-label") }}
+                                {{ formulaire.grade(class="form-control") }}
+                                <small class="form-text text-muted">Ex: Maître Assistant, Professeur</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.date_embauche.label(class="form-label") }}
+                        {{ formulaire.date_embauche(class="form-control" + (" is-invalid" if formulaire.date_embauche.errors else ""), type="date") }}
+                        {% if formulaire.date_embauche.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in formulaire.date_embauche.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.photo.label(class="form-label") }}
+                        {{ formulaire.photo(class="form-control-file") }}
+                        <small class="form-text text-muted">Format: JPG, PNG. Taille max: 2MB</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.enseignants') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Enregistrement d'un enseignant</h5>
+                    <p>Un enseignant peut être assigné à plusieurs matières.</p>
+                    <ul class="mb-0">
+                        <li>Le matricule doit être unique</li>
+                        <li>L'email est optionnel mais doit être unique</li>
+                        <li>La spécialité et le grade sont optionnels</li>
+                        <li>La photo sera redimensionnée automatiquement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validation côté client
+document.addEventListener('DOMContentLoaded', function() {
+    const dateNaissance = document.getElementById('date_naissance');
+    const dateEmbauche = document.getElementById('date_embauche');
+    const email = document.getElementById('email');
+    
+    // Validation de la date de naissance
+    dateNaissance.addEventListener('change', function() {
+        const date = new Date(this.value);
+        const today = new Date();
+        const age = today.getFullYear() - date.getFullYear();
+        
+        if (age < 20 || age > 100) {
+            this.setCustomValidity('L\'âge doit être entre 20 et 100 ans');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Validation de la date d'embauche
+    dateEmbauche.addEventListener('change', function() {
+        const dateNaiss = new Date(dateNaissance.value);
+        const dateEmb = new Date(this.value);
+        
+        if (dateEmb < dateNaiss) {
+            this.setCustomValidity('La date d\'embauche ne peut pas être antérieure à la date de naissance');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Validation de l'email
+    email.addEventListener('input', function() {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (this.value && !emailRegex.test(this.value)) {
+            this.setCustomValidity('Veuillez entrer un email valide');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,141 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Modifier l'année académique - Administration{% endblock %}
+
+{% block page_title %}Modifier l'année académique{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.annees_academiques') }}">Années académiques</a></li>
+<li class="breadcrumb-item active">Modifier {{ annee.nom }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Modifier l'année académique {{ annee.nom }}</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ formulaire.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.nom.label(class="form-label") }}
+                                {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                                {% if formulaire.nom.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.nom.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="custom-control custom-switch">
+                                    {{ formulaire.active(class="custom-control-input") }}
+                                    {{ formulaire.active.label(class="custom-control-label") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.date_debut.label(class="form-label") }}
+                                {{ formulaire.date_debut(class="form-control" + (" is-invalid" if formulaire.date_debut.errors else ""), type="date") }}
+                                {% if formulaire.date_debut.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.date_debut.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.date_fin.label(class="form-label") }}
+                                {{ formulaire.date_fin(class="form-control" + (" is-invalid" if formulaire.date_fin.errors else ""), type="date") }}
+                                {% if formulaire.date_fin.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.date_fin.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.annees_academiques') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Statistiques</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info"><i class="fas fa-calendar"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Semestres</span>
+                        <span class="info-box-number">{{ annee.semestres|length }}</span>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <span class="info-box-icon bg-success"><i class="fas fa-user-graduate"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Étudiants</span>
+                        <span class="info-box-number">{{ annee.etudiants|length }}</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Attention</h6>
+                    <p class="mb-0">La modification d'une année académique peut affecter les données existantes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validation côté client pour les dates
+document.addEventListener('DOMContentLoaded', function() {
+    const dateDebut = document.getElementById('date_debut');
+    const dateFin = document.getElementById('date_fin');
+    
+    dateDebut.addEventListener('change', function() {
+        if (dateFin.value && dateDebut.value > dateFin.value) {
+            dateFin.setCustomValidity('La date de fin doit être postérieure à la date de début');
+        } else {
+            dateFin.setCustomValidity('');
+        }
+    });
+    
+    dateFin.addEventListener('change', function() {
+        if (dateDebut.value && dateFin.value < dateDebut.value) {
+            dateFin.setCustomValidity('La date de fin doit être postérieure à la date de début');
+        } else {
+            dateFin.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %} 

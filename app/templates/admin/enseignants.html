@@ -1,0 +1,192 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Enseignants - Administration{% endblock %}
+
+{% block page_title %}Gestion des enseignants{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Enseignants</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Liste des enseignants</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <input type="text" id="searchInput" class="form-control float-right" placeholder="Rechercher un enseignant...">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-default" onclick="rechercherEnseignants()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.creer_enseignant') }}" class="btn btn-primary btn-sm ml-2">
+                        <i class="fas fa-plus"></i> Nouvel enseignant
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if enseignants %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped" id="enseignantsTable">
+                        <thead>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Photo</th>
+                                <th>Nom complet</th>
+                                <th>Spécialité</th>
+                                <th>Grade</th>
+                                <th>Date embauche</th>
+                                <th>Téléphone</th>
+                                <th>Email</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for enseignant in enseignants %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-secondary">{{ enseignant.matricule }}</span>
+                                </td>
+                                <td>
+                                    {% if enseignant.photo %}
+                                        <img src="{{ url_for('static', filename='uploads/' + enseignant.photo) }}" 
+                                             class="img-circle" width="40" height="40" alt="Photo">
+                                    {% else %}
+                                        <div class="img-circle bg-secondary d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px;">
+                                            <i class="fas fa-chalkboard-teacher text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ enseignant.prenom }} {{ enseignant.nom }}</strong>
+                                    {% if enseignant.lieu_naissance %}
+                                        <br><small class="text-muted">{{ enseignant.lieu_naissance }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if enseignant.specialite %}
+                                        <span class="badge badge-info">{{ enseignant.specialite }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if enseignant.grade %}
+                                        <span class="badge badge-primary">{{ enseignant.grade }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ enseignant.date_embauche.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    {% if enseignant.telephone %}
+                                        <a href="tel:{{ enseignant.telephone }}">{{ enseignant.telephone }}</a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if enseignant.email %}
+                                        <a href="mailto:{{ enseignant.email }}">{{ enseignant.email }}</a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if enseignant.statut == 'actif' %}
+                                        <span class="badge badge-success">Actif</span>
+                                    {% elif enseignant.statut == 'retraité' %}
+                                        <span class="badge badge-warning">Retraité</span>
+                                    {% elif enseignant.statut == 'démissionné' %}
+                                        <span class="badge badge-danger">Démissionné</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('admin.modifier_enseignant', enseignant_id=enseignant.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.details_enseignant', enseignant_id=enseignant.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="Détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                                onclick="changerStatut({{ enseignant.id }}, 'actif')" title="Activer">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                onclick="changerStatut({{ enseignant.id }}, 'retraité')" title="Retraiter">
+                                            <i class="fas fa-user-clock"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chalkboard-teacher fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun enseignant</h5>
+                    <p class="text-muted">Aucun enseignant n'est enregistré dans le système.</p>
+                    <a href="{{ url_for('admin.creer_enseignant') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Enregistrer le premier enseignant
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function rechercherEnseignants() {
+    const terme = document.getElementById('searchInput').value;
+    if (terme.trim()) {
+        window.location.href = `{{ url_for('admin.rechercher_enseignants') }}?q=${encodeURIComponent(terme)}`;
+    }
+}
+
+// Recherche en temps réel
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        rechercherEnseignants();
+    }
+});
+
+function changerStatut(enseignantId, statut) {
+    const statuts = {
+        'actif': 'activer',
+        'retraité': 'mettre à la retraite',
+        'démissionné': 'marquer comme démissionné'
+    };
+    
+    if (confirm(`Êtes-vous sûr de vouloir ${statuts[statut]} cet enseignant ?`)) {
+        // TODO: Implémenter le changement de statut via AJAX
+        window.location.href = `/admin/enseignants/${enseignantId}/statut/${statut}`;
+    }
+}
+
+// Filtrage en temps réel
+document.getElementById('searchInput').addEventListener('input', function() {
+    const terme = this.value.toLowerCase();
+    const table = document.getElementById('enseignantsTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    for (let row of rows) {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(terme) ? '' : 'none';
+    }
+});
+</script>
+{% endblock %} 

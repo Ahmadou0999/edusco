@@ -1,0 +1,200 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Groupes - Administration{% endblock %}
+
+{% block page_title %}Gestion des groupes{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Groupes</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Liste des groupes</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.creer_groupe') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Nouveau groupe
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if annee_active %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Groupes de l'année académique <strong>{{ annee_active.nom }}</strong>
+                </div>
+                
+                {% if semestres %}
+                <div class="accordion" id="accordionGroupes">
+                    {% for semestre in semestres %}
+                    <div class="card">
+                        <div class="card-header" id="heading{{ semestre.id }}">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left" type="button" 
+                                        data-toggle="collapse" data-target="#collapse{{ semestre.id }}" 
+                                        aria-expanded="true" aria-controls="collapse{{ semestre.id }}">
+                                    <i class="fas fa-calendar"></i> 
+                                    <strong>{{ semestre.nom }}</strong> ({{ semestre.code }})
+                                    <span class="badge badge-info float-right">{{ semestre.unites_enseignement|length }} UE(s)</span>
+                                    {% if semestre.actif %}
+                                        <span class="badge badge-success ml-2">Actif</span>
+                                    {% endif %}
+                                </button>
+                            </h2>
+                        </div>
+
+                        <div id="collapse{{ semestre.id }}" class="collapse show" aria-labelledby="heading{{ semestre.id }}" 
+                             data-parent="#accordionGroupes">
+                            <div class="card-body">
+                                {% if semestre.unites_enseignement %}
+                                <div class="accordion" id="accordionUE{{ semestre.id }}">
+                                    {% for ue in semestre.unites_enseignement %}
+                                    <div class="card">
+                                        <div class="card-header" id="headingUE{{ ue.id }}">
+                                            <h3 class="mb-0">
+                                                <button class="btn btn-link btn-block text-left" type="button" 
+                                                        data-toggle="collapse" data-target="#collapseUE{{ ue.id }}" 
+                                                        aria-expanded="true" aria-controls="collapseUE{{ ue.id }}">
+                                                    <i class="fas fa-book"></i> 
+                                                    <strong>{{ ue.nom }}</strong> ({{ ue.code }})
+                                                    <span class="badge badge-primary float-right">{{ ue.groupes|length }} groupe(s)</span>
+                                                </button>
+                                            </h3>
+                                        </div>
+
+                                        <div id="collapseUE{{ ue.id }}" class="collapse show" aria-labelledby="headingUE{{ ue.id }}" 
+                                             data-parent="#accordionUE{{ semestre.id }}">
+                                            <div class="card-body">
+                                                {% if ue.groupes %}
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Code</th>
+                                                                <th>Nom</th>
+                                                                <th>Responsable</th>
+                                                                <th>Capacité</th>
+                                                                <th>Étudiants</th>
+                                                                <th>Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for groupe in ue.groupes %}
+                                                            <tr>
+                                                                <td>
+                                                                    <span class="badge badge-primary">{{ groupe.code }}</span>
+                                                                </td>
+                                                                <td>
+                                                                    <strong>{{ groupe.nom }}</strong>
+                                                                    {% if groupe.description %}
+                                                                        <br><small class="text-muted">{{ groupe.description[:100] }}{% if groupe.description|length > 100 %}...{% endif %}</small>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td>
+                                                                    {% if groupe.enseignant_responsable %}
+                                                                        <span class="badge badge-info">{{ groupe.enseignant_responsable.nom_complet }}</span>
+                                                                    {% else %}
+                                                                        <span class="text-muted">Non assigné</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td>{{ groupe.capacite_max }} étudiants</td>
+                                                                <td>
+                                                                    <span class="badge badge-{{ 'success' if groupe.nombre_etudiants < groupe.capacite_max else 'warning' }}">
+                                                                        {{ groupe.nombre_etudiants }}/{{ groupe.capacite_max }}
+                                                                    </span>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="btn-group">
+                                                                        <a href="{{ url_for('admin.modifier_groupe', groupe_id=groupe.id) }}" 
+                                                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </a>
+                                                                        <a href="{{ url_for('admin.details_groupe', groupe_id=groupe.id) }}" 
+                                                                           class="btn btn-sm btn-outline-info" title="Détails">
+                                                                            <i class="fas fa-eye"></i>
+                                                                        </a>
+                                                                        <a href="{{ url_for('admin.gestion_inscriptions_groupe', groupe_id=groupe.id) }}" 
+                                                                           class="btn btn-sm btn-outline-success" title="Gérer les inscriptions">
+                                                                            <i class="fas fa-users"></i>
+                                                                        </a>
+                                                                        {% if groupe.nombre_etudiants == 0 %}
+                                                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                                                onclick="supprimerGroupe({{ groupe.id }})" title="Supprimer">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                {% else %}
+                                                <div class="text-center py-3">
+                                                    <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                                                    <p class="text-muted mb-0">Aucun groupe pour cette UE.</p>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <div class="mt-3">
+                                                    <a href="{{ url_for('admin.creer_groupe') }}?ue_id={{ ue.id }}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-plus"></i> Créer un groupe pour cette UE
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fas fa-book fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">Aucune unité d'enseignement pour ce semestre.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun semestre</h5>
+                    <p class="text-muted">Vous devez créer des semestres avant de créer des groupes.</p>
+                    <a href="{{ url_for('admin.semestres') }}" class="btn btn-primary">
+                        <i class="fas fa-calendar"></i> Gérer les semestres
+                    </a>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-warning">Aucune année académique active</h5>
+                    <p class="text-muted">Vous devez créer et activer une année académique avant de créer des groupes.</p>
+                    <a href="{{ url_for('admin.annees_academiques') }}" class="btn btn-warning">
+                        <i class="fas fa-calendar-alt"></i> Gérer les années académiques
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function supprimerGroupe(groupeId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible.')) {
+        // TODO: Implémenter la suppression via AJAX
+        window.location.href = `/admin/groupes/${groupeId}/supprimer`;
+    }
+}
+</script>
+{% endblock %} 

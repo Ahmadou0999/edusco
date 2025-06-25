@@ -1,0 +1,203 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Étudiants - Administration{% endblock %}
+
+{% block page_title %}Gestion des étudiants{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Étudiants</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Liste des étudiants</h3>
+                <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 250px;">
+                        <input type="text" id="searchInput" class="form-control float-right" placeholder="Rechercher un étudiant...">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-default" onclick="rechercherEtudiants()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('admin.creer_etudiant') }}" class="btn btn-primary btn-sm ml-2">
+                        <i class="fas fa-plus"></i> Nouvel étudiant
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if annee_active %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Affichage des étudiants de l'année académique <strong>{{ annee_active.nom }}</strong>
+                </div>
+                
+                {% if etudiants %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped" id="etudiantsTable">
+                        <thead>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Photo</th>
+                                <th>Nom complet</th>
+                                <th>Date naissance</th>
+                                <th>Sexe</th>
+                                <th>Téléphone</th>
+                                <th>Email</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etudiant in etudiants %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-secondary">{{ etudiant.matricule }}</span>
+                                </td>
+                                <td>
+                                    {% if etudiant.photo %}
+                                        <img src="{{ url_for('static', filename='uploads/' + etudiant.photo) }}" 
+                                             class="img-circle" width="40" height="40" alt="Photo">
+                                    {% else %}
+                                        <div class="img-circle bg-secondary d-flex align-items-center justify-content-center" 
+                                             style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ etudiant.prenom }} {{ etudiant.nom }}</strong>
+                                    {% if etudiant.lieu_naissance %}
+                                        <br><small class="text-muted">{{ etudiant.lieu_naissance }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ etudiant.date_naissance.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    {% if etudiant.sexe == 'M' %}
+                                        <span class="badge badge-info">Masculin</span>
+                                    {% else %}
+                                        <span class="badge badge-pink">Féminin</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if etudiant.telephone %}
+                                        <a href="tel:{{ etudiant.telephone }}">{{ etudiant.telephone }}</a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if etudiant.email %}
+                                        <a href="mailto:{{ etudiant.email }}">{{ etudiant.email }}</a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if etudiant.statut == 'actif' %}
+                                        <span class="badge badge-success">Actif</span>
+                                    {% elif etudiant.statut == 'suspendu' %}
+                                        <span class="badge badge-warning">Suspendu</span>
+                                    {% elif etudiant.statut == 'diplômé' %}
+                                        <span class="badge badge-primary">Diplômé</span>
+                                    {% elif etudiant.statut == 'abandon' %}
+                                        <span class="badge badge-danger">Abandon</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('admin.modifier_etudiant', etudiant_id=etudiant.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.details_etudiant', etudiant_id=etudiant.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="Détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                                onclick="changerStatut({{ etudiant.id }}, 'actif')" title="Activer">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                onclick="changerStatut({{ etudiant.id }}, 'suspendu')" title="Suspendre">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun étudiant</h5>
+                    <p class="text-muted">Aucun étudiant n'est inscrit pour cette année académique.</p>
+                    <a href="{{ url_for('admin.creer_etudiant') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Inscrire le premier étudiant
+                    </a>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-warning">Aucune année académique active</h5>
+                    <p class="text-muted">Vous devez créer et activer une année académique avant d'inscrire des étudiants.</p>
+                    <a href="{{ url_for('admin.annees_academiques') }}" class="btn btn-warning">
+                        <i class="fas fa-calendar-alt"></i> Gérer les années académiques
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function rechercherEtudiants() {
+    const terme = document.getElementById('searchInput').value;
+    if (terme.trim()) {
+        window.location.href = `{{ url_for('admin.rechercher_etudiants') }}?q=${encodeURIComponent(terme)}`;
+    }
+}
+
+// Recherche en temps réel
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        rechercherEtudiants();
+    }
+});
+
+function changerStatut(etudiantId, statut) {
+    const statuts = {
+        'actif': 'activer',
+        'suspendu': 'suspendre',
+        'diplômé': 'diplômer',
+        'abandon': 'marquer comme abandon'
+    };
+    
+    if (confirm(`Êtes-vous sûr de vouloir ${statuts[statut]} cet étudiant ?`)) {
+        // TODO: Implémenter le changement de statut via AJAX
+        window.location.href = `/admin/etudiants/${etudiantId}/statut/${statut}`;
+    }
+}
+
+// Filtrage en temps réel
+document.getElementById('searchInput').addEventListener('input', function() {
+    const terme = this.value.toLowerCase();
+    const table = document.getElementById('etudiantsTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    for (let row of rows) {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(terme) ? '' : 'none';
+    }
+});
+</script>
+{% endblock %} 

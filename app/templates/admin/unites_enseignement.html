@@ -1,0 +1,160 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Unités d'enseignement - Administration{% endblock %}
+
+{% block page_title %}Gestion des unités d'enseignement{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Unités d'enseignement</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Liste des unités d'enseignement</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.creer_unite_enseignement') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Nouvelle UE
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if annee_active %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Unités d'enseignement de l'année académique <strong>{{ annee_active.nom }}</strong>
+                </div>
+                
+                {% if semestres %}
+                <div class="accordion" id="accordionSemestres">
+                    {% for semestre in semestres %}
+                    <div class="card">
+                        <div class="card-header" id="heading{{ semestre.id }}">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left" type="button" 
+                                        data-toggle="collapse" data-target="#collapse{{ semestre.id }}" 
+                                        aria-expanded="true" aria-controls="collapse{{ semestre.id }}">
+                                    <i class="fas fa-calendar"></i> 
+                                    <strong>{{ semestre.nom }}</strong> ({{ semestre.code }})
+                                    <span class="badge badge-info float-right">{{ semestre.unites_enseignement|length }} UE(s)</span>
+                                    {% if semestre.actif %}
+                                        <span class="badge badge-success ml-2">Actif</span>
+                                    {% endif %}
+                                </button>
+                            </h2>
+                        </div>
+
+                        <div id="collapse{{ semestre.id }}" class="collapse show" aria-labelledby="heading{{ semestre.id }}" 
+                             data-parent="#accordionSemestres">
+                            <div class="card-body">
+                                {% if semestre.unites_enseignement %}
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Nom</th>
+                                                <th>Crédits</th>
+                                                <th>Coefficient</th>
+                                                <th>Matières</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for ue in semestre.unites_enseignement %}
+                                            <tr>
+                                                <td>
+                                                    <span class="badge badge-primary">{{ ue.code }}</span>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ ue.nom }}</strong>
+                                                    {% if ue.description %}
+                                                        <br><small class="text-muted">{{ ue.description[:100] }}{% if ue.description|length > 100 %}...{% endif %}</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-secondary">{{ ue.credits }} crédits</span>
+                                                </td>
+                                                <td>{{ ue.coefficient }}</td>
+                                                <td>
+                                                    <span class="badge badge-info">{{ ue.matieres|length }} matière(s)</span>
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a href="{{ url_for('admin.modifier_unite_enseignement', ue_id=ue.id) }}" 
+                                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a href="{{ url_for('admin.details_unite_enseignement', ue_id=ue.id) }}" 
+                                                           class="btn btn-sm btn-outline-info" title="Détails">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        {% if ue.matieres|length == 0 %}
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                                onclick="supprimerUE({{ ue.id }})" title="Supprimer">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-3">
+                                    <i class="fas fa-book fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">Aucune unité d'enseignement pour ce semestre.</p>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="mt-3">
+                                    <a href="{{ url_for('admin.creer_unite_enseignement') }}?semestre_id={{ semestre.id }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-plus"></i> Ajouter une UE à ce semestre
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun semestre</h5>
+                    <p class="text-muted">Vous devez créer des semestres avant d'ajouter des unités d'enseignement.</p>
+                    <a href="{{ url_for('admin.semestres') }}" class="btn btn-primary">
+                        <i class="fas fa-calendar"></i> Gérer les semestres
+                    </a>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-warning">Aucune année académique active</h5>
+                    <p class="text-muted">Vous devez créer et activer une année académique avant de créer des unités d'enseignement.</p>
+                    <a href="{{ url_for('admin.annees_academiques') }}" class="btn btn-warning">
+                        <i class="fas fa-calendar-alt"></i> Gérer les années académiques
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function supprimerUE(ueId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette unité d\'enseignement ? Cette action est irréversible.')) {
+        // TODO: Implémenter la suppression via AJAX
+        window.location.href = `/admin/unites-enseignement/${ueId}/supprimer`;
+    }
+}
+</script>
+{% endblock %} 

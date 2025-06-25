@@ -1,0 +1,333 @@
+/* Styles personnalisés pour l'interface d'administration Edusco */
+
+/* Couleurs personnalisées */
+:root {
+    --edusco-primary: #007bff;
+    --edusco-secondary: #6c757d;
+    --edusco-success: #28a745;
+    --edusco-info: #17a2b8;
+    --edusco-warning: #ffc107;
+    --edusco-danger: #dc3545;
+    --edusco-light: #f8f9fa;
+    --edusco-dark: #343a40;
+}
+
+/* Badge personnalisé pour le sexe féminin */
+.badge-pink {
+    background-color: #e83e8c;
+    color: white;
+}
+
+/* Amélioration des tableaux */
+.table th {
+    background-color: #f8f9fa;
+    border-top: 2px solid #dee2e6;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Amélioration des cartes */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    font-weight: 600;
+}
+
+/* Amélioration des boutons */
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+/* Amélioration des formulaires */
+.form-control:focus {
+    border-color: var(--edusco-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Amélioration des alertes */
+.alert {
+    border-radius: 0.375rem;
+    border: none;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Amélioration de la sidebar */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: var(--edusco-primary);
+    color: white;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Amélioration du navbar */
+.main-header {
+    border-bottom: 1px solid #dee2e6;
+    background-color: white;
+}
+
+/* Amélioration des badges */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+}
+
+/* Amélioration des info-box */
+.info-box {
+    margin-bottom: 1rem;
+}
+
+.info-box-icon {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border-radius: 0.375rem;
+}
+
+.info-box-content {
+    padding: 1rem;
+}
+
+.info-box-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.info-box-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #343a40;
+}
+
+/* Amélioration des accordéons */
+.accordion .card {
+    margin-bottom: 0.5rem;
+}
+
+.accordion .card-header {
+    padding: 0.75rem 1rem;
+}
+
+.accordion .btn-link {
+    text-decoration: none;
+    color: #495057;
+    font-weight: 600;
+}
+
+.accordion .btn-link:hover {
+    color: var(--edusco-primary);
+}
+
+/* Amélioration des modales */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Amélioration des breadcrumbs */
+.breadcrumb {
+    background-color: transparent;
+    padding: 0.75rem 0;
+    margin-bottom: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: #6c757d;
+}
+
+/* Amélioration des images de profil */
+.img-circle {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Amélioration des liens */
+a {
+    color: var(--edusco-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Amélioration des icônes */
+.fas, .far, .fab {
+    margin-right: 0.25rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .card-header {
+        padding: 0.75rem;
+    }
+    
+    .info-box-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    
+    .info-box-number {
+        font-size: 1.25rem;
+    }
+}
+
+/* Animation pour les alertes */
+.alert {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Amélioration des tooltips */
+.tooltip {
+    font-size: 0.875rem;
+}
+
+/* Amélioration des popovers */
+.popover {
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Amélioration des dropdowns */
+.dropdown-menu {
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Amélioration des pagination */
+.pagination .page-link {
+    color: var(--edusco-primary);
+    border-color: #dee2e6;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--edusco-primary);
+    border-color: var(--edusco-primary);
+}
+
+/* Amélioration des progress bars */
+.progress {
+    height: 0.75rem;
+    border-radius: 0.375rem;
+}
+
+/* Amélioration des listes */
+.list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* Amélioration des inputs de recherche */
+.input-group .form-control:focus {
+    z-index: 3;
+}
+
+.input-group-append .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Amélioration des switches */
+.custom-switch .custom-control-label::before {
+    border-radius: 1rem;
+}
+
+.custom-switch .custom-control-label::after {
+    border-radius: 1rem;
+}
+
+/* Amélioration des file inputs */
+.custom-file-label {
+    border-radius: 0.375rem;
+}
+
+.custom-file-label::after {
+    border-radius: 0 0.375rem 0.375rem 0;
+} 

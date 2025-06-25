@@ -1,0 +1,176 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Créer une matière - Administration{% endblock %}
+
+{% block page_title %}Nouvelle matière{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.matieres') }}">Matières</a></li>
+<li class="breadcrumb-item active">Nouvelle matière</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations de la matière</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ formulaire.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.code.label(class="form-label") }}
+                                {{ formulaire.code(class="form-control" + (" is-invalid" if formulaire.code.errors else "")) }}
+                                {% if formulaire.code.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.code.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Exemple: MAT101, PHY101</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.unite_enseignement_id.label(class="form-label") }}
+                                {{ formulaire.unite_enseignement_id(class="form-control" + (" is-invalid" if formulaire.unite_enseignement_id.errors else "")) }}
+                                {% if formulaire.unite_enseignement_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.unite_enseignement_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.nom.label(class="form-label") }}
+                        {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                        {% if formulaire.nom.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in formulaire.nom.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.description.label(class="form-label") }}
+                        {{ formulaire.description(class="form-control", rows="3") }}
+                        <small class="form-text text-muted">Description optionnelle de la matière</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ formulaire.volume_horaire.label(class="form-label") }}
+                                {{ formulaire.volume_horaire(class="form-control" + (" is-invalid" if formulaire.volume_horaire.errors else "")) }}
+                                {% if formulaire.volume_horaire.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.volume_horaire.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Volume horaire en heures</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ formulaire.coefficient.label(class="form-label") }}
+                                {{ formulaire.coefficient(class="form-control" + (" is-invalid" if formulaire.coefficient.errors else "")) }}
+                                {% if formulaire.coefficient.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.coefficient.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Coefficient pour les notes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ formulaire.enseignant_id.label(class="form-label") }}
+                                {{ formulaire.enseignant_id(class="form-control" + (" is-invalid" if formulaire.enseignant_id.errors else "")) }}
+                                {% if formulaire.enseignant_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.enseignant_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Enseignant responsable (optionnel)</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.matieres') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Création d'une matière</h5>
+                    <p>Une matière représente un cours spécifique dans une UE.</p>
+                    <ul class="mb-0">
+                        <li>Le code doit être unique (ex: MAT101)</li>
+                        <li>Le volume horaire est en heures</li>
+                        <li>Le coefficient influence la moyenne</li>
+                        <li>L'enseignant peut être assigné plus tard</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Année académique</h6>
+                    <p class="mb-0">Matière pour l'année <strong>{{ annee_active.nom }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Validation côté client
+document.addEventListener('DOMContentLoaded', function() {
+    const volumeHoraire = document.getElementById('volume_horaire');
+    const coefficient = document.getElementById('coefficient');
+    
+    volumeHoraire.addEventListener('input', function() {
+        if (this.value < 0) {
+            this.setCustomValidity('Le volume horaire doit être positif');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    coefficient.addEventListener('input', function() {
+        if (this.value <= 0) {
+            this.setCustomValidity('Le coefficient doit être positif');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %} 

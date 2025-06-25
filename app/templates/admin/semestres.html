@@ -1,0 +1,135 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Semestres - Administration{% endblock %}
+
+{% block page_title %}Gestion des semestres{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Semestres</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Liste des semestres</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.creer_semestre') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Nouveau semestre
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if annee_active %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Semestres de l'année académique <strong>{{ annee_active.nom }}</strong>
+                </div>
+                
+                {% if semestres %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Nom</th>
+                                <th>Date début</th>
+                                <th>Date fin</th>
+                                <th>Statut</th>
+                                <th>Unités d'enseignement</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for semestre in semestres %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-primary">{{ semestre.code }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ semestre.nom }}</strong>
+                                    {% if semestre.actif %}
+                                        <span class="badge badge-success ml-2">Actif</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ semestre.date_debut.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ semestre.date_fin.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    {% if semestre.actif %}
+                                        <span class="badge badge-success">Actif</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ semestre.unites_enseignement|length }} UE(s)</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('admin.modifier_semestre', semestre_id=semestre.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if not semestre.actif %}
+                                        <button type="button" class="btn btn-sm btn-outline-success" 
+                                                onclick="activerSemestre({{ semestre.id }})" title="Activer">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                        {% if semestre.unites_enseignement|length == 0 %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="supprimerSemestre({{ semestre.id }})" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun semestre</h5>
+                    <p class="text-muted">Aucun semestre n'est défini pour cette année académique.</p>
+                    <a href="{{ url_for('admin.creer_semestre') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer le premier semestre
+                    </a>
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5 class="text-warning">Aucune année académique active</h5>
+                    <p class="text-muted">Vous devez créer et activer une année académique avant de créer des semestres.</p>
+                    <a href="{{ url_for('admin.annees_academiques') }}" class="btn btn-warning">
+                        <i class="fas fa-calendar-alt"></i> Gérer les années académiques
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function activerSemestre(semestreId) {
+    if (confirm('Êtes-vous sûr de vouloir activer ce semestre ?')) {
+        // TODO: Implémenter l'activation via AJAX
+        window.location.href = `/admin/semestres/${semestreId}/activer`;
+    }
+}
+
+function supprimerSemestre(semestreId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce semestre ? Cette action est irréversible.')) {
+        // TODO: Implémenter la suppression via AJAX
+        window.location.href = `/admin/semestres/${semestreId}/supprimer`;
+    }
+}
+</script>
+{% endblock %} 

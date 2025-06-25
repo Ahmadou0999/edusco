@@ -109,6 +109,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+edusco_env/
 
 # Spyder project settings
 .spyderproject
@@ -128,23 +129,53 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Application specific
+# Configuration spécifique à Edusco
+# Fichiers de configuration sensibles
+.env
+.env.local
+.env.production
+.env.staging
+
+# Base de données
 *.db
 *.sqlite
 *.sqlite3
-edusco_dev.db
-edusco_test.db
-edusco.db
 
-# Uploads
-app/static/uploads/
+# Fichiers uploadés
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+
+# Sauvegardes
+backups/
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Fichiers système
+.DS_Store
+Thumbs.db
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
+*.sublime-project
+*.sublime-workspace
 
-# OS
-.DS_Store
-Thumbs.db 
+# Fichiers de cache
+.cache/
+.pytest_cache/
+
+# Fichiers de migration (optionnel - décommentez si vous ne voulez pas versionner les migrations)
+# migrations/
+
+# Fichiers de configuration locaux
+config_local.py
+settings_local.py 
