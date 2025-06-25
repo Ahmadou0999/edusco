@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Saisie des absences - {{ groupe.nom }}</h2>
+<form method="post">
+    <div class="row mb-3">
+        <div class="col">
+            <label>Matière :</label>
+            <select name="matiere_id" class="form-control" required>
+                {% for matiere in matieres %}
+                    <option value="{{ matiere.id }}">{{ matiere.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label>Date :</label>
+            <input type="date" name="date_absence" class="form-control" required>
+        </div>
+        <div class="col">
+            <label>Heure début :</label>
+            <input type="time" name="heure_debut" class="form-control" required>
+        </div>
+        <div class="col">
+            <label>Heure fin :</label>
+            <input type="time" name="heure_fin" class="form-control" required>
+        </div>
+        <div class="col">
+            <label>Motif :</label>
+            <input type="text" name="motif" class="form-control">
+        </div>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Étudiant</th>
+                <th>Absent</th>
+                <th>Justifiée</th>
+                <th>Commentaire</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for etudiant in etudiants %}
+            <tr>
+                <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
+                <td><input type="checkbox" name="absent_{{ etudiant.id }}"></td>
+                <td><input type="checkbox" name="justifiee_{{ etudiant.id }}"></td>
+                <td><input type="text" name="commentaire_{{ etudiant.id }}" class="form-control"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-success">Enregistrer</button>
+    <a href="{{ url_for('enseignant.absences') }}" class="btn btn-secondary">Retour</a>
+</form>
+{% endblock %} 

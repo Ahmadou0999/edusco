@@ -1,0 +1,40 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Rapports pédagogiques</h2>
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Étudiants</h5>
+                <p class="card-text">{{ total_etudiants }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Enseignants</h5>
+                <p class="card-text">{{ total_enseignants }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Notes</h5>
+                <p class="card-text">{{ total_notes }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Absences</h5>
+                <p class="card-text">{{ total_absences }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+<p><strong>Moyenne générale des notes :</strong> {{ moyenne_generale|round(2) }}</p>
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Retour</a>
+{% endblock %} 

@@ -1,0 +1,37 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Gestion des délibérations</h2>
+<a href="{{ url_for('admin.creer_deliberation') }}" class="btn btn-primary mb-3">Créer une délibération</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Groupe</th>
+            <th>Semestre</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for deliberation in deliberations %}
+        <tr>
+            <td>{{ deliberation.groupe.nom }}</td>
+            <td>{{ deliberation.semestre.nom }}</td>
+            <td>{{ deliberation.date_deliberation.strftime('%d/%m/%Y') }}</td>
+            <td>
+                {% if deliberation.statut == 'en_cours' %}
+                    <span class="badge badge-warning">En cours</span>
+                {% elif deliberation.statut == 'validee' %}
+                    <span class="badge badge-success">Validée</span>
+                {% else %}
+                    <span class="badge badge-danger">Rejetée</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('admin.detail_deliberation', deliberation_id=deliberation.id) }}" class="btn btn-sm btn-info">Détail</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

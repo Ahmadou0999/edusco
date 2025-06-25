@@ -1,0 +1,60 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Gestion des emplois du temps</h2>
+<a href="{{ url_for('admin.creer_emploi_du_temps') }}" class="btn btn-primary mb-3">Créer un emploi du temps</a>
+
+<form method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <label>Groupe :</label>
+            <select name="groupe_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- Tous --</option>
+                {% for groupe in groupes %}
+                    <option value="{{ groupe.id }}" {% if groupe_selectionne == groupe.id %}selected{% endif %}>{{ groupe.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label>Semestre :</label>
+            <select name="semestre_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- Tous --</option>
+                {% for semestre in semestres %}
+                    <option value="{{ semestre.id }}" {% if semestre_selectionne == semestre.id %}selected{% endif %}>{{ semestre.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Jour</th>
+            <th>Heure</th>
+            <th>Groupe</th>
+            <th>Matière</th>
+            <th>Enseignant</th>
+            <th>Salle</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for edt in emplois_du_temps %}
+        <tr>
+            <td>{{ edt.jour_semaine }}</td>
+            <td>{{ edt.heure_debut.strftime('%H:%M') }} - {{ edt.heure_fin.strftime('%H:%M') }}</td>
+            <td>{{ edt.groupe.nom }}</td>
+            <td>{{ edt.matiere.nom }}</td>
+            <td>{{ edt.enseignant.nom }} {{ edt.enseignant.prenom }}</td>
+            <td>{{ edt.salle or '-' }}</td>
+            <td>
+                <a href="#" class="btn btn-sm btn-warning">Modifier</a>
+                <form action="#" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cet emploi du temps ?')">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

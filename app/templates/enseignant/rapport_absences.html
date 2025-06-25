@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Rapport des absences - {{ groupe.nom }}</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Taux d'absence (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for etudiant in etudiants %}
+        <tr>
+            <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
+            <td>{{ taux_absences[etudiant.id]['taux_absence']|round(2) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for('enseignant.absences') }}" class="btn btn-secondary">Retour</a>
+{% endblock %} 

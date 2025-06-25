@@ -8,7 +8,7 @@ from app.models.academique import (
     AnneeAcademique, Semestre, UniteEnseignement, Matiere,
     Etudiant, Enseignant, Groupe, InscriptionGroupe
 )
-from app.models.pedagogique import Note, Absence, EmploiTemps, Délibération
+from app.models.pedagogique import Note, Absence, EmploiDuTemps, Deliberation
 from datetime import datetime, date
 from typing import Tuple, List, Optional
 import os

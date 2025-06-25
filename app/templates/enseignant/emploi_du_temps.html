@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Mon emploi du temps</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Jour</th>
+            <th>Matière</th>
+            <th>Groupe</th>
+            <th>Heure</th>
+            <th>Salle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for jour, edt_list in emplois_par_jour.items() %}
+            {% for edt in edt_list %}
+            <tr>
+                <td>{{ jour }}</td>
+                <td>{{ edt.matiere.nom }}</td>
+                <td>{{ edt.groupe.nom }}</td>
+                <td>{{ edt.heure_debut.strftime('%H:%M') }} - {{ edt.heure_fin.strftime('%H:%M') }}</td>
+                <td>{{ edt.salle }}</td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

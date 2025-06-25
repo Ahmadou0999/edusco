@@ -1,0 +1,65 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Validation des notes</h2>
+<form method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-3">
+            <label>Matière :</label>
+            <select name="matiere_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- Toutes --</option>
+                {% for matiere in matieres %}
+                    <option value="{{ matiere.id }}" {% if matiere_selectionnee == matiere.id %}selected{% endif %}>{{ matiere.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Groupe :</label>
+            <select name="groupe_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- Tous --</option>
+                {% for groupe in groupes %}
+                    <option value="{{ groupe.id }}" {% if groupe_selectionne == groupe.id %}selected{% endif %}>{{ groupe.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Enseignant :</label>
+            <select name="enseignant_id" class="form-control" onchange="this.form.submit()">
+                <option value="">-- Tous --</option>
+                {% for enseignant in enseignants %}
+                    <option value="{{ enseignant.id }}" {% if enseignant_selectionne == enseignant.id %}selected{% endif %}>{{ enseignant.nom }} {{ enseignant.prenom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Matière</th>
+            <th>Note</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Enseignant</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for note in notes %}
+        <tr>
+            <td>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</td>
+            <td>{{ note.matiere.nom }}</td>
+            <td>{{ note.note }}</td>
+            <td>{{ note.type_evaluation }}</td>
+            <td>{{ note.date_evaluation.strftime('%d/%m/%Y') }}</td>
+            <td>{{ note.enseignant.nom }} {{ note.enseignant.prenom }}</td>
+            <td>
+                <form action="{{ url_for('admin.valider_note', note_id=note.id) }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-success">Valider</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

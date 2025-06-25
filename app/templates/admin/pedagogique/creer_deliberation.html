@@ -1,0 +1,28 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Créer une délibération</h2>
+<form method="post">
+    <div class="mb-3">
+        <label>Semestre :</label>
+        <select name="semestre_id" class="form-control" required>
+            {% for semestre in semestres %}
+                <option value="{{ semestre.id }}">{{ semestre.nom }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Groupe :</label>
+        <select name="groupe_id" class="form-control" required>
+            {% for groupe in groupes %}
+                <option value="{{ groupe.id }}">{{ groupe.nom }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Commentaire :</label>
+        <textarea name="commentaire" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+    <a href="{{ url_for('admin.deliberations') }}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %} 

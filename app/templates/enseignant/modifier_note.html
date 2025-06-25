@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Modifier la note</h2>
+<form method="post">
+    <div class="mb-3">
+        <label>Note :</label>
+        <input type="number" name="note" min="0" max="20" step="0.01" class="form-control" value="{{ note.note }}" required>
+    </div>
+    <div class="mb-3">
+        <label>Commentaire :</label>
+        <input type="text" name="commentaire" class="form-control" value="{{ note.commentaire }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="{{ url_for('enseignant.notes') }}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %} 

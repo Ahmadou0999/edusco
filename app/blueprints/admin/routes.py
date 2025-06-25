@@ -14,6 +14,7 @@ from app.forms.academique import (
 from app.models.academique import AnneeAcademique, Semestre, UniteEnseignement, Matiere, Etudiant, Enseignant, Groupe
 from app.extensions import db
 from datetime import datetime
+from sqlalchemy.sql import func
 
 @bp.route('/dashboard')
 @login_required
@@ -445,4 +446,285 @@ def api_matieres_par_ue(ue_id):
 def api_groupes_par_ue(ue_id):
     """API pour obtenir les groupes d'une UE"""
     groupes = ServiceAcademique.obtenir_groupes_par_ue(ue_id)
-    return jsonify([{'id': g.id, 'code': g.code, 'nom': g.nom} for g in groupes]) 
+    return jsonify([{'id': g.id, 'code': g.code, 'nom': g.nom} for g in groupes])
+
+# ==================== GESTION PÉDAGOGIQUE ====================
+
+@bp.route('/pedagogique')
+@login_required
+@administrateur_requis
+def pedagogique_dashboard():
+    """Tableau de bord pédagogique"""
+    # Statistiques globales
+    total_notes = Note.query.count()
+    total_absences = Absence.query.count()
+    total_deliberations = Deliberation.query.count()
+    
+    # Délibérations en cours
+    deliberations_en_cours = Deliberation.query.filter_by(statut=Deliberation.STATUT_EN_COURS).count()
+    
+    return render_template('admin/pedagogique/dashboard.html',
+                         total_notes=total_notes,
+                         total_absences=total_absences,
+                         total_deliberations=total_deliberations,
+                         deliberations_en_cours=deliberations_en_cours)
+
+# ==================== VALIDATION DES NOTES ====================
+
+@bp.route('/pedagogique/notes')
+@login_required
+@administrateur_requis
+def validation_notes():
+    """Validation des notes saisies par les enseignants"""
+    # Filtres
+    matiere_id = request.args.get('matiere_id', type=int)
+    groupe_id = request.args.get('groupe_id', type=int)
+    enseignant_id = request.args.get('enseignant_id', type=int)
+    
+    query = Note.query
+    
+    if matiere_id:
+        query = query.filter(Note.matiere_id == matiere_id)
+    if groupe_id:
+        query = query.filter(Note.groupe_id == groupe_id)
+    if enseignant_id:
+        query = query.filter(Note.enseignant_id == enseignant_id)
+    
+    notes = query.order_by(Note.date_saisie.desc()).all()
+    
+    # Données pour les filtres
+    matieres = Matiere.query.all()
+    groupes = Groupe.query.all()
+    enseignants = Enseignant.query.all()
+    
+    return render_template('admin/pedagogique/validation_notes.html',
+                         notes=notes,
+                         matieres=matieres,
+                         groupes=groupes,
+                         enseignants=enseignants,
+                         matiere_selectionnee=matiere_id,
+                         groupe_selectionne=groupe_id,
+                         enseignant_selectionne=enseignant_id)
+
+@bp.route('/pedagogique/notes/<int:note_id>/valider', methods=['POST'])
+@login_required
+@administrateur_requis
+def valider_note(note_id):
+    """Valider une note"""
+    note = Note.query.get(note_id)
+    if not note:
+        flash('Note non trouvée', 'error')
+        return redirect(url_for('admin.validation_notes'))
+    
+    # Logique de validation (à implémenter selon les besoins)
+    # Par exemple, marquer la note comme validée par l'admin
+    
+    flash('Note validée avec succès', 'success')
+    return redirect(url_for('admin.validation_notes'))
+
+# ==================== GESTION DES DÉLIBÉRATIONS ====================
+
+@bp.route('/pedagogique/deliberations')
+@login_required
+@administrateur_requis
+def deliberations():
+    """Liste des délibérations"""
+    deliberations = Deliberation.query.order_by(Deliberation.date_deliberation.desc()).all()
+    return render_template('admin/pedagogique/deliberations.html', deliberations=deliberations)
+
+@bp.route('/pedagogique/deliberations/creer', methods=['GET', 'POST'])
+@login_required
+@administrateur_requis
+def creer_deliberation():
+    """Créer une nouvelle délibération"""
+    if request.method == 'POST':
+        semestre_id = request.form.get('semestre_id', type=int)
+        groupe_id = request.form.get('groupe_id', type=int)
+        commentaire = request.form.get('commentaire', '')
+        
+        deliberation, succes = ServicePedagogique.creer_deliberation(
+            semestre_id=semestre_id,
+            groupe_id=groupe_id,
+            commentaire=commentaire
+        )
+        
+        if succes:
+            flash('Délibération créée avec succès', 'success')
+            return redirect(url_for('admin.deliberations'))
+        else:
+            flash('Erreur lors de la création de la délibération', 'error')
+    
+    # Données pour le formulaire
+    semestres = Semestre.query.all()
+    groupes = Groupe.query.all()
+    
+    return render_template('admin/pedagogique/creer_deliberation.html',
+                         semestres=semestres,
+                         groupes=groupes)
+
+@bp.route('/pedagogique/deliberations/<int:deliberation_id>')
+@login_required
+@administrateur_requis
+def detail_deliberation(deliberation_id):
+    """Détail d'une délibération"""
+    deliberation = Deliberation.query.get(deliberation_id)
+    if not deliberation:
+        flash('Délibération non trouvée', 'error')
+        return redirect(url_for('admin.deliberations'))
+    
+    return render_template('admin/pedagogique/detail_deliberation.html', deliberation=deliberation)
+
+@bp.route('/pedagogique/deliberations/<int:deliberation_id>/calculer', methods=['POST'])
+@login_required
+@administrateur_requis
+def calculer_deliberation(deliberation_id):
+    """Calculer les résultats de délibération"""
+    succes = ServicePedagogique.calculer_resultats_deliberation(deliberation_id)
+    
+    if succes:
+        flash('Résultats calculés avec succès', 'success')
+    else:
+        flash('Erreur lors du calcul des résultats', 'error')
+    
+    return redirect(url_for('admin.detail_deliberation', deliberation_id=deliberation_id))
+
+@bp.route('/pedagogique/deliberations/<int:deliberation_id>/valider', methods=['POST'])
+@login_required
+@administrateur_requis
+def valider_deliberation(deliberation_id):
+    """Valider une délibération"""
+    commentaire = request.form.get('commentaire', '')
+    succes = ServicePedagogique.valider_deliberation(deliberation_id, commentaire)
+    
+    if succes:
+        flash('Délibération validée avec succès', 'success')
+    else:
+        flash('Erreur lors de la validation', 'error')
+    
+    return redirect(url_for('admin.detail_deliberation', deliberation_id=deliberation_id))
+
+# ==================== GESTION DES EMPLOIS DU TEMPS ====================
+
+@bp.route('/pedagogique/emplois-du-temps')
+@login_required
+@administrateur_requis
+def emplois_du_temps():
+    """Gestion des emplois du temps"""
+    # Filtres
+    groupe_id = request.args.get('groupe_id', type=int)
+    semestre_id = request.args.get('semestre_id', type=int)
+    
+    query = EmploiDuTemps.query.filter_by(actif=True)
+    
+    if groupe_id:
+        query = query.filter(EmploiDuTemps.groupe_id == groupe_id)
+    if semestre_id:
+        query = query.filter(EmploiDuTemps.semestre_id == semestre_id)
+    
+    emplois_du_temps = query.order_by(EmploiDuTemps.jour, EmploiDuTemps.heure_debut).all()
+    
+    # Données pour les filtres
+    groupes = Groupe.query.all()
+    semestres = Semestre.query.all()
+    
+    return render_template('admin/pedagogique/emplois_du_temps.html',
+                         emplois_du_temps=emplois_du_temps,
+                         groupes=groupes,
+                         semestres=semestres,
+                         groupe_selectionne=groupe_id,
+                         semestre_selectionne=semestre_id)
+
+@bp.route('/pedagogique/emplois-du-temps/creer', methods=['GET', 'POST'])
+@login_required
+@administrateur_requis
+def creer_emploi_du_temps():
+    """Créer un emploi du temps"""
+    if request.method == 'POST':
+        groupe_id = request.form.get('groupe_id', type=int)
+        matiere_id = request.form.get('matiere_id', type=int)
+        enseignant_id = request.form.get('enseignant_id', type=int)
+        semestre_id = request.form.get('semestre_id', type=int)
+        jour = request.form.get('jour', type=int)
+        heure_debut = datetime.strptime(request.form.get('heure_debut'), '%H:%M').time()
+        heure_fin = datetime.strptime(request.form.get('heure_fin'), '%H:%M').time()
+        salle = request.form.get('salle', '')
+        
+        edt, succes = ServicePedagogique.creer_emploi_du_temps(
+            groupe_id=groupe_id,
+            matiere_id=matiere_id,
+            enseignant_id=enseignant_id,
+            semestre_id=semestre_id,
+            jour=jour,
+            heure_debut=heure_debut,
+            heure_fin=heure_fin,
+            salle=salle
+        )
+        
+        if succes:
+            flash('Emploi du temps créé avec succès', 'success')
+            return redirect(url_for('admin.emplois_du_temps'))
+        else:
+            flash('Erreur lors de la création (conflit possible)', 'error')
+    
+    # Données pour le formulaire
+    groupes = Groupe.query.all()
+    matieres = Matiere.query.all()
+    enseignants = Enseignant.query.all()
+    semestres = Semestre.query.all()
+    
+    return render_template('admin/pedagogique/creer_emploi_du_temps.html',
+                         groupes=groupes,
+                         matieres=matieres,
+                         enseignants=enseignants,
+                         semestres=semestres)
+
+# ==================== RAPPORTS ET STATISTIQUES ====================
+
+@bp.route('/pedagogique/rapports')
+@login_required
+@administrateur_requis
+def rapports_pedagogiques():
+    """Rapports pédagogiques globaux"""
+    # Statistiques globales
+    total_etudiants = Etudiant.query.count()
+    total_enseignants = Enseignant.query.count()
+    total_notes = Note.query.count()
+    total_absences = Absence.query.count()
+    
+    # Moyenne générale (exemple)
+    moyenne_generale = 0
+    if total_notes > 0:
+        result = db.session.query(func.avg(Note.note)).scalar()
+        moyenne_generale = result if result else 0
+    
+    return render_template('admin/pedagogique/rapports.html',
+                         total_etudiants=total_etudiants,
+                         total_enseignants=total_enseignants,
+                         total_notes=total_notes,
+                         total_absences=total_absences,
+                         moyenne_generale=moyenne_generale)
+
+@bp.route('/pedagogique/rapports/etudiant/<int:etudiant_id>')
+@login_required
+@administrateur_requis
+def rapport_etudiant(etudiant_id):
+    """Rapport détaillé d'un étudiant"""
+    etudiant = Etudiant.query.get(etudiant_id)
+    if not etudiant:
+        flash('Étudiant non trouvé', 'error')
+        return redirect(url_for('admin.rapports_pedagogiques'))
+    
+    # Notes de l'étudiant
+    notes = ServicePedagogique.obtenir_notes_etudiant(etudiant_id)
+    
+    # Absences de l'étudiant
+    absences = ServicePedagogique.obtenir_absences_etudiant(etudiant_id)
+    
+    # Résultats de délibération
+    resultats = ServicePedagogique.obtenir_resultats_etudiant(etudiant_id)
+    
+    return render_template('admin/pedagogique/rapport_etudiant.html',
+                         etudiant=etudiant,
+                         notes=notes,
+                         absences=absences,
+                         resultats=resultats) 

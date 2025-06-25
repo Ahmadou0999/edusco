@@ -1,0 +1,72 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Détail de la délibération</h2>
+<div class="card mb-3">
+    <div class="card-body">
+        <h5>Informations générales</h5>
+        <p><strong>Groupe :</strong> {{ deliberation.groupe.nom }}</p>
+        <p><strong>Semestre :</strong> {{ deliberation.semestre.nom }}</p>
+        <p><strong>Date :</strong> {{ deliberation.date_deliberation.strftime('%d/%m/%Y') }}</p>
+        <p><strong>Statut :</strong> 
+            {% if deliberation.statut == 'en_cours' %}
+                <span class="badge badge-warning">En cours</span>
+            {% elif deliberation.statut == 'validee' %}
+                <span class="badge badge-success">Validée</span>
+            {% else %}
+                <span class="badge badge-danger">Rejetée</span>
+            {% endif %}
+        </p>
+        {% if deliberation.commentaire %}
+            <p><strong>Commentaire :</strong> {{ deliberation.commentaire }}</p>
+        {% endif %}
+    </div>
+</div>
+{% if deliberation.statut == 'en_cours' %}
+<div class="mb-3">
+    <form action="{{ url_for('admin.calculer_deliberation', deliberation_id=deliberation.id) }}" method="post" style="display:inline;">
+        <button type="submit" class="btn btn-warning">Calculer les résultats</button>
+    </form>
+</div>
+{% endif %}
+{% if deliberation.resultats %}
+<h3>Résultats</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Moyenne</th>
+            <th>Crédits obtenus</th>
+            <th>Décision</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for resultat in deliberation.resultats %}
+        <tr>
+            <td>{{ resultat.etudiant.nom }} {{ resultat.etudiant.prenom }}</td>
+            <td>{{ '%.2f'|format(resultat.moyenne_generale) }}</td>
+            <td>{{ resultat.credits_obtenus }}/{{ resultat.credits_totaux }}</td>
+            <td>
+                {% if resultat.decision == 'admis' %}
+                    <span class="badge badge-success">Admis</span>
+                {% elif resultat.decision == 'admis_reserve' %}
+                    <span class="badge badge-warning">Admis avec réserve</span>
+                {% else %}
+                    <span class="badge badge-danger">Échec</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if deliberation.statut == 'en_cours' %}
+<form action="{{ url_for('admin.valider_deliberation', deliberation_id=deliberation.id) }}" method="post">
+    <div class="mb-3">
+        <label>Commentaire de validation :</label>
+        <textarea name="commentaire" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Valider la délibération</button>
+</form>
+{% endif %}
+{% endif %}
+<a href="{{ url_for('admin.deliberations') }}" class="btn btn-secondary">Retour</a>
+{% endblock %} 

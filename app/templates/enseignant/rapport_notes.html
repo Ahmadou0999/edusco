@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Rapport des notes - {{ matiere.nom }}</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Moyenne</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for etudiant in etudiants %}
+        <tr>
+            <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
+            <td>{{ '%.2f'|format(moyennes[etudiant.id]) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p><strong>Moyenne de la classe :</strong> {{ '%.2f'|format(moyenne_classe) }}</p>
+<p><strong>Note max :</strong> {{ note_max }} | <strong>Note min :</strong> {{ note_min }}</p>
+<a href="{{ url_for('enseignant.notes') }}" class="btn btn-secondary">Retour</a>
+{% endblock %} 

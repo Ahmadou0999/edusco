@@ -1,0 +1,47 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Tableau de bord pédagogique</h2>
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Notes</h5>
+                <p class="card-text">{{ total_notes }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Absences</h5>
+                <p class="card-text">{{ total_absences }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Délibérations</h5>
+                <p class="card-text">{{ total_deliberations }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">En cours</h5>
+                <p class="card-text">{{ deliberations_en_cours }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h3>Actions rapides</h3>
+        <a href="{{ url_for('admin.validation_notes') }}" class="btn btn-primary">Validation des notes</a>
+        <a href="{{ url_for('admin.deliberations') }}" class="btn btn-success">Délibérations</a>
+        <a href="{{ url_for('admin.emplois_du_temps') }}" class="btn btn-info">Emplois du temps</a>
+        <a href="{{ url_for('admin.rapports_pedagogiques') }}" class="btn btn-warning">Rapports</a>
+    </div>
+</div>
+{% endblock %} 

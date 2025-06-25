@@ -1,0 +1,70 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Rapport détaillé - {{ etudiant.nom }} {{ etudiant.prenom }}</h2>
+<h4>Notes</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Matière</th>
+            <th>Note</th>
+            <th>Type</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for note in notes %}
+        <tr>
+            <td>{{ note.matiere.nom }}</td>
+            <td>{{ note.note }}</td>
+            <td>{{ note.type_evaluation }}</td>
+            <td>{{ note.date_evaluation.strftime('%d/%m/%Y') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h4>Absences</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Matière</th>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Justifiée</th>
+            <th>Motif</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for absence in absences %}
+        <tr>
+            <td>{{ absence.matiere.nom }}</td>
+            <td>{{ absence.date_absence.strftime('%d/%m/%Y') }}</td>
+            <td>{{ absence.heure_debut.strftime('%H:%M') }} - {{ absence.heure_fin.strftime('%H:%M') }}</td>
+            <td>{% if absence.justifiee %}Oui{% else %}Non{% endif %}</td>
+            <td>{{ absence.motif }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h4>Délibérations</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Semestre</th>
+            <th>Moyenne</th>
+            <th>Crédits</th>
+            <th>Décision</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for resultat in resultats %}
+        <tr>
+            <td>{{ resultat.deliberation.semestre.nom }}</td>
+            <td>{{ resultat.moyenne_generale|round(2) }}</td>
+            <td>{{ resultat.credits_obtenus }}/{{ resultat.credits_totaux }}</td>
+            <td>{{ resultat.decision }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for('admin.rapports_pedagogiques') }}" class="btn btn-secondary">Retour</a>
+{% endblock %} 

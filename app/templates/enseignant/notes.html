@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Mes notes saisies</h2>
+<form method="get" class="mb-3">
+    <label for="matiere_id">Matière :</label>
+    <select name="matiere_id" id="matiere_id" onchange="this.form.submit()">
+        <option value="">-- Choisir --</option>
+        {% for matiere in matieres %}
+            <option value="{{ matiere.id }}" {% if matiere_selectionnee == matiere.id %}selected{% endif %}>{{ matiere.nom }}</option>
+        {% endfor %}
+    </select>
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Matière</th>
+            <th>Note</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for note in notes %}
+        <tr>
+            <td>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</td>
+            <td>{{ note.matiere.nom }}</td>
+            <td>{{ note.note }}</td>
+            <td>{{ note.type_evaluation }}</td>
+            <td>{{ note.date_evaluation.strftime('%d/%m/%Y') }}</td>
+            <td>
+                <a href="{{ url_for('enseignant.modifier_note', note_id=note.id) }}" class="btn btn-sm btn-primary">Modifier</a>
+                <form action="{{ url_for('enseignant.supprimer_note', note_id=note.id) }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette note ?')">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

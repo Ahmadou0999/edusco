@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Mes absences saisies</h2>
+<form method="get" class="mb-3">
+    <label for="groupe_id">Groupe :</label>
+    <select name="groupe_id" id="groupe_id" onchange="this.form.submit()">
+        <option value="">-- Choisir --</option>
+        {% for groupe in groupes %}
+            <option value="{{ groupe.id }}" {% if groupe_selectionne == groupe.id %}selected{% endif %}>{{ groupe.nom }}</option>
+        {% endfor %}
+    </select>
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Étudiant</th>
+            <th>Matière</th>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Justifiée</th>
+            <th>Motif</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for absence in absences %}
+        <tr>
+            <td>{{ absence.etudiant.nom }} {{ absence.etudiant.prenom }}</td>
+            <td>{{ absence.matiere.nom }}</td>
+            <td>{{ absence.date_absence.strftime('%d/%m/%Y') }}</td>
+            <td>{{ absence.heure_debut.strftime('%H:%M') }} - {{ absence.heure_fin.strftime('%H:%M') }}</td>
+            <td>{% if absence.justifiee %}Oui{% else %}Non{% endif %}</td>
+            <td>{{ absence.motif }}</td>
+            <td>
+                <a href="{{ url_for('enseignant.modifier_absence', absence_id=absence.id) }}" class="btn btn-sm btn-primary">Modifier</a>
+                <form action="{{ url_for('enseignant.supprimer_absence', absence_id=absence.id) }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette absence ?')">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

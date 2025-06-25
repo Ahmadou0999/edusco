@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Saisie des notes - {{ matiere.nom }}</h2>
+<form method="post">
+    <input type="hidden" name="type_evaluation" value="{{ type_evaluation }}">
+    <input type="hidden" name="date_evaluation" value="{{ date_evaluation }}">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Étudiant</th>
+                <th>Note</th>
+                <th>Commentaire</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for etudiant in etudiants %}
+            <tr>
+                <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
+                <td>
+                    <input type="number" name="note_{{ etudiant.id }}" min="0" max="20" step="0.01" class="form-control" value="{{ notes_existantes[etudiant.id].note if notes_existantes[etudiant.id] is defined else '' }}">
+                </td>
+                <td>
+                    <input type="text" name="commentaire_{{ etudiant.id }}" class="form-control" value="{{ notes_existantes[etudiant.id].commentaire if notes_existantes[etudiant.id] is defined else '' }}">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-success">Enregistrer</button>
+    <a href="{{ url_for('enseignant.notes') }}" class="btn btn-secondary">Retour</a>
+</form>
+{% endblock %} 

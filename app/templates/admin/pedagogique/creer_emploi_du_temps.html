@@ -1,0 +1,68 @@
+{% extends 'admin/base.html' %}
+{% block content %}
+<h2>Créer un emploi du temps</h2>
+<form method="post">
+    <div class="row mb-3">
+        <div class="col">
+            <label>Groupe :</label>
+            <select name="groupe_id" class="form-control" required>
+                {% for groupe in groupes %}
+                    <option value="{{ groupe.id }}">{{ groupe.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label>Matière :</label>
+            <select name="matiere_id" class="form-control" required>
+                {% for matiere in matieres %}
+                    <option value="{{ matiere.id }}">{{ matiere.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label>Enseignant :</label>
+            <select name="enseignant_id" class="form-control" required>
+                {% for enseignant in enseignants %}
+                    <option value="{{ enseignant.id }}">{{ enseignant.nom }} {{ enseignant.prenom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <label>Semestre :</label>
+            <select name="semestre_id" class="form-control" required>
+                {% for semestre in semestres %}
+                    <option value="{{ semestre.id }}">{{ semestre.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col">
+            <label>Jour :</label>
+            <select name="jour" class="form-control" required>
+                <option value="0">Lundi</option>
+                <option value="1">Mardi</option>
+                <option value="2">Mercredi</option>
+                <option value="3">Jeudi</option>
+                <option value="4">Vendredi</option>
+                <option value="5">Samedi</option>
+                <option value="6">Dimanche</option>
+            </select>
+        </div>
+        <div class="col">
+            <label>Heure début :</label>
+            <input type="time" name="heure_debut" class="form-control" required>
+        </div>
+        <div class="col">
+            <label>Heure fin :</label>
+            <input type="time" name="heure_fin" class="form-control" required>
+        </div>
+        <div class="col">
+            <label>Salle :</label>
+            <input type="text" name="salle" class="form-control">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+    <a href="{{ url_for('admin.emplois_du_temps') }}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %} 

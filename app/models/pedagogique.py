@@ -4,7 +4,8 @@ Contient les modèles pour la gestion pédagogique (notes, absences)
 """
 
 from app.extensions import db
-from datetime import datetime
+from datetime import datetime, date
+from sqlalchemy.orm import relationship
 
 class Note(db.Model):
     """Modèle pour les notes des étudiants"""
@@ -14,21 +15,41 @@ class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     etudiant_id = db.Column(db.Integer, db.ForeignKey('etudiants.id'), nullable=False)
     matiere_id = db.Column(db.Integer, db.ForeignKey('matieres.id'), nullable=False)
-    type_evaluation = db.Column(db.String(50), nullable=False)  # "Contrôle", "Examen", "TP", "Projet"
-    note = db.Column(db.Float, nullable=False)  # note sur 20
-    coefficient = db.Column(db.Float, nullable=False, default=1.0)
-    date_evaluation = db.Column(db.Date, nullable=False)
+    groupe_id = db.Column(db.Integer, db.ForeignKey('groupes.id'), nullable=False)
+    enseignant_id = db.Column(db.Integer, db.ForeignKey('enseignants.id'), nullable=False)
+    
+    # Types d'évaluation
+    TYPE_CONTROLE = 'controle'
+    TYPE_EXAMEN = 'examen'
+    TYPE_TP = 'tp'
+    TYPE_PROJET = 'projet'
+    TYPE_ORAL = 'oral'
+    
+    type_evaluation = db.Column(db.String(20), nullable=False, default=TYPE_CONTROLE)
+    note = db.Column(db.Float, nullable=False)  # Note sur 20
+    coefficient = db.Column(db.Float, default=1.0)
     commentaire = db.Column(db.Text)
-    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modification = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    date_evaluation = db.Column(db.Date, nullable=False, default=date.today)
+    date_saisie = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    etudiant = relationship('Etudiant', back_populates='notes')
+    matiere = relationship('Matiere', back_populates='notes')
+    groupe = relationship('Groupe', back_populates='notes')
+    enseignant = relationship('Enseignant', back_populates='notes_saisies')
     
     def __repr__(self):
-        return f'<Note {self.etudiant.matricule} - {self.matiere.code} - {self.note}/20>'
+        return f'<Note {self.etudiant.nom} - {self.matiere.nom}: {self.note}/20>'
     
     @property
     def note_ponderee(self):
-        """Calcule la note pondérée"""
+        """Retourne la note pondérée par le coefficient"""
         return self.note * self.coefficient
+    
+    @property
+    def est_validee(self):
+        """Vérifie si la note est dans une plage valide"""
+        return 0 <= self.note <= 20
 
 class Absence(db.Model):
     """Modèle pour les absences des étudiants"""
@@ -38,70 +59,162 @@ class Absence(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     etudiant_id = db.Column(db.Integer, db.ForeignKey('etudiants.id'), nullable=False)
     matiere_id = db.Column(db.Integer, db.ForeignKey('matieres.id'), nullable=False)
-    date_absence = db.Column(db.Date, nullable=False)
+    groupe_id = db.Column(db.Integer, db.ForeignKey('groupes.id'), nullable=False)
+    
+    date_absence = db.Column(db.Date, nullable=False, default=date.today)
     heure_debut = db.Column(db.Time, nullable=False)
     heure_fin = db.Column(db.Time, nullable=False)
-    motif = db.Column(db.String(200))  # "Maladie", "Famille", "Autre"
+    motif = db.Column(db.String(100))  # Maladie, motif personnel, etc.
     justifiee = db.Column(db.Boolean, default=False)
-    justificatif = db.Column(db.String(255))  # chemin vers le justificatif
+    justificatif = db.Column(db.String(255))  # Chemin vers le fichier justificatif
     commentaire = db.Column(db.Text)
-    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
-    date_modification = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    date_saisie = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    etudiant = relationship('Etudiant', back_populates='absences')
+    matiere = relationship('Matiere', back_populates='absences')
+    groupe = relationship('Groupe', back_populates='absences')
     
     def __repr__(self):
-        return f'<Absence {self.etudiant.matricule} - {self.date_absence} - {"Justifiée" if self.justifiee else "Non justifiée"}>'
+        return f'<Absence {self.etudiant.nom} - {self.date_absence}>'
     
     @property
     def duree_heures(self):
         """Calcule la durée de l'absence en heures"""
-        from datetime import timedelta
-        debut = datetime.combine(datetime.today(), self.heure_debut)
-        fin = datetime.combine(datetime.today(), self.heure_fin)
-        duree = fin - debut
-        return duree.total_seconds() / 3600  # conversion en heures
+        debut = datetime.combine(date.today(), self.heure_debut)
+        fin = datetime.combine(date.today(), self.heure_fin)
+        return (fin - debut).total_seconds() / 3600
 
-class EmploiTemps(db.Model):
+class EmploiDuTemps(db.Model):
     """Modèle pour les emplois du temps"""
     
-    __tablename__ = 'emplois_temps'
+    __tablename__ = 'emplois_du_temps'
     
     id = db.Column(db.Integer, primary_key=True)
     groupe_id = db.Column(db.Integer, db.ForeignKey('groupes.id'), nullable=False)
     matiere_id = db.Column(db.Integer, db.ForeignKey('matieres.id'), nullable=False)
-    jour_semaine = db.Column(db.Integer, nullable=False)  # 1=Lundi, 2=Mardi, ..., 7=Dimanche
+    enseignant_id = db.Column(db.Integer, db.ForeignKey('enseignants.id'), nullable=False)
+    salle = db.Column(db.String(50))
+    
+    # Jours de la semaine (0=Lundi, 6=Dimanche)
+    jour = db.Column(db.Integer, nullable=False)  # 0-6
     heure_debut = db.Column(db.Time, nullable=False)
     heure_fin = db.Column(db.Time, nullable=False)
-    salle = db.Column(db.String(50))
-    type_cours = db.Column(db.String(50))  # "Cours", "TD", "TP"
-    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Période (semestre, année)
+    semestre_id = db.Column(db.Integer, db.ForeignKey('semestres.id'), nullable=False)
+    actif = db.Column(db.Boolean, default=True)
+    
+    # Relations
+    groupe = relationship('Groupe', back_populates='emplois_du_temps')
+    matiere = relationship('Matiere', back_populates='emplois_du_temps')
+    enseignant = relationship('Enseignant', back_populates='emplois_du_temps')
+    semestre = relationship('Semestre', back_populates='emplois_du_temps')
     
     def __repr__(self):
-        return f'<EmploiTemps {self.groupe.code} - {self.matiere.code} - {self.jour_semaine}>'
+        return f'<EDT {self.groupe.nom} - {self.matiere.nom} - {self.jour_semaine}>'
+    
+    @property
+    def jour_semaine(self):
+        """Retourne le nom du jour de la semaine"""
+        jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+        return jours[self.jour] if 0 <= self.jour < 7 else 'Inconnu'
+    
+    @property
+    def duree_heures(self):
+        """Calcule la durée du cours en heures"""
+        debut = datetime.combine(date.today(), self.heure_debut)
+        fin = datetime.combine(date.today(), self.heure_fin)
+        return (fin - debut).total_seconds() / 3600
 
-class Délibération(db.Model):
+class Deliberation(db.Model):
     """Modèle pour les délibérations"""
     
     __tablename__ = 'deliberations'
     
     id = db.Column(db.Integer, primary_key=True)
     semestre_id = db.Column(db.Integer, db.ForeignKey('semestres.id'), nullable=False)
-    etudiant_id = db.Column(db.Integer, db.ForeignKey('etudiants.id'), nullable=False)
-    moyenne_generale = db.Column(db.Float, nullable=False)
-    moyenne_ue = db.Column(db.Float, nullable=False)
-    credits_obtenus = db.Column(db.Integer, nullable=False, default=0)
-    credits_total = db.Column(db.Integer, nullable=False, default=0)
-    decision = db.Column(db.String(50), nullable=False)  # "Admis", "Ajourné", "Redoublement"
-    mention = db.Column(db.String(50))  # "Passable", "Assez bien", "Bien", "Très bien"
+    groupe_id = db.Column(db.Integer, db.ForeignKey('groupes.id'), nullable=False)
+    
+    # Statuts de délibération
+    STATUT_EN_COURS = 'en_cours'
+    STATUT_VALIDEE = 'validee'
+    STATUT_REJETEE = 'rejetee'
+    
+    statut = db.Column(db.String(20), default=STATUT_EN_COURS)
+    date_deliberation = db.Column(db.Date, nullable=False, default=date.today)
+    date_validation = db.Column(db.Date)
     commentaire = db.Column(db.Text)
-    date_deliberation = db.Column(db.DateTime, default=datetime.utcnow)
-    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    semestre = relationship('Semestre', back_populates='deliberations')
+    groupe = relationship('Groupe', back_populates='deliberations')
+    resultats = relationship('ResultatDeliberation', back_populates='deliberation', cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f'<Délibération {self.etudiant.matricule} - {self.semestre.nom} - {self.decision}>'
+        return f'<Deliberation {self.groupe.nom} - {self.semestre.nom}>'
+
+class ResultatDeliberation(db.Model):
+    """Modèle pour les résultats de délibération par étudiant"""
+    __tablename__ = 'resultats_deliberation'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    deliberation_id = db.Column(db.Integer, db.ForeignKey('deliberations.id'), nullable=False)
+    etudiant_id = db.Column(db.Integer, db.ForeignKey('etudiants.id'), nullable=False)
+    
+    # Résultats
+    moyenne_generale = db.Column(db.Float, nullable=False)
+    credits_obtenus = db.Column(db.Integer, default=0)
+    credits_totaux = db.Column(db.Integer, default=0)
+    
+    # Décision
+    DECISION_ADMIS = 'admis'
+    DECISION_ADMIS_AVEC_RESERVE = 'admis_reserve'
+    DECISION_ECHEC = 'echec'
+    DECISION_REDOUBLEMENT = 'redoublement'
+    
+    decision = db.Column(db.String(20), nullable=False)
+    commentaire = db.Column(db.Text)
+    
+    # Relations
+    deliberation = relationship('Deliberation', back_populates='resultats')
+    etudiant = relationship('Etudiant', back_populates='resultats_deliberation')
+    
+    def __repr__(self):
+        return f'<Resultat {self.etudiant.nom} - {self.decision}>'
     
     @property
     def taux_reussite(self):
         """Calcule le taux de réussite en crédits"""
-        if self.credits_total > 0:
-            return (self.credits_obtenus / self.credits_total) * 100
-        return 0 
+        if self.credits_totaux > 0:
+            return (self.credits_obtenus / self.credits_totaux) * 100
+        return 0.0
+
+# Mise à jour des modèles existants pour ajouter les relations
+def ajouter_relations_pedagogiques():
+    """Ajoute les relations pédagogiques aux modèles existants"""
+    from app.models.academique import Etudiant, Matiere, Groupe, Enseignant, Semestre
+    
+    # Relations pour Etudiant
+    Etudiant.notes = relationship('Note', back_populates='etudiant', cascade='all, delete-orphan')
+    Etudiant.absences = relationship('Absence', back_populates='etudiant', cascade='all, delete-orphan')
+    Etudiant.resultats_deliberation = relationship('ResultatDeliberation', back_populates='etudiant', cascade='all, delete-orphan')
+    
+    # Relations pour Matiere
+    Matiere.notes = relationship('Note', back_populates='matiere', cascade='all, delete-orphan')
+    Matiere.absences = relationship('Absence', back_populates='matiere', cascade='all, delete-orphan')
+    Matiere.emplois_du_temps = relationship('EmploiDuTemps', back_populates='matiere', cascade='all, delete-orphan')
+    
+    # Relations pour Groupe
+    Groupe.notes = relationship('Note', back_populates='groupe', cascade='all, delete-orphan')
+    Groupe.absences = relationship('Absence', back_populates='groupe', cascade='all, delete-orphan')
+    Groupe.emplois_du_temps = relationship('EmploiDuTemps', back_populates='groupe', cascade='all, delete-orphan')
+    Groupe.deliberations = relationship('Deliberation', back_populates='groupe', cascade='all, delete-orphan')
+    
+    # Relations pour Enseignant
+    Enseignant.notes_saisies = relationship('Note', back_populates='enseignant', cascade='all, delete-orphan')
+    Enseignant.emplois_du_temps = relationship('EmploiDuTemps', back_populates='enseignant', cascade='all, delete-orphan')
+    
+    # Relations pour Semestre
+    Semestre.emplois_du_temps = relationship('EmploiDuTemps', back_populates='semestre', cascade='all, delete-orphan')
+    Semestre.deliberations = relationship('Deliberation', back_populates='semestre', cascade='all, delete-orphan') 

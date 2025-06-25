@@ -5,19 +5,30 @@ Ce module contient tous les modèles SQLAlchemy
 
 from app.extensions import db
 
-# Import des modèles
-from app.models.utilisateur import Utilisateur
-from app.models.academique import (
+# Import des modèles utilisateur
+from .utilisateur import Utilisateur
+
+# Import des modèles académiques
+from .academique import (
     AnneeAcademique, Semestre, UniteEnseignement, Matiere,
     Etudiant, Enseignant, Groupe, InscriptionGroupe
 )
-from app.models.pedagogique import (
-    Note, Absence, EmploiTemps, Délibération
+
+# Import des modèles pédagogiques
+from .pedagogique import (
+    Note, Absence, EmploiDuTemps, Deliberation, ResultatDeliberation,
+    ajouter_relations_pedagogiques
 )
+
+# Ajouter les relations pédagogiques aux modèles existants
+ajouter_relations_pedagogiques()
 
 # Liste de tous les modèles pour les migrations
 __all__ = [
+    # Modèles utilisateur
     'Utilisateur',
+    
+    # Modèles académiques
     'AnneeAcademique',
     'Semestre', 
     'UniteEnseignement',
@@ -26,8 +37,11 @@ __all__ = [
     'Enseignant',
     'Groupe',
     'InscriptionGroupe',
+    
+    # Modèles pédagogiques
     'Note',
     'Absence',
-    'EmploiTemps',
-    'Délibération'
+    'EmploiDuTemps',
+    'Deliberation',
+    'ResultatDeliberation'
 ] 
