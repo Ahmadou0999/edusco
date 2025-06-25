@@ -3,57 +3,56 @@ from dotenv import load_dotenv
 
 # Charger les variables d'environnement seulement si le fichier .env existe
 if os.path.exists('.env'):
-    load_dotenv()
+    try:
+        load_dotenv()
+    except UnicodeDecodeError:
+        # Si le fichier .env est corrompu, on continue sans lui
+        pass
 
-class Configuration:
-    """Configuration de base pour l'application Edusco"""
-    
-    # Configuration generale
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'cle-secrete-par-defaut-pour-developpement'
-    APP_NAME = os.environ.get('APP_NAME', 'Edusco')
-    APP_DESCRIPTION = os.environ.get('APP_DESCRIPTION', 'Plateforme de gestion d\'institut superieur')
-    
-    # Configuration de la base de donnees
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///edusco.db'
+class Config:
+    """Configuration de base"""
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///edusco.db'
     
     # Configuration email
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
+    MAIL_USE_SSL = os.environ.get('MAIL_USE_SSL', 'false').lower() in ['true', 'on', '1']
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     
-    # Configuration de l'application
-    ITEMS_PAR_PAGE = 20  # Nombre d'elements par page pour la pagination
-    UPLOAD_FOLDER = 'app/static/uploads'  # Dossier pour les fichiers uploades
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max pour les uploads
+    # Configuration uploads
+    UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER') or 'app/static/uploads'
+    MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH') or 16 * 1024 * 1024)  # 16MB
+    ALLOWED_EXTENSIONS = os.environ.get('ALLOWED_EXTENSIONS', 'jpg,jpeg,png,gif,pdf,doc,docx').split(',')
     
-    # Configuration des roles
-    ROLES = {
-        'ADMIN': 'administrateur',
-        'ENSEIGNANT': 'enseignant'
-    }
+    # Configuration sécurité
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() in ['true', 'on', '1']
+    SESSION_COOKIE_HTTPONLY = os.environ.get('SESSION_COOKIE_HTTPONLY', 'true').lower() in ['true', 'on', '1']
+    PERMANENT_SESSION_LIFETIME = int(os.environ.get('PERMANENT_SESSION_LIFETIME') or 3600)
 
-class ConfigurationDeveloppement(Configuration):
-    """Configuration pour l'environnement de developpement"""
+class DevelopmentConfig(Config):
+    """Configuration de développement"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///edusco_dev.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///edusco_dev.db'
 
-class ConfigurationProduction(Configuration):
-    """Configuration pour l'environnement de production"""
+class ProductionConfig(Config):
+    """Configuration de production"""
     DEBUG = False
-    
-class ConfigurationTest(Configuration):
-    """Configuration pour les tests"""
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+
+class TestingConfig(Config):
+    """Configuration de test"""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///edusco_test.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
 
-# Configuration par defaut selon l'environnement
+# Dictionnaire des configurations
 config = {
-    'development': ConfigurationDeveloppement,
-    'production': ConfigurationProduction,
-    'testing': ConfigurationTest,
-    'default': ConfigurationDeveloppement
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'testing': TestingConfig,
+    'default': DevelopmentConfig
 } 
