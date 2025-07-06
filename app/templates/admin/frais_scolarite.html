@@ -1,0 +1,107 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Gestion des Frais de Scolarité{% endblock %}
+
+{% block page_title %}Gestion des Frais de Scolarité{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des Frais de Scolarité</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-download fa-sm text-white-50"></i> Exporter
+        </a>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtres</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row">
+                <div class="col-md-4">
+                    <label for="annee_id">Année académique</label>
+                    <select name="annee_id" id="annee_id" class="form-control">
+                        <option value="">Toutes les années</option>
+                        {% for annee in annees %}
+                        <option value="{{ annee.id }}" {% if request.args.get('annee_id')|int == annee.id %}selected{% endif %}>
+                            {{ annee.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="statut">Statut</label>
+                    <select name="statut" id="statut" class="form-control">
+                        <option value="tous" {% if request.args.get('statut') == 'tous' %}selected{% endif %}>Tous</option>
+                        <option value="payes" {% if request.args.get('statut') == 'payes' %}selected{% endif %}>Payés</option>
+                        <option value="impayes" {% if request.args.get('statut') == 'impayes' %}selected{% endif %}>Impayés</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary btn-block">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des frais -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des Frais de Scolarité</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Année</th>
+                            <th>Montant Total</th>
+                            <th>Montant Payé</th>
+                            <th>Reste</th>
+                            <th>Date Limite</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for frais in frais_etudiants %}
+                        <tr>
+                            <td>
+                                <strong>{{ frais.etudiant.nom }} {{ frais.etudiant.prenom }}</strong><br>
+                                <small class="text-muted">{{ frais.etudiant.matricule }}</small>
+                            </td>
+                            <td>{{ frais.etudiant.annee_academique.nom if frais.etudiant.annee_academique else 'N/A' }}</td>
+                            <td>{{ frais.montant_total }} FCFA</td>
+                            <td>{{ frais.montant_paye }} FCFA</td>
+                            <td>
+                                <span class="{% if frais.reste > 0 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ frais.reste }} FCFA
+                                </span>
+                            </td>
+                            <td>{{ frais.date_limite.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {% if frais.statut == 'paye' %}
+                                <span class="badge badge-success">Payé</span>
+                                {% else %}
+                                <span class="badge badge-danger">Impayé</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('admin.detail_frais_etudiant', etudiant_id=frais.etudiant.id) }}" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> Détails
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

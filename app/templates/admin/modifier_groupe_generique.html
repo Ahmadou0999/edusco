@@ -1,0 +1,292 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Modifier le Groupe Générique - Administration{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête de la page -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-edit"></i> Modifier le Groupe Générique
+        </h1>
+        <div class="d-flex">
+            <a href="{{ url_for('admin.details_groupe_generique', groupe_id=groupe.id) }}" class="btn btn-info mr-2">
+                <i class="fas fa-eye"></i> Voir les détails
+            </a>
+            <a href="{{ url_for('admin.groupes_generiques') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <!-- Informations du groupe -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Groupe en cours de modification
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ groupe.code }} - {{ groupe.nom }}
+                            </div>
+                            <div class="text-gray-600">
+                                Créé le {{ groupe.date_creation.strftime('%d/%m/%Y à %H:%M') }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge badge-primary badge-lg">{{ groupe.code }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Modifier les Informations</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.nom.label(class="form-control-label") }}
+                                    {{ form.nom(class="form-control" + (" is-invalid" if form.nom.errors else "")) }}
+                                    {% if form.nom.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.nom.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.code.label(class="form-control-label") }}
+                                    {{ form.code(class="form-control" + (" is-invalid" if form.code.errors else "")) }}
+                                    {% if form.code.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.code.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.capacite_max.label(class="form-control-label") }}
+                                    {{ form.capacite_max(class="form-control" + (" is-invalid" if form.capacite_max.errors else "")) }}
+                                    {% if form.capacite_max.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.capacite_max.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        Actuellement {{ groupe.nombre_etudiants }} étudiants inscrits
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.enseignant_responsable_id.label(class="form-control-label") }}
+                                    {{ form.enseignant_responsable_id(class="form-control" + (" is-invalid" if form.enseignant_responsable_id.errors else "")) }}
+                                    {% if form.enseignant_responsable_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.enseignant_responsable_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.description.label(class="form-control-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3) }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-0">
+                            {{ form.bouton_sauvegarder(class="btn btn-primary") }}
+                            <a href="{{ url_for('admin.groupes_generiques') }}" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar avec informations -->
+        <div class="col-lg-4">
+            <!-- Statistiques du groupe -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar"></i> Statistiques du Groupe
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Étudiants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ groupe.nombre_etudiants }}
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Capacité
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ groupe.capacite_max }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="text-center">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Taux de remplissage
+                        </div>
+                        {% set taux = (groupe.nombre_etudiants / groupe.capacite_max * 100) if groupe.capacite_max > 0 else 0 %}
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar {% if taux >= 90 %}bg-danger{% elif taux >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ taux }}%;"
+                                 aria-valuenow="{{ taux }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ "%.1f"|format(taux) }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UE liées -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-link"></i> UE Liées
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if groupe.utilisations_ue %}
+                        <ul class="list-unstyled">
+                            {% for usage in groupe.utilisations_ue %}
+                            <li class="mb-2">
+                                <span class="badge badge-secondary">{{ usage.unite_enseignement.code }}</span>
+                                <small class="text-muted d-block">{{ usage.unite_enseignement.nom }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <a href="{{ url_for('admin.details_groupe_generique', groupe_id=groupe.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> Voir toutes les UE
+                        </a>
+                    {% else %}
+                        <p class="text-muted mb-2">Aucune UE liée</p>
+                        <a href="{{ url_for('admin.lier_groupe_generique_ue', groupe_id=groupe.id) }}" class="btn btn-sm btn-success">
+                            <i class="fas fa-link"></i> Lier à une UE
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tools"></i> Actions Rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.details_groupe_generique', groupe_id=groupe.id) }}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i> Voir les détails
+                        </a>
+                        <a href="{{ url_for('admin.lier_groupe_generique_ue', groupe_id=groupe.id) }}" class="btn btn-sm btn-success">
+                            <i class="fas fa-link"></i> Lier à une UE
+                        </a>
+                        {% if groupe.utilisations_ue %}
+                        <form action="{{ url_for('admin.lier_groupe_generique_toutes_ues', groupe_id=groupe.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-warning w-100">
+                                <i class="fas fa-link"></i> Lier à toutes les UE
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Validation en temps réel du code
+    $('#code').on('input', function() {
+        var code = $(this).val();
+        if (code.length > 0) {
+            // Vérifier si le code contient seulement des lettres et chiffres
+            if (!/^[A-Za-z0-9]+$/.test(code)) {
+                $(this).addClass('is-invalid');
+                if (!$(this).next('.invalid-feedback').length) {
+                    $(this).after('<div class="invalid-feedback">Le code ne peut contenir que des lettres et des chiffres</div>');
+                }
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).next('.invalid-feedback').remove();
+            }
+        }
+    });
+
+    // Validation de la capacité
+    $('#capacite_max').on('input', function() {
+        var capacite = parseInt($(this).val());
+        var etudiantsActuels = {{ groupe.nombre_etudiants|int }};
+        
+        if (capacite < 1) {
+            $(this).addClass('is-invalid');
+            if (!$(this).next('.invalid-feedback').length) {
+                $(this).after('<div class="invalid-feedback">La capacité doit être supérieure à 0</div>');
+            }
+        } else if (capacite < etudiantsActuels) {
+            $(this).addClass('is-invalid');
+            if (!$(this).next('.invalid-feedback').length) {
+                $(this).after('<div class="invalid-feedback">La capacité ne peut pas être inférieure au nombre d\'étudiants actuels (' + etudiantsActuels + ')</div>');
+            }
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).next('.invalid-feedback').remove();
+        }
+    });
+});
+</script>
+{% endblock %} 

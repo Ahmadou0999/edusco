@@ -1,65 +1,353 @@
 {% extends 'admin/base.html' %}
+
+{% block title %}Validation des Notes - Administration{% endblock %}
+
+{% block page_title %}Validation des Notes{% endblock %}
+
 {% block content %}
-<h2>Validation des notes</h2>
-<form method="get" class="mb-3">
-    <div class="row">
-        <div class="col-md-3">
-            <label>Matière :</label>
-            <select name="matiere_id" class="form-control" onchange="this.form.submit()">
-                <option value="">-- Toutes --</option>
-                {% for matiere in matieres %}
-                    <option value="{{ matiere.id }}" {% if matiere_selectionnee == matiere.id %}selected{% endif %}>{{ matiere.nom }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label>Groupe :</label>
-            <select name="groupe_id" class="form-control" onchange="this.form.submit()">
-                <option value="">-- Tous --</option>
-                {% for groupe in groupes %}
-                    <option value="{{ groupe.id }}" {% if groupe_selectionne == groupe.id %}selected{% endif %}>{{ groupe.nom }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label>Enseignant :</label>
-            <select name="enseignant_id" class="form-control" onchange="this.form.submit()">
-                <option value="">-- Tous --</option>
-                {% for enseignant in enseignants %}
-                    <option value="{{ enseignant.id }}" {% if enseignant_selectionne == enseignant.id %}selected{% endif %}>{{ enseignant.nom }} {{ enseignant.prenom }}</option>
-                {% endfor %}
-            </select>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-check-circle me-2"></i>Validation des Notes
+        </h1>
+        <div class="d-flex gap-2">
+            <button onclick="validerToutesNotes()" class="btn btn-success btn-sm">
+                <i class="fas fa-check-double me-1"></i>Valider toutes
+            </button>
+            <button onclick="exporterNotes()" class="btn btn-primary btn-sm">
+                <i class="fas fa-download me-1"></i>Exporter
+            </button>
         </div>
     </div>
-</form>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Étudiant</th>
-            <th>Matière</th>
-            <th>Note</th>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Enseignant</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for note in notes %}
-        <tr>
-            <td>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</td>
-            <td>{{ note.matiere.nom }}</td>
-            <td>{{ note.note }}</td>
-            <td>{{ note.type_evaluation }}</td>
-            <td>{{ note.date_evaluation.strftime('%d/%m/%Y') }}</td>
-            <td>{{ note.enseignant.nom }} {{ note.enseignant.prenom }}</td>
-            <td>
-                <form action="{{ url_for('admin.valider_note', note_id=note.id) }}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-success">Valider</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-filter me-2"></i>Filtres
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-2">
+                            <label for="matiere_id" class="form-label">Matière</label>
+                            <select class="form-select" id="matiere_id" name="matiere_id">
+                                <option value="">Toutes les matières</option>
+                                {% for matiere in matieres %}
+                                <option value="{{ matiere.id }}" {% if request.args.get('matiere_id')|int == matiere.id %}selected{% endif %}>
+                                    {{ matiere.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="groupe_id" class="form-label">Groupe</label>
+                            <select class="form-select" id="groupe_id" name="groupe_id">
+                                <option value="">Tous les groupes</option>
+                                {% for groupe in groupes %}
+                                <option value="{{ groupe.id }}" {% if request.args.get('groupe_id')|int == groupe.id %}selected{% endif %}>
+                                    {{ groupe.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="semestre_id" class="form-label">Semestre</label>
+                            <select class="form-select" id="semestre_id" name="semestre_id">
+                                <option value="">Tous les semestres</option>
+                                {% for semestre in semestres %}
+                                <option value="{{ semestre.id }}" {% if request.args.get('semestre_id')|int == semestre.id %}selected{% endif %}>
+                                    {{ semestre.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="statut" class="form-label">Statut</label>
+                            <select class="form-select" id="statut" name="statut">
+                                <option value="non_validees" {% if request.args.get('statut') == 'non_validees' %}selected{% endif %}>Non validées</option>
+                                <option value="validees" {% if request.args.get('statut') == 'validees' %}selected{% endif %}>Validées</option>
+                                <option value="toutes" {% if request.args.get('statut') == 'toutes' %}selected{% endif %}>Toutes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-1"></i>Filtrer
+                            </button>
+                            <a href="{{ url_for('admin.validation_notes') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des notes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list me-2"></i>Notes à valider
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if notes %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="notesTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                    </th>
+                                    <th>Étudiant</th>
+                                    <th>Matière</th>
+                                    <th>Groupe</th>
+                                    <th>Note</th>
+                                    <th>Type</th>
+                                    <th>Enseignant</th>
+                                    <th>Date saisie</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for note in notes %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="note-checkbox" value="{{ note.id }}">
+                                    </td>
+                                    <td>
+                                        <strong>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</strong><br>
+                                        <small class="text-muted">{{ note.etudiant.matricule }}</small>
+                                    </td>
+                                    <td>{{ note.matiere.nom }}</td>
+                                    <td>{{ note.groupe.nom }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if note.note >= 10 else 'danger' }}">
+                                            {{ note.note }}/20
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ 'primary' if note.type_evaluation == 'examen' else 'secondary' }}">
+                                            {{ note.type_evaluation|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ note.enseignant.nom if note.enseignant else 'N/A' }}</td>
+                                    <td>{{ note.date_saisie.strftime('%d/%m/%Y') if note.date_saisie else 'N/A' }}</td>
+                                    <td>
+                                        {% if note.validee %}
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check me-1"></i>Validée
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-clock me-1"></i>En attente
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if not note.validee %}
+                                            <button type="button" class="btn btn-outline-success" 
+                                                    onclick="validerNote({{ note.id }})" title="Valider">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            {% else %}
+                                            <button type="button" class="btn btn-outline-warning" 
+                                                    onclick="invaliderNote({{ note.id }})" title="Invalider">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-outline-info" 
+                                                    onclick="voirDetails({{ note.id }})" title="Détails">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Statistiques -->
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ notes|length }}</h4>
+                                    <p class="mb-0">Total des notes</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ notes|selectattr('validee', 'equalto', True)|list|length }}</h4>
+                                    <p class="mb-0">Notes validées</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ notes|selectattr('validee', 'equalto', False)|list|length }}</h4>
+                                    <p class="mb-0">Notes en attente</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ "%.1f"|format((notes|selectattr('validee', 'equalto', True)|list|length / notes|length) * 100) if notes|length > 0 else 0 }}%</h4>
+                                    <p class="mb-0">Taux de validation</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                        <h5 class="text-muted">Aucune note trouvée</h5>
+                        <p class="text-muted">Aucune note ne correspond aux critères de recherche</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de validation -->
+<div class="modal fade" id="validationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Valider la note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="validationForm" method="POST">
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir valider cette note ?</p>
+                    <div class="mb-3">
+                        <label for="commentaire_validation" class="form-label">Commentaire (optionnel)</label>
+                        <textarea class="form-control" id="commentaire_validation" name="commentaire" rows="3" placeholder="Commentaire de validation..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Valider</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentNoteId = null;
+const validationModal = new bootstrap.Modal(document.getElementById('validationModal'));
+
+function validerNote(noteId) {
+    currentNoteId = noteId;
+    document.getElementById('validationForm').action = `/admin/pedagogique/valider-note/${noteId}`;
+    // Utiliser une approche simple sans modal Bootstrap
+    if (confirm('Êtes-vous sûr de vouloir valider cette note ?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/pedagogique/valider-note/${noteId}`;
+        
+        const commentaire = prompt('Commentaire de validation (optionnel):');
+        if (commentaire !== null) {
+            const commentaireInput = document.createElement('input');
+            commentaireInput.type = 'hidden';
+            commentaireInput.name = 'commentaire';
+            commentaireInput.value = commentaire;
+            form.appendChild(commentaireInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function invaliderNote(noteId) {
+    if (confirm('Êtes-vous sûr de vouloir invalider cette note ?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/pedagogique/invalider-note/${noteId}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function voirDetails(noteId) {
+    // Rediriger vers une page de détails de la note
+    window.open(`/admin/pedagogique/note/${noteId}`, '_blank');
+}
+
+function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('.note-checkbox');
+    const selectAll = document.getElementById('selectAll');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+}
+
+function validerToutesNotes() {
+    const selectedNotes = Array.from(document.querySelectorAll('.note-checkbox:checked'))
+        .map(checkbox => checkbox.value);
+    
+    if (selectedNotes.length === 0) {
+        alert('Veuillez sélectionner au moins une note à valider');
+        return;
+    }
+    
+    if (confirm(`Êtes-vous sûr de vouloir valider ${selectedNotes.length} note(s) ?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/pedagogique/valider-notes-masse';
+        
+        // Ajouter les IDs des notes sélectionnées
+        selectedNotes.forEach(noteId => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'note_ids';
+            input.value = noteId;
+            form.appendChild(input);
+        });
+        
+        // Ajouter un commentaire optionnel
+        const commentaire = prompt('Commentaire de validation en masse (optionnel):');
+        if (commentaire !== null) {
+            const commentaireInput = document.createElement('input');
+            commentaireInput.type = 'hidden';
+            commentaireInput.name = 'commentaire';
+            commentaireInput.value = commentaire;
+            form.appendChild(commentaireInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function exporterNotes() {
+    const params = new URLSearchParams(window.location.search);
+    window.open(`/admin/pedagogique/export-notes?${params.toString()}`, '_blank');
+}
+
+// Auto-submit form when filters change
+document.querySelectorAll('#matiere_id, #groupe_id, #semestre_id, #statut').forEach(select => {
+    select.addEventListener('change', function() {
+        this.form.submit();
+    });
+});
+</script>
 {% endblock %} 

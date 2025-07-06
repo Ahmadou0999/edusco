@@ -1,0 +1,155 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Détail des Frais - {{ etudiant.nom }} {{ etudiant.prenom }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            Frais de Scolarité - {{ etudiant.nom }} {{ etudiant.prenom }}
+        </h1>
+        <a href="{{ url_for('admin.frais_scolarite') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    <!-- Informations de l'étudiant -->
+    <div class="row">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Informations Étudiant
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ etudiant.nom }} {{ etudiant.prenom }}
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                Matricule: {{ etudiant.matricule }}<br>
+                                Groupe: {{ etudiant.groupe.nom if etudiant.groupe else 'N/A' }}<br>
+                                Année: {{ etudiant.annee_academique.nom if etudiant.annee_academique else 'N/A' }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Montant Total
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                50,000 FCFA
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Montant Payé
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                35,000 FCFA
+                            </div>
+                            <div class="text-xs text-gray-600">
+                                Reste: 15,000 FCFA
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enregistrer un paiement -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Enregistrer un Paiement</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.enregistrer_paiement', etudiant_id=etudiant.id) }}">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="montant">Montant (FCFA)</label>
+                        <input type="number" class="form-control" id="montant" name="montant" required min="0" step="100">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="mode_paiement">Mode de paiement</label>
+                        <select class="form-control" id="mode_paiement" name="mode_paiement" required>
+                            <option value="">Sélectionner...</option>
+                            <option value="especes">Espèces</option>
+                            <option value="virement">Virement bancaire</option>
+                            <option value="cheque">Chèque</option>
+                            <option value="mobile_money">Mobile Money</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="reference">Référence (optionnel)</label>
+                        <input type="text" class="form-control" id="reference" name="reference" placeholder="Numéro de transaction...">
+                    </div>
+                    <div class="col-md-3">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-success btn-block">
+                            <i class="fas fa-plus"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Historique des paiements -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Historique des Paiements</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Montant</th>
+                            <th>Mode de Paiement</th>
+                            <th>Référence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paiement in historique_paiements %}
+                        <tr>
+                            <td>{{ paiement.date.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ paiement.montant }} FCFA</td>
+                            <td>{{ paiement.mode }}</td>
+                            <td>{{ paiement.reference }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

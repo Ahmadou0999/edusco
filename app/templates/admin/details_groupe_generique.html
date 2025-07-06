@@ -1,0 +1,277 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Détails du Groupe Générique - Administration{% endblock %}
+
+{% block page_title %}Détails du Groupe Générique{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.groupes_generiques') }}">Groupes Génériques</a></li>
+<li class="breadcrumb-item active">{{ groupe.code }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-layer-group"></i> 
+                    {{ groupe.nom }} ({{ groupe.code }})
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.modifier_groupe_generique', groupe_id=groupe.id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{{ url_for('admin.gestion_inscriptions_groupe_generique', groupe_id=groupe.id) }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-users"></i> Gérer les inscriptions
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-info-circle"></i> Informations générales</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Code :</strong></td>
+                                <td><span class="badge badge-primary">{{ groupe.code }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nom :</strong></td>
+                                <td>{{ groupe.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Capacité :</strong></td>
+                                <td>{{ groupe.capacite_max }} étudiants</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Étudiants inscrits :</strong></td>
+                                <td>
+                                    <span class="badge badge-{{ 'success' if groupe.nombre_etudiants < groupe.capacite_max else 'warning' }}">
+                                        {{ groupe.nombre_etudiants }}/{{ groupe.capacite_max }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Taux de remplissage :</strong></td>
+                                <td>
+                                    {% set taux = (groupe.nombre_etudiants / groupe.capacite_max * 100) if groupe.capacite_max > 0 else 0 %}
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-{{ 'success' if taux < 80 else 'warning' if taux < 100 else 'danger' }}" 
+                                             role="progressbar" style="width: {{ taux }}%">
+                                            {{ "%.1f"|format(taux) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% if groupe.enseignant_responsable %}
+                            <tr>
+                                <td><strong>Responsable :</strong></td>
+                                <td>
+                                    <span class="badge badge-info">{{ groupe.enseignant_responsable.nom_complet }}</span>
+                                    <br><small class="text-muted">{{ groupe.enseignant_responsable.matricule }}</small>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Date de création :</strong></td>
+                                <td>{{ groupe.date_creation.strftime('%d/%m/%Y à %H:%M') }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-chart-bar"></i> Statistiques</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Étudiants</span>
+                                        <span class="info-box-number">{{ groupe.nombre_etudiants }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-percentage"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Remplissage</span>
+                                        {% set taux = (groupe.nombre_etudiants / groupe.capacite_max * 100) if groupe.capacite_max > 0 else 0 %}
+                                        <span class="info-box-number">{{ "%.1f"|format(taux) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning"><i class="fas fa-link"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">UE Liées</span>
+                                <span class="info-box-number">{{ ues_liees|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if groupe.description %}
+                <div class="mt-4">
+                    <h5><i class="fas fa-align-left"></i> Description</h5>
+                    <div class="alert alert-light">
+                        {{ groupe.description }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Liste des étudiants inscrits -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user-graduate"></i> 
+                    Étudiants inscrits ({{ groupe.nombre_etudiants }})
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if etudiants %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Date d'inscription</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etudiant in etudiants %}
+                            <tr>
+                                <td><span class="badge badge-secondary">{{ etudiant.matricule }}</span></td>
+                                <td>{{ etudiant.nom }}</td>
+                                <td>{{ etudiant.prenom }}</td>
+                                <td>{{ etudiant.email }}</td>
+                                <td>{{ etudiant.date_inscription.strftime('%d/%m/%Y') if etudiant.date_inscription else 'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun étudiant inscrit</h5>
+                    <p class="text-muted">Ce groupe générique ne contient aucun étudiant pour le moment.</p>
+                    <a href="{{ url_for('admin.gestion_inscriptions_groupe_generique', groupe_id=groupe.id) }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Inscrire des étudiants
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Liste des UE liées -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-link"></i> 
+                    Unités d'enseignement liées ({{ ues_liees|length }})
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if ues_liees %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Code UE</th>
+                                <th>Nom</th>
+                                <th>Semestre</th>
+                                <th>Crédits</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ue in ues_liees %}
+                            <tr>
+                                <td><span class="badge badge-primary">{{ ue.code }}</span></td>
+                                <td>{{ ue.nom }}</td>
+                                <td>{{ ue.semestre.nom }}</td>
+                                <td>{{ ue.credits }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin.details_unite_enseignement', ue_id=ue.id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-link fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune UE liée</h5>
+                    <p class="text-muted">Ce groupe générique n'est lié à aucune unité d'enseignement.</p>
+                    <a href="{{ url_for('admin.lier_groupe_generique_ue', groupe_id=groupe.id) }}" class="btn btn-success">
+                        <i class="fas fa-link"></i> Lier à une UE
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Actions rapides</h3>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.modifier_groupe_generique', groupe_id=groupe.id) }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Modifier le groupe
+                    </a>
+                    <a href="{{ url_for('admin.gestion_inscriptions_groupe_generique', groupe_id=groupe.id) }}" class="btn btn-success">
+                        <i class="fas fa-users"></i> Gérer les inscriptions
+                    </a>
+                    <a href="{{ url_for('admin.lier_groupe_generique_ue', groupe_id=groupe.id) }}" class="btn btn-info">
+                        <i class="fas fa-link"></i> Lier à une UE
+                    </a>
+                    <a href="{{ url_for('admin.groupes_generiques') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour aux groupes
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Groupe Générique</h6>
+                    <p class="mb-0">Ce groupe générique peut être lié à plusieurs unités d'enseignement pour éviter la duplication.</p>
+                </div>
+                
+                {% if groupe.nombre_etudiants == 0 %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Groupe vide</h6>
+                    <p class="mb-0">Ce groupe générique ne contient aucun étudiant. Vous pouvez le supprimer s'il n'est plus nécessaire.</p>
+                </div>
+                {% endif %}
+
+                {% if ues_liees|length == 0 %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Aucune UE liée</h6>
+                    <p class="mb-0">Ce groupe générique n'est lié à aucune UE. Liez-le à au moins une UE pour qu'il soit utilisable.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

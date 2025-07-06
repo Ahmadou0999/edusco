@@ -5,6 +5,7 @@ Contient les modèles pour la gestion académique
 
 from app.extensions import db
 from datetime import datetime
+from sqlalchemy.orm import relationship
 
 class AnneeAcademique(db.Model):
     """Modèle pour les années académiques"""
@@ -40,6 +41,8 @@ class Semestre(db.Model):
     
     # Relations
     unites_enseignement = db.relationship('UniteEnseignement', backref='semestre', lazy=True, cascade='all, delete-orphan')
+    emplois_du_temps = db.relationship('EmploiDuTemps', backref='semestre', lazy=True, cascade='all, delete-orphan')
+    deliberations = db.relationship('Deliberation', backref='semestre', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Semestre {self.nom} - {self.annee_academique.nom}>'
@@ -60,6 +63,8 @@ class UniteEnseignement(db.Model):
     
     # Relations
     matieres = db.relationship('Matiere', backref='unite_enseignement', lazy=True, cascade='all, delete-orphan')
+    groupes = db.relationship('Groupe', backref='unite_enseignement', lazy=True, cascade='all, delete-orphan')
+    utilisations_groupes = db.relationship('UtilisationGroupeUE', backref='unite_enseignement', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<UniteEnseignement {self.code} - {self.nom}>'
@@ -82,6 +87,7 @@ class Matiere(db.Model):
     # Relations
     notes = db.relationship('Note', backref='matiere', lazy=True, cascade='all, delete-orphan')
     absences = db.relationship('Absence', backref='matiere', lazy=True, cascade='all, delete-orphan')
+    emplois_du_temps = db.relationship('EmploiDuTemps', backref='matiere', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Matiere {self.code} - {self.nom}>'
@@ -105,11 +111,14 @@ class Etudiant(db.Model):
     statut = db.Column(db.String(20), default='actif')  # actif, suspendu, diplômé, abandon
     annee_academique_id = db.Column(db.Integer, db.ForeignKey('annees_academiques.id'), nullable=False)
     date_inscription = db.Column(db.DateTime, default=datetime.utcnow)
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'))
     
     # Relations
     notes = db.relationship('Note', backref='etudiant', lazy=True, cascade='all, delete-orphan')
     absences = db.relationship('Absence', backref='etudiant', lazy=True, cascade='all, delete-orphan')
     inscriptions_groupes = db.relationship('InscriptionGroupe', backref='etudiant', lazy=True, cascade='all, delete-orphan')
+    inscriptions_groupes_generiques = db.relationship('InscriptionGroupeGenerique', backref='etudiant', lazy=True, cascade='all, delete-orphan')
+    resultats_deliberation = db.relationship('ResultatDeliberation', backref='etudiant', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Etudiant {self.matricule} - {self.prenom} {self.nom}>'
@@ -139,10 +148,15 @@ class Enseignant(db.Model):
     statut = db.Column(db.String(20), default='actif')  # actif, retraité, démissionné
     date_embauche = db.Column(db.Date, nullable=False)
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    utilisateur_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'))
     
     # Relations
     matieres = db.relationship('Matiere', backref='enseignant', lazy=True)
     groupes = db.relationship('Groupe', backref='enseignant_responsable', lazy=True)
+    groupes_generiques = db.relationship('GroupeGenerique', backref='enseignant_responsable', lazy=True)
+    notes_saisies = db.relationship('Note', backref='enseignant', lazy=True, cascade='all, delete-orphan')
+    emplois_du_temps = db.relationship('EmploiDuTemps', backref='enseignant', lazy=True, cascade='all, delete-orphan')
+    absences_saisies = db.relationship('Absence', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Enseignant {self.matricule} - {self.prenom} {self.nom}>'
@@ -167,6 +181,10 @@ class Groupe(db.Model):
     
     # Relations
     inscriptions = db.relationship('InscriptionGroupe', backref='groupe', lazy=True, cascade='all, delete-orphan')
+    notes = db.relationship('Note', backref='groupe', lazy=True, cascade='all, delete-orphan')
+    absences = db.relationship('Absence', backref='groupe', lazy=True, cascade='all, delete-orphan')
+    emplois_du_temps = db.relationship('EmploiDuTemps', backref='groupe', lazy=True, cascade='all, delete-orphan')
+    deliberations = db.relationship('Deliberation', backref='groupe', lazy=True, cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Groupe {self.code} - {self.nom}>'
@@ -174,6 +192,11 @@ class Groupe(db.Model):
     @property
     def nombre_etudiants(self):
         return len(self.inscriptions)
+    
+    @property
+    def etudiants(self):
+        """Retourne la liste des étudiants inscrits dans ce groupe"""
+        return [inscription.etudiant for inscription in self.inscriptions]
 
 class InscriptionGroupe(db.Model):
     """Modèle pour les inscriptions des étudiants aux groupes"""
@@ -189,4 +212,67 @@ class InscriptionGroupe(db.Model):
     __table_args__ = (db.UniqueConstraint('etudiant_id', 'groupe_id', name='_etudiant_groupe_uc'),)
     
     def __repr__(self):
-        return f'<InscriptionGroupe {self.etudiant.matricule} - {self.groupe.code}>' 
+        return f'<InscriptionGroupe {self.etudiant.matricule} - {self.groupe.code}>'
+
+# ==================== NOUVEAUX MODÈLES POUR GROUPES GÉNÉRIQUES ====================
+
+class GroupeGenerique(db.Model):
+    """Modèle pour les groupes génériques réutilisables entre UE"""
+    
+    __tablename__ = 'groupes_generiques'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(50), nullable=False)  # ex: "Groupe A", "Groupe B"
+    code = db.Column(db.String(20), nullable=False, unique=True)  # ex: "GA", "GB"
+    capacite_max = db.Column(db.Integer, nullable=False, default=30)
+    description = db.Column(db.Text)
+    enseignant_responsable_id = db.Column(db.Integer, db.ForeignKey('enseignants.id'))
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relations
+    inscriptions_generiques = db.relationship('InscriptionGroupeGenerique', backref='groupe_generique', lazy=True, cascade='all, delete-orphan')
+    utilisations_ue = db.relationship('UtilisationGroupeUE', backref='groupe_generique', lazy=True, cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<GroupeGenerique {self.code} - {self.nom}>'
+    
+    @property
+    def nombre_etudiants(self):
+        return len(self.inscriptions_generiques)
+    
+    @property
+    def etudiants(self):
+        """Retourne la liste des étudiants inscrits dans ce groupe générique"""
+        return [inscription.etudiant for inscription in self.inscriptions_generiques]
+
+class InscriptionGroupeGenerique(db.Model):
+    """Modèle pour les inscriptions des étudiants aux groupes génériques"""
+    
+    __tablename__ = 'inscriptions_groupes_generiques'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    etudiant_id = db.Column(db.Integer, db.ForeignKey('etudiants.id'), nullable=False)
+    groupe_generique_id = db.Column(db.Integer, db.ForeignKey('groupes_generiques.id'), nullable=False)
+    date_inscription = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Contrainte unique pour éviter les doublons
+    __table_args__ = (db.UniqueConstraint('etudiant_id', 'groupe_generique_id', name='_etudiant_groupe_generique_uc'),)
+    
+    def __repr__(self):
+        return f'<InscriptionGroupeGenerique {self.etudiant.matricule} - {self.groupe_generique.code}>'
+
+class UtilisationGroupeUE(db.Model):
+    """Modèle pour lier un groupe générique à une UE spécifique"""
+    
+    __tablename__ = 'utilisations_groupes_ue'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    groupe_generique_id = db.Column(db.Integer, db.ForeignKey('groupes_generiques.id'), nullable=False)
+    unite_enseignement_id = db.Column(db.Integer, db.ForeignKey('unites_enseignement.id'), nullable=False)
+    date_creation = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Contrainte unique pour éviter les doublons
+    __table_args__ = (db.UniqueConstraint('groupe_generique_id', 'unite_enseignement_id', name='_groupe_generique_ue_uc'),)
+    
+    def __repr__(self):
+        return f'<UtilisationGroupeUE {self.groupe_generique.code} - {self.unite_enseignement.code}>' 

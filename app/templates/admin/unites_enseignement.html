@@ -21,6 +21,13 @@
                 </div>
             </div>
             <div class="card-body">
+                    <!-- Composant de recherche et import/export -->
+                    {% set export_route = 'admin.exporter_unites_enseignement' %}
+                    {% set import_route = 'admin.importer_unites_enseignement' %}
+                    {% include 'admin/components/search_export.html' %}
+
+                    
+
                 {% if annee_active %}
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> 
@@ -83,6 +90,14 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group">
+                                                        <a href="{{ url_for('admin.creer_matiere_ue', ue_id=ue.id) }}" 
+                                                           class="btn btn-sm btn-outline-success" title="Ajouter une matière à cette UE">
+                                                            <i class="fas fa-plus"></i> Matière
+                                                        </a>
+                                                        <a href="{{ url_for('admin.creer_groupe_ue', ue_id=ue.id) }}" 
+                                                           class="btn btn-sm btn-outline-warning" title="Ajouter un groupe à cette UE">
+                                                            <i class="fas fa-users"></i> Groupe
+                                                        </a>
                                                         <a href="{{ url_for('admin.modifier_unite_enseignement', ue_id=ue.id) }}" 
                                                            class="btn btn-sm btn-outline-primary" title="Modifier">
                                                             <i class="fas fa-edit"></i>
@@ -112,7 +127,7 @@
                                 {% endif %}
                                 
                                 <div class="mt-3">
-                                    <a href="{{ url_for('admin.creer_unite_enseignement') }}?semestre_id={{ semestre.id }}" 
+                                    <a href="{{ url_for('admin.creer_unite_enseignement_semestre', semestre_id=semestre.id) }}" 
                                        class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-plus"></i> Ajouter une UE à ce semestre
                                     </a>
@@ -152,8 +167,12 @@
 <script>
 function supprimerUE(ueId) {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette unité d\'enseignement ? Cette action est irréversible.')) {
-        // TODO: Implémenter la suppression via AJAX
-        window.location.href = `/admin/unites-enseignement/${ueId}/supprimer`;
+        // Créer un formulaire pour la suppression
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("admin.supprimer_unite_enseignement", ue_id=0) }}'.replace('0', ueId);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

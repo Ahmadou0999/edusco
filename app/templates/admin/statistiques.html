@@ -1,0 +1,189 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Statistiques - Administration{% endblock %}
+
+{% block page_title %}Tableau de bord - Statistiques{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Statistiques</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Cartes de statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Étudiants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_etudiants }}</div>
+                            {% if stats.annee_active %}
+                            <small class="text-muted">{{ stats.etudiants_annee_active }} en {{ stats.annee_active }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Enseignants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_enseignants }}</div>
+                            <small class="text-muted">Actifs dans l'institut</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Matières
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_matieres }}</div>
+                            <small class="text-muted">Cours dispensés</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Groupes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_groupes }}</div>
+                            <small class="text-muted">Classes actives</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations supplémentaires -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Année académique active</h6>
+                </div>
+                <div class="card-body">
+                    {% if stats.annee_active %}
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-calendar-check"></i> {{ stats.annee_active }}</h5>
+                        <p class="mb-0">{{ stats.etudiants_annee_active }} étudiants inscrits cette année</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Aucune année active</h5>
+                        <p class="mb-0">Veuillez définir une année académique active</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actions rapides</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="{{ url_for('admin.creer_etudiant') }}" class="btn btn-primary btn-block mb-2">
+                                <i class="fas fa-user-plus"></i> Nouvel étudiant
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('admin.creer_enseignant') }}" class="btn btn-success btn-block mb-2">
+                                <i class="fas fa-chalkboard-teacher"></i> Nouvel enseignant
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('admin.creer_annee_academique') }}" class="btn btn-info btn-block mb-2">
+                                <i class="fas fa-calendar-plus"></i> Nouvelle année
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('admin.creer_groupe') }}" class="btn btn-warning btn-block mb-2">
+                                <i class="fas fa-users"></i> Nouveau groupe
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques détaillées -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Vue d'ensemble de l'institut</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-primary">{{ stats.total_etudiants }}</h4>
+                                <p class="text-muted">Étudiants total</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-success">{{ stats.total_enseignants }}</h4>
+                                <p class="text-muted">Enseignants</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border-right">
+                                <h4 class="text-info">{{ stats.total_matieres }}</h4>
+                                <p class="text-muted">Matières</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div>
+                                <h4 class="text-warning">{{ stats.total_groupes }}</h4>
+                                <p class="text-muted">Groupes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Modifier un groupe - Administration{% endblock %}
+
+{% block page_title %}Modifier le groupe{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.groupes') }}">Groupes</a></li>
+<li class="breadcrumb-item active">Modifier {{ groupe.code }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Modifier les informations du groupe</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ formulaire.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.code.label(class="form-label") }}
+                                {{ formulaire.code(class="form-control" + (" is-invalid" if formulaire.code.errors else "")) }}
+                                {% if formulaire.code.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.code.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Exemple: 1A-MATH, 1B-INFO</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.nom.label(class="form-label") }}
+                                {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                                {% if formulaire.nom.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.nom.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Exemple: Groupe 1A Mathématiques</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.unite_enseignement_id.label(class="form-label") }}
+                                {{ formulaire.unite_enseignement_id(class="form-control" + (" is-invalid" if formulaire.unite_enseignement_id.errors else "")) }}
+                                {% if formulaire.unite_enseignement_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.unite_enseignement_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.capacite_max.label(class="form-label") }}
+                                {{ formulaire.capacite_max(class="form-control" + (" is-invalid" if formulaire.capacite_max.errors else "")) }}
+                                {% if formulaire.capacite_max.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.capacite_max.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Nombre maximum d'étudiants</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.enseignant_responsable_id.label(class="form-label") }}
+                        {{ formulaire.enseignant_responsable_id(class="form-control" + (" is-invalid" if formulaire.enseignant_responsable_id.errors else "")) }}
+                        {% if formulaire.enseignant_responsable_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in formulaire.enseignant_responsable_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Enseignant responsable du groupe (optionnel)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.description.label(class="form-label") }}
+                        {{ formulaire.description(class="form-control", rows="3") }}
+                        <small class="form-text text-muted">Description optionnelle du groupe</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.groupes') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations actuelles</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Groupe actuel</h6>
+                    <p class="mb-1"><strong>Code :</strong> {{ groupe.code }}</p>
+                    <p class="mb-1"><strong>Nom :</strong> {{ groupe.nom }}</p>
+                    <p class="mb-1"><strong>UE :</strong> {{ groupe.unite_enseignement.code }} - {{ groupe.unite_enseignement.nom }}</p>
+                    <p class="mb-1"><strong>Capacité :</strong> {{ groupe.capacite_max }} étudiants</p>
+                    <p class="mb-1"><strong>Étudiants inscrits :</strong> {{ groupe.nombre_etudiants }}</p>
+                    {% if groupe.enseignant_responsable %}
+                        <p class="mb-0"><strong>Responsable :</strong> {{ groupe.enseignant_responsable.nom_complet }}</p>
+                    {% else %}
+                        <p class="mb-0"><strong>Responsable :</strong> <span class="text-muted">Non assigné</span></p>
+                    {% endif %}
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Attention</h6>
+                    <p class="mb-0">La modification peut affecter les inscriptions et emplois du temps existants.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

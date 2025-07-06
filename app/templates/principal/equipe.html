@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Notre équipe - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Notre équipe enseignante</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Enseignants</h5>
+                </div>
+                <div class="card-body">
+                    {% if enseignants %}
+                    <div class="row">
+                        {% for enseignant in enseignants %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        {% if enseignant.photo %}
+                                        <img src="{{ url_for('static', filename=enseignant.photo) }}" 
+                                             alt="Photo de {{ enseignant.nom_complet }}" 
+                                             class="rounded-circle"
+                                             style="width: 120px; height: 120px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                                             style="width: 120px; height: 120px;">
+                                            <i class="fas fa-user fa-3x text-white"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <h5 class="card-title">{{ enseignant.nom_complet }}</h5>
+                                    {% if enseignant.grade %}
+                                    <p class="card-text text-muted">{{ enseignant.grade }}</p>
+                                    {% endif %}
+                                    {% if enseignant.specialite %}
+                                    <p class="card-text"><small class="text-muted">{{ enseignant.specialite }}</small></p>
+                                    {% endif %}
+                                    <div class="mt-3">
+                                        {% if enseignant.email %}
+                                        <a href="mailto:{{ enseignant.email }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-envelope me-1"></i>Contact
+                                        </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('principal.profil_enseignant', enseignant_id=enseignant.id) }}" 
+                                           class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-user me-1"></i>Profil
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun enseignant disponible pour le moment</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

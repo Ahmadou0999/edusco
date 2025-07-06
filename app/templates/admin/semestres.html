@@ -21,6 +21,11 @@
                 </div>
             </div>
             <div class="card-body">
+                <!-- Composant de recherche et import/export -->
+                {% set export_route = 'admin.exporter_semestres' %}
+                {% set import_route = 'admin.importer_semestres' %}
+                {% include 'admin/components/search_export.html' %}
+
                 {% if annee_active %}
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> 
@@ -67,6 +72,10 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
+                                        <a href="{{ url_for('admin.creer_unite_enseignement_semestre', semestre_id=semestre.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="Ajouter une UE à ce semestre">
+                                            <i class="fas fa-plus"></i> UE
+                                        </a>
                                         <a href="{{ url_for('admin.modifier_semestre', semestre_id=semestre.id) }}" 
                                            class="btn btn-sm btn-outline-primary" title="Modifier">
                                             <i class="fas fa-edit"></i>
@@ -120,15 +129,23 @@
 <script>
 function activerSemestre(semestreId) {
     if (confirm('Êtes-vous sûr de vouloir activer ce semestre ?')) {
-        // TODO: Implémenter l'activation via AJAX
-        window.location.href = `/admin/semestres/${semestreId}/activer`;
+        // Créer un formulaire pour l'activation
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("admin.activer_semestre", semestre_id=0) }}'.replace('0', semestreId);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
 function supprimerSemestre(semestreId) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce semestre ? Cette action est irréversible.')) {
-        // TODO: Implémenter la suppression via AJAX
-        window.location.href = `/admin/semestres/${semestreId}/supprimer`;
+        // Créer un formulaire pour la suppression
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url_for("admin.supprimer_semestre", semestre_id=0) }}'.replace('0', semestreId);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 </script>

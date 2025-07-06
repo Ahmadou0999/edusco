@@ -32,14 +32,14 @@ class Note(db.Model):
     date_evaluation = db.Column(db.Date, nullable=False, default=date.today)
     date_saisie = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relations
-    etudiant = relationship('Etudiant', back_populates='notes')
-    matiere = relationship('Matiere', back_populates='notes')
-    groupe = relationship('Groupe', back_populates='notes')
-    enseignant = relationship('Enseignant', back_populates='notes_saisies')
+    # Validation des notes
+    validee = db.Column(db.Boolean, default=False)
+    validee_par = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'))
+    date_validation = db.Column(db.DateTime)
+    commentaire_validation = db.Column(db.Text)
     
     def __repr__(self):
-        return f'<Note {self.etudiant.nom} - {self.matiere.nom}: {self.note}/20>'
+        return f'<Note {self.etudiant.nom if self.etudiant else "N/A"} - {self.matiere.nom if self.matiere else "N/A"}: {self.note}/20>'
     
     @property
     def note_ponderee(self):
@@ -60,6 +60,7 @@ class Absence(db.Model):
     etudiant_id = db.Column(db.Integer, db.ForeignKey('etudiants.id'), nullable=False)
     matiere_id = db.Column(db.Integer, db.ForeignKey('matieres.id'), nullable=False)
     groupe_id = db.Column(db.Integer, db.ForeignKey('groupes.id'), nullable=False)
+    enseignant_id = db.Column(db.Integer, db.ForeignKey('enseignants.id'), nullable=False)
     
     date_absence = db.Column(db.Date, nullable=False, default=date.today)
     heure_debut = db.Column(db.Time, nullable=False)
@@ -70,13 +71,8 @@ class Absence(db.Model):
     commentaire = db.Column(db.Text)
     date_saisie = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relations
-    etudiant = relationship('Etudiant', back_populates='absences')
-    matiere = relationship('Matiere', back_populates='absences')
-    groupe = relationship('Groupe', back_populates='absences')
-    
     def __repr__(self):
-        return f'<Absence {self.etudiant.nom} - {self.date_absence}>'
+        return f'<Absence {self.etudiant.nom if self.etudiant else "N/A"} - {self.date_absence}>'
     
     @property
     def duree_heures(self):
@@ -105,14 +101,8 @@ class EmploiDuTemps(db.Model):
     semestre_id = db.Column(db.Integer, db.ForeignKey('semestres.id'), nullable=False)
     actif = db.Column(db.Boolean, default=True)
     
-    # Relations
-    groupe = relationship('Groupe', back_populates='emplois_du_temps')
-    matiere = relationship('Matiere', back_populates='emplois_du_temps')
-    enseignant = relationship('Enseignant', back_populates='emplois_du_temps')
-    semestre = relationship('Semestre', back_populates='emplois_du_temps')
-    
     def __repr__(self):
-        return f'<EDT {self.groupe.nom} - {self.matiere.nom} - {self.jour_semaine}>'
+        return f'<EDT {self.groupe.nom if self.groupe else "N/A"} - {self.matiere.nom if self.matiere else "N/A"} - {self.jour_semaine}>'
     
     @property
     def jour_semaine(self):
@@ -146,13 +136,8 @@ class Deliberation(db.Model):
     date_validation = db.Column(db.Date)
     commentaire = db.Column(db.Text)
     
-    # Relations
-    semestre = relationship('Semestre', back_populates='deliberations')
-    groupe = relationship('Groupe', back_populates='deliberations')
-    resultats = relationship('ResultatDeliberation', back_populates='deliberation', cascade='all, delete-orphan')
-    
     def __repr__(self):
-        return f'<Deliberation {self.groupe.nom} - {self.semestre.nom}>'
+        return f'<Deliberation {self.groupe.nom if self.groupe else "N/A"} - {self.semestre.nom if self.semestre else "N/A"}>'
 
 class ResultatDeliberation(db.Model):
     """Modèle pour les résultats de délibération par étudiant"""
@@ -176,12 +161,8 @@ class ResultatDeliberation(db.Model):
     decision = db.Column(db.String(20), nullable=False)
     commentaire = db.Column(db.Text)
     
-    # Relations
-    deliberation = relationship('Deliberation', back_populates='resultats')
-    etudiant = relationship('Etudiant', back_populates='resultats_deliberation')
-    
     def __repr__(self):
-        return f'<Resultat {self.etudiant.nom} - {self.decision}>'
+        return f'<Resultat {self.etudiant.nom if self.etudiant else "N/A"} - {self.decision}>'
     
     @property
     def taux_reussite(self):
@@ -196,25 +177,29 @@ def ajouter_relations_pedagogiques():
     from app.models.academique import Etudiant, Matiere, Groupe, Enseignant, Semestre
     
     # Relations pour Etudiant
-    Etudiant.notes = relationship('Note', back_populates='etudiant', cascade='all, delete-orphan')
-    Etudiant.absences = relationship('Absence', back_populates='etudiant', cascade='all, delete-orphan')
-    Etudiant.resultats_deliberation = relationship('ResultatDeliberation', back_populates='etudiant', cascade='all, delete-orphan')
+    Etudiant.notes = relationship('Note', backref='etudiant', cascade='all, delete-orphan')
+    Etudiant.absences = relationship('Absence', backref='etudiant', cascade='all, delete-orphan')
+    Etudiant.resultats_deliberation = relationship('ResultatDeliberation', backref='etudiant', cascade='all, delete-orphan')
     
     # Relations pour Matiere
-    Matiere.notes = relationship('Note', back_populates='matiere', cascade='all, delete-orphan')
-    Matiere.absences = relationship('Absence', back_populates='matiere', cascade='all, delete-orphan')
-    Matiere.emplois_du_temps = relationship('EmploiDuTemps', back_populates='matiere', cascade='all, delete-orphan')
+    Matiere.notes = relationship('Note', backref='matiere', cascade='all, delete-orphan')
+    Matiere.absences = relationship('Absence', backref='matiere', cascade='all, delete-orphan')
+    Matiere.emplois_du_temps = relationship('EmploiDuTemps', backref='matiere', cascade='all, delete-orphan')
     
     # Relations pour Groupe
-    Groupe.notes = relationship('Note', back_populates='groupe', cascade='all, delete-orphan')
-    Groupe.absences = relationship('Absence', back_populates='groupe', cascade='all, delete-orphan')
-    Groupe.emplois_du_temps = relationship('EmploiDuTemps', back_populates='groupe', cascade='all, delete-orphan')
-    Groupe.deliberations = relationship('Deliberation', back_populates='groupe', cascade='all, delete-orphan')
+    Groupe.notes = relationship('Note', backref='groupe', cascade='all, delete-orphan')
+    Groupe.absences = relationship('Absence', backref='groupe', cascade='all, delete-orphan')
+    Groupe.emplois_du_temps = relationship('EmploiDuTemps', backref='groupe', cascade='all, delete-orphan')
+    Groupe.deliberations = relationship('Deliberation', backref='groupe', cascade='all, delete-orphan')
     
     # Relations pour Enseignant
-    Enseignant.notes_saisies = relationship('Note', back_populates='enseignant', cascade='all, delete-orphan')
-    Enseignant.emplois_du_temps = relationship('EmploiDuTemps', back_populates='enseignant', cascade='all, delete-orphan')
+    Enseignant.notes_saisies = relationship('Note', backref='enseignant', cascade='all, delete-orphan')
+    Enseignant.emplois_du_temps = relationship('EmploiDuTemps', backref='enseignant', cascade='all, delete-orphan')
+    Enseignant.absences_saisies = relationship('Absence', backref='enseignant', cascade='all, delete-orphan')
     
     # Relations pour Semestre
-    Semestre.emplois_du_temps = relationship('EmploiDuTemps', back_populates='semestre', cascade='all, delete-orphan')
-    Semestre.deliberations = relationship('Deliberation', back_populates='semestre', cascade='all, delete-orphan') 
+    Semestre.emplois_du_temps = relationship('EmploiDuTemps', backref='semestre', cascade='all, delete-orphan')
+    Semestre.deliberations = relationship('Deliberation', backref='semestre', cascade='all, delete-orphan')
+    
+    # Relations pour Deliberation
+    Deliberation.resultats = relationship('ResultatDeliberation', backref='deliberation', cascade='all, delete-orphan') 

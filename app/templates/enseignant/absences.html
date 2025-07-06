@@ -1,44 +1,235 @@
-{% extends 'base.html' %}
+{% extends "enseignant/base.html" %}
+
+{% block title %}Mes absences - Enseignant{% endblock %}
+
+{% block page_title %}Mes absences{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Mes absences</li>
+{% endblock %}
+
 {% block content %}
-<h2>Mes absences saisies</h2>
-<form method="get" class="mb-3">
-    <label for="groupe_id">Groupe :</label>
-    <select name="groupe_id" id="groupe_id" onchange="this.form.submit()">
-        <option value="">-- Choisir --</option>
-        {% for groupe in groupes %}
-            <option value="{{ groupe.id }}" {% if groupe_selectionne == groupe.id %}selected{% endif %}>{{ groupe.nom }}</option>
-        {% endfor %}
-    </select>
-</form>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Étudiant</th>
-            <th>Matière</th>
-            <th>Date</th>
-            <th>Heure</th>
-            <th>Justifiée</th>
-            <th>Motif</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for absence in absences %}
-        <tr>
-            <td>{{ absence.etudiant.nom }} {{ absence.etudiant.prenom }}</td>
-            <td>{{ absence.matiere.nom }}</td>
-            <td>{{ absence.date_absence.strftime('%d/%m/%Y') }}</td>
-            <td>{{ absence.heure_debut.strftime('%H:%M') }} - {{ absence.heure_fin.strftime('%H:%M') }}</td>
-            <td>{% if absence.justifiee %}Oui{% else %}Non{% endif %}</td>
-            <td>{{ absence.motif }}</td>
-            <td>
-                <a href="{{ url_for('enseignant.modifier_absence', absence_id=absence.id) }}" class="btn btn-sm btn-primary">Modifier</a>
-                <form action="{{ url_for('enseignant.supprimer_absence', absence_id=absence.id) }}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette absence ?')">Supprimer</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user-times me-2"></i>Mes absences
+        </h1>
+        {# TODO: Corriger ou implémenter les routes enseignant.saisir_absences, enseignant.absences, enseignant.modifier_absence #}
+        <a href="{{ url_for('enseignant.saisir_absences') }}" class="btn btn-warning btn-sm">
+            <i class="fas fa-plus me-1"></i>Saisir des absences
+        </a>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtres
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="matiere_id" class="form-label">Matière</label>
+                    <select class="form-select" id="matiere_id" name="matiere_id">
+                        <option value="">Toutes les matières</option>
+                        {% for matiere in matieres %}
+                        <option value="{{ matiere.id }}" {{ 'selected' if request.args.get('matiere_id')|int == matiere.id }}>
+                            {{ matiere.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="groupe_id" class="form-label">Groupe</label>
+                    <select class="form-select" id="groupe_id" name="groupe_id">
+                        <option value="">Tous les groupes</option>
+                        {% for groupe in groupes %}
+                        <option value="{{ groupe.id }}" {{ 'selected' if request.args.get('groupe_id')|int == groupe.id }}>
+                            {{ groupe.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="date_debut" class="form-label">Date début</label>
+                    <input type="date" class="form-control" id="date_debut" name="date_debut" 
+                           value="{{ request.args.get('date_debut', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_fin" class="form-label">Date fin</label>
+                    <input type="date" class="form-control" id="date_fin" name="date_fin" 
+                           value="{{ request.args.get('date_fin', '') }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Filtrer
+                    </button>
+                    <a href="{{ url_for('enseignant.absences') }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des absences -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Liste des absences
+            </h6>
+            <div>
+                <button class="btn btn-success btn-sm" onclick="exporterAbsences()">
+                    <i class="fas fa-download me-1"></i>Exporter
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if absences %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="absencesTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Matière</th>
+                            <th>Groupe</th>
+                            <th>Date</th>
+                            <th>Heures</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for absence in absences %}
+                        <tr>
+                            <td>
+                                <strong>{{ absence.etudiant.nom }} {{ absence.etudiant.prenom }}</strong><br>
+                                <small class="text-muted">{{ absence.etudiant.matricule }}</small>
+                            </td>
+                            <td>{{ absence.matiere.nom }}</td>
+                            <td>{{ absence.groupe.nom }}</td>
+                            <td>{{ absence.date_absence.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                {{ absence.heure_debut.strftime('%H:%M') }} - {{ absence.heure_fin.strftime('%H:%M') }}
+                            </td>
+                            <td>
+                                {% if absence.justifiee %}
+                                <span class="badge bg-success">Justifiée</span>
+                                {% else %}
+                                <span class="badge bg-danger">Non justifiée</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('enseignant.modifier_absence', absence_id=absence.id) }}" 
+                                       class="btn btn-outline-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            onclick="supprimerAbsence({{ absence.id }})" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if absences.pages > 1 %}
+            <nav aria-label="Pagination des absences">
+                <ul class="pagination justify-content-center">
+                    {% if absences.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enseignant.absences', page=absences.prev_num, **request.args) }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in absences.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != absences.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('enseignant.absences', page=page_num, **request.args) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if absences.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enseignant.absences', page=absences.next_num, **request.args) }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                <h5 class="text-muted">Aucune absence trouvée</h5>
+                <p class="text-muted">Commencez par saisir des absences pour vos étudiants</p>
+                <a href="{{ url_for('enseignant.saisir_absences') }}" class="btn btn-warning">
+                    <i class="fas fa-plus me-2"></i>Saisir des absences
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function supprimerAbsence(absenceId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette absence ?')) {
+        fetch(`/enseignant/absences/supprimer/${absenceId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression');
+        });
+    }
+}
+
+function exporterAbsences() {
+    const params = new URLSearchParams(window.location.search);
+    window.open(`/enseignant/absences/export?${params.toString()}`, '_blank');
+}
+
+// Auto-submit form when filters change
+document.querySelectorAll('#matiere_id, #groupe_id').forEach(select => {
+    select.addEventListener('change', function() {
+        this.form.submit();
+    });
+});
+</script>
 {% endblock %} 

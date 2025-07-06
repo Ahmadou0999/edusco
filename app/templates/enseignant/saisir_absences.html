@@ -1,54 +1,295 @@
-{% extends 'base.html' %}
+{% extends "enseignant/base.html" %}
+
+{% block title %}Saisir des absences - Enseignant{% endblock %}
+
+{% block page_title %}Saisir des absences{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Saisir des absences</li>
+{% endblock %}
+
 {% block content %}
-<h2>Saisie des absences - {{ groupe.nom }}</h2>
-<form method="post">
-    <div class="row mb-3">
-        <div class="col">
-            <label>Matière :</label>
-            <select name="matiere_id" class="form-control" required>
-                {% for matiere in matieres %}
-                    <option value="{{ matiere.id }}">{{ matiere.nom }}</option>
-                {% endfor %}
-            </select>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user-times me-2"></i>Saisie des absences
+        </h1>
+        <a href="{{ url_for('enseignant.absences') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Retour aux absences
+        </a>
+    </div>
+
+    <!-- Formulaire de sélection -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-cog me-2"></i>Sélection de l'absence
+            </h6>
         </div>
-        <div class="col">
-            <label>Date :</label>
-            <input type="date" name="date_absence" class="form-control" required>
-        </div>
-        <div class="col">
-            <label>Heure début :</label>
-            <input type="time" name="heure_debut" class="form-control" required>
-        </div>
-        <div class="col">
-            <label>Heure fin :</label>
-            <input type="time" name="heure_fin" class="form-control" required>
-        </div>
-        <div class="col">
-            <label>Motif :</label>
-            <input type="text" name="motif" class="form-control">
+        <div class="card-body">
+            <form id="selectionForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="matiere" class="form-label">Matière *</label>
+                        <select class="form-select" id="matiere" name="matiere" required>
+                            <option value="">Sélectionner une matière</option>
+                            {% for matiere in matieres %}
+                            <option value="{{ matiere.id }}">{{ matiere.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="groupe" class="form-label">Groupe *</label>
+                        <select class="form-select" id="groupe" name="groupe" required>
+                            <option value="">Sélectionner un groupe</option>
+                            {% for groupe in groupes %}
+                            <option value="{{ groupe.id }}">{{ groupe.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="date_absence" class="form-label">Date d'absence *</label>
+                        <input type="date" class="form-control" id="date_absence" name="date_absence" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="heure_debut" class="form-label">Heure début *</label>
+                        <input type="time" class="form-control" id="heure_debut" name="heure_debut" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="heure_fin" class="form-label">Heure fin *</label>
+                        <input type="time" class="form-control" id="heure_fin" name="heure_fin" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="motif" class="form-label">Motif général</label>
+                        <input type="text" class="form-control" id="motif" name="motif" placeholder="Motif de l'absence...">
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <button type="button" class="btn btn-primary" id="chargerEtudiants">
+                        <i class="fas fa-users me-2"></i>Charger les étudiants
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Étudiant</th>
-                <th>Absent</th>
-                <th>Justifiée</th>
-                <th>Commentaire</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for etudiant in etudiants %}
-            <tr>
-                <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
-                <td><input type="checkbox" name="absent_{{ etudiant.id }}"></td>
-                <td><input type="checkbox" name="justifiee_{{ etudiant.id }}"></td>
-                <td><input type="text" name="commentaire_{{ etudiant.id }}" class="form-control"></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <button type="submit" class="btn btn-success">Enregistrer</button>
-    <a href="{{ url_for('enseignant.absences') }}" class="btn btn-secondary">Retour</a>
-</form>
+
+    <!-- Formulaire de saisie des absences -->
+    <div class="card shadow mb-4" id="absencesForm" style="display: none;">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-user-times me-2"></i>Saisie des absences
+            </h6>
+            <div>
+                <button type="button" class="btn btn-success btn-sm" id="sauvegarderAbsences">
+                    <i class="fas fa-save me-2"></i>Sauvegarder
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="absencesTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="15%">Matricule</th>
+                            <th width="25%">Nom</th>
+                            <th width="25%">Prénom</th>
+                            <th width="15%">Absent</th>
+                            <th width="15%">Justifiée</th>
+                        </tr>
+                    </thead>
+                    <tbody id="etudiantsList">
+                        <!-- Les étudiants seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir sauvegarder ces absences ?</p>
+                <p class="text-muted small">Cette action ne peut pas être annulée.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="confirmerSauvegarde">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectionForm = document.getElementById('selectionForm');
+    const absencesForm = document.getElementById('absencesForm');
+    const chargerEtudiantsBtn = document.getElementById('chargerEtudiants');
+    const sauvegarderAbsencesBtn = document.getElementById('sauvegarderAbsences');
+    const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+    
+    // Éléments du formulaire
+    const matiereSelect = document.getElementById('matiere');
+    const groupeSelect = document.getElementById('groupe');
+    const dateAbsenceInput = document.getElementById('date_absence');
+    const heureDebutInput = document.getElementById('heure_debut');
+    const heureFinInput = document.getElementById('heure_fin');
+    const motifInput = document.getElementById('motif');
+    
+    // Charger les étudiants
+    chargerEtudiantsBtn.addEventListener('click', function() {
+        const matiere = matiereSelect.value;
+        const groupe = groupeSelect.value;
+        const dateAbsence = dateAbsenceInput.value;
+        const heureDebut = heureDebutInput.value;
+        const heureFin = heureFinInput.value;
+        
+        if (!matiere || !groupe || !dateAbsence || !heureDebut || !heureFin) {
+            alert('Veuillez remplir tous les champs obligatoires');
+            return;
+        }
+        
+        chargerEtudiants(groupe);
+    });
+    
+    // Sauvegarder les absences
+    sauvegarderAbsencesBtn.addEventListener('click', function() {
+        if (validerFormulaire()) {
+            confirmationModal.show();
+        }
+    });
+    
+    // Confirmer la sauvegarde
+    document.getElementById('confirmerSauvegarde').addEventListener('click', function() {
+        sauvegarderAbsences();
+        confirmationModal.hide();
+    });
+});
+
+function chargerEtudiants(groupe) {
+    const tbody = document.getElementById('etudiantsList');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border" role="status"></div></td></tr>';
+
+    fetch(`/enseignant/get-etudiants-groupe/${groupe}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.forEach((etudiant, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${etudiant.matricule}</td>
+                    <td>${etudiant.nom}</td>
+                    <td>${etudiant.prenom}</td>
+                    <td class="text-center">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input absent-checkbox" 
+                                   data-etudiant-id="${etudiant.id}">
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input justifiee-checkbox" 
+                                   data-etudiant-id="${etudiant.id}">
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('absencesForm').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors du chargement des étudiants');
+        });
+}
+
+function validerFormulaire() {
+    const absences = document.querySelectorAll('.absent-checkbox:checked');
+    
+    if (absences.length === 0) {
+        alert('Veuillez sélectionner au moins un étudiant absent');
+        return false;
+    }
+    
+    return true;
+}
+
+function sauvegarderAbsences() {
+    const formData = {
+        matiere_id: document.getElementById('matiere').value,
+        groupe_id: document.getElementById('groupe').value,
+        date_absence: document.getElementById('date_absence').value,
+        heure_debut: document.getElementById('heure_debut').value,
+        heure_fin: document.getElementById('heure_fin').value,
+        motif: document.getElementById('motif').value,
+        absences: []
+    };
+
+    document.querySelectorAll('.absent-checkbox:checked').forEach(checkbox => {
+        const etudiantId = checkbox.dataset.etudiantId;
+        const justifiee = document.querySelector(`.justifiee-checkbox[data-etudiant-id="${etudiantId}"]`).checked;
+        
+        formData.absences.push({
+            etudiant_id: etudiantId,
+            justifiee: justifiee
+        });
+    });
+
+    fetch('/enseignant/saisir-absences', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Absences sauvegardées avec succès !');
+            window.location.href = '/enseignant/absences';
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la sauvegarde');
+    });
+}
+
+// Initialiser la date d'absence à aujourd'hui
+document.getElementById('date_absence').value = new Date().toISOString().split('T')[0];
+</script>
+
+<style>
+.table th {
+    background-color: #4e73df !important;
+    color: white !important;
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+</style>
 {% endblock %} 

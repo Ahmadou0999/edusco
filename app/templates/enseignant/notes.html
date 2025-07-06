@@ -1,42 +1,236 @@
-{% extends 'base.html' %}
+{% extends "enseignant/base.html" %}
+
+{% block title %}Mes notes - Enseignant{% endblock %}
+
+{% block page_title %}Mes notes{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Mes notes</li>
+{% endblock %}
+
 {% block content %}
-<h2>Mes notes saisies</h2>
-<form method="get" class="mb-3">
-    <label for="matiere_id">Matière :</label>
-    <select name="matiere_id" id="matiere_id" onchange="this.form.submit()">
-        <option value="">-- Choisir --</option>
-        {% for matiere in matieres %}
-            <option value="{{ matiere.id }}" {% if matiere_selectionnee == matiere.id %}selected{% endif %}>{{ matiere.nom }}</option>
-        {% endfor %}
-    </select>
-</form>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Étudiant</th>
-            <th>Matière</th>
-            <th>Note</th>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for note in notes %}
-        <tr>
-            <td>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</td>
-            <td>{{ note.matiere.nom }}</td>
-            <td>{{ note.note }}</td>
-            <td>{{ note.type_evaluation }}</td>
-            <td>{{ note.date_evaluation.strftime('%d/%m/%Y') }}</td>
-            <td>
-                <a href="{{ url_for('enseignant.modifier_note', note_id=note.id) }}" class="btn btn-sm btn-primary">Modifier</a>
-                <form action="{{ url_for('enseignant.supprimer_note', note_id=note.id) }}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette note ?')">Supprimer</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-star me-2"></i>Mes notes
+        </h1>
+        {# TODO: Corriger ou implémenter les routes enseignant.saisir_notes, enseignant.notes, enseignant.modifier_note #}
+        <a href="{{ url_for('enseignant.saisir_notes') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i>Saisir des notes
+        </a>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtres
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="matiere_id" class="form-label">Matière</label>
+                    <select class="form-select" id="matiere_id" name="matiere_id">
+                        <option value="">Toutes les matières</option>
+                        {% for matiere in matieres %}
+                        <option value="{{ matiere.id }}" {{ 'selected' if request.args.get('matiere_id')|int == matiere.id }}>
+                            {{ matiere.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="groupe_id" class="form-label">Groupe</label>
+                    <select class="form-select" id="groupe_id" name="groupe_id">
+                        <option value="">Tous les groupes</option>
+                        {% for groupe in groupes %}
+                        <option value="{{ groupe.id }}" {{ 'selected' if request.args.get('groupe_id')|int == groupe.id }}>
+                            {{ groupe.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="semestre_id" class="form-label">Semestre</label>
+                    <select class="form-select" id="semestre_id" name="semestre_id">
+                        <option value="">Tous les semestres</option>
+                        {% for semestre in semestres %}
+                        <option value="{{ semestre.id }}" {{ 'selected' if request.args.get('semestre_id')|int == semestre.id }}>
+                            {{ semestre.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Filtrer
+                    </button>
+                    <a href="{{ url_for('enseignant.notes') }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des notes -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Liste des notes
+            </h6>
+            <div>
+                <button class="btn btn-success btn-sm" onclick="exporterNotes()">
+                    <i class="fas fa-download me-1"></i>Exporter
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if notes %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="notesTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Matière</th>
+                            <th>Groupe</th>
+                            <th>Type</th>
+                            <th>Note</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for note in notes %}
+                        <tr>
+                            <td>
+                                <strong>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</strong><br>
+                                <small class="text-muted">{{ note.etudiant.matricule }}</small>
+                            </td>
+                            <td>{{ note.matiere.nom }}</td>
+                            <td>{{ note.groupe.nom }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'primary' if note.type_evaluation == 'examen' else 'secondary' }}">
+                                    {{ note.type_evaluation|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if note.note >= 10 else 'danger' }}">
+                                    {{ note.note }}/20
+                                </span>
+                            </td>
+                            <td>{{ note.date_evaluation.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('enseignant.modifier_note', note_id=note.id) }}" 
+                                       class="btn btn-outline-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            onclick="supprimerNote({{ note.id }})" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if notes.pages > 1 %}
+            <nav aria-label="Pagination des notes">
+                <ul class="pagination justify-content-center">
+                    {% if notes.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enseignant.notes', page=notes.prev_num, **request.args) }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in notes.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != notes.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('enseignant.notes', page=page_num, **request.args) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if notes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enseignant.notes', page=notes.next_num, **request.args) }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                <h5 class="text-muted">Aucune note trouvée</h5>
+                <p class="text-muted">Commencez par saisir des notes pour vos étudiants</p>
+                <a href="{{ url_for('enseignant.saisir_notes') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Saisir des notes
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function supprimerNote(noteId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette note ?')) {
+        fetch(`/enseignant/notes/supprimer/${noteId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression');
+        });
+    }
+}
+
+function exporterNotes() {
+    const params = new URLSearchParams(window.location.search);
+    window.open(`/enseignant/notes/export?${params.toString()}`, '_blank');
+}
+
+// Auto-submit form when filters change
+document.querySelectorAll('#matiere_id, #groupe_id, #semestre_id').forEach(select => {
+    select.addEventListener('change', function() {
+        this.form.submit();
+    });
+});
+</script>
 {% endblock %} 

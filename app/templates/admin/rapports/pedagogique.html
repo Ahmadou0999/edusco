@@ -1,0 +1,206 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Rapport Pédagogique Général{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Rapport Pédagogique Général</h1>
+        <a href="{{ url_for('admin.rapports_pedagogiques') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Étudiants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_etudiants }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Enseignants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_enseignants }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Groupes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_groupes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-layer-group fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total UE
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_ues }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activité récente -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Activité Récente</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div class="h4 text-primary">{{ activite_recente.notes_saisies }}</div>
+                            <div class="text-xs text-uppercase text-muted">Notes saisies</div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="h4 text-danger">{{ activite_recente.absences_enregistrees }}</div>
+                            <div class="text-xs text-uppercase text-muted">Absences</div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="h4 text-success">{{ activite_recente.groupes_crees }}</div>
+                            <div class="text-xs text-uppercase text-muted">Groupes créés</div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="h4 text-info">{{ activite_recente.etudiants_inscrits }}</div>
+                            <div class="text-xs text-uppercase text-muted">Étudiants inscrits</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actions Rapides</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.rapport_performance') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-chart-line"></i> Rapport Performance
+                        </a>
+                        <a href="{{ url_for('admin.rapport_assiduite') }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-calendar-check"></i> Rapport Assiduité
+                        </a>
+                        <a href="{{ url_for('admin.pedagogique_dashboard') }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Répartition par sexe -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition des Étudiants par Sexe</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <div class="h4 text-primary">{{ etudiants_hommes }}</div>
+                                <div class="text-xs text-uppercase text-muted">Hommes</div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar bg-primary" style="width: {{ (etudiants_hommes / total_etudiants * 100) if total_etudiants > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <div class="h4 text-success">{{ etudiants_femmes }}</div>
+                                <div class="text-xs text-uppercase text-muted">Femmes</div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar bg-success" style="width: {{ (etudiants_femmes / total_etudiants * 100) if total_etudiants > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Statistiques Pédagogiques</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Total Notes:</strong> {{ total_notes }}</p>
+                            <p><strong>Total Absences:</strong> {{ total_absences }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Ratio Étudiant/Enseignant:</strong> 
+                                {% if total_enseignants > 0 %}
+                                    {{ "%.1f"|format(total_etudiants / total_enseignants) }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </p>
+                            <p><strong>Moyenne par Groupe:</strong> 
+                                {% if total_groupes > 0 %}
+                                    {{ "%.1f"|format(total_etudiants / total_groupes) }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

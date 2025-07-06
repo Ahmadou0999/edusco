@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Événements - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Événements</h1>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filtres</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="categorie" class="form-label">Catégorie</label>
+                            <select class="form-select" id="categorie" name="categorie">
+                                <option value="">Toutes les catégories</option>
+                                <option value="academique" {% if request.args.get('categorie') == 'academique' %}selected{% endif %}>Académique</option>
+                                <option value="culturel" {% if request.args.get('categorie') == 'culturel' %}selected{% endif %}>Culturel</option>
+                                <option value="sportif" {% if request.args.get('categorie') == 'sportif' %}selected{% endif %}>Sportif</option>
+                                <option value="social" {% if request.args.get('categorie') == 'social' %}selected{% endif %}>Social</option>
+                                <option value="autre" {% if request.args.get('categorie') == 'autre' %}selected{% endif %}>Autre</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_debut" class="form-label">Date de début</label>
+                            <input type="date" class="form-control" id="date_debut" name="date_debut" 
+                                   value="{{ request.args.get('date_debut', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date_fin" class="form-label">Date de fin</label>
+                            <input type="date" class="form-control" id="date_fin" name="date_fin" 
+                                   value="{{ request.args.get('date_fin', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Filtrer</button>
+                                <a href="{{ url_for('principal.evenements') }}" class="btn btn-secondary">Réinitialiser</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Événements -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Événements</h5>
+                </div>
+                <div class="card-body">
+                    {% if evenements %}
+                    <div class="row">
+                        {% for evenement in evenements %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                {% if evenement.image %}
+                                <img src="{{ url_for('static', filename=evenement.image) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ evenement.titre }}"
+                                     style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                                     style="height: 200px;">
+                                    <i class="fas fa-calendar-alt fa-3x text-white"></i>
+                                </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ evenement.titre }}</h5>
+                                    <p class="card-text text-muted">
+                                        <small>
+                                            <i class="fas fa-calendar me-1"></i>
+                                            {{ evenement.date_debut.strftime('%d/%m/%Y') if evenement.date_debut else 'N/A' }}
+                                            {% if evenement.date_fin and evenement.date_fin != evenement.date_debut %}
+                                            - {{ evenement.date_fin.strftime('%d/%m/%Y') }}
+                                            {% endif %}
+                                        </small>
+                                    </p>
+                                    <p class="card-text text-muted">
+                                        <small>
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ evenement.heure_debut.strftime('%H:%M') if evenement.heure_debut else 'N/A' }}
+                                            {% if evenement.heure_fin %}
+                                            - {{ evenement.heure_fin.strftime('%H:%M') }}
+                                            {% endif %}
+                                        </small>
+                                    </p>
+                                    {% if evenement.lieu %}
+                                    <p class="card-text text-muted">
+                                        <small>
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            {{ evenement.lieu }}
+                                        </small>
+                                    </p>
+                                    {% endif %}
+                                    <p class="card-text">
+                                        {{ evenement.description[:150] + '...' if evenement.description|length > 150 else evenement.description }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{{ url_for('principal.detail_evenement', evenement_id=evenement.id) }}" 
+                                           class="btn btn-primary btn-sm">
+                                            Plus d'infos
+                                        </a>
+                                        {% if evenement.categorie %}
+                                        <span class="badge bg-secondary">{{ evenement.categorie }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun événement disponible pour le moment</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendrier des événements -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Calendrier des événements</h5>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script pour le calendrier -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ici vous pouvez ajouter le code pour initialiser un calendrier
+    // Par exemple avec FullCalendar.js ou une autre bibliothèque
+    console.log('Calendrier des événements chargé');
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,346 @@
+{% extends "etudiant/base.html" %}
+
+{% block title %}Mon Bulletin - Étudiant{% endblock %}
+
+{% block page_title %}Mon Bulletin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-file-alt me-2"></i>Mon Bulletin
+        </h1>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-primary btn-sm">
+                <i class="fas fa-print me-1"></i>Imprimer
+            </button>
+            <button onclick="exportBulletin()" class="btn btn-success btn-sm">
+                <i class="fas fa-download me-1"></i>Exporter PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-filter me-2"></i>Filtres
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="annee_id" class="form-label">Année académique</label>
+                            <select class="form-select" id="annee_id" name="annee_id">
+                                <option value="">Toutes les années</option>
+                                {% for annee in annees %}
+                                <option value="{{ annee.id }}" {% if request.args.get('annee_id')|int == annee.id %}selected{% endif %}>
+                                    {{ annee.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="semestre_id" class="form-label">Semestre</label>
+                            <select class="form-select" id="semestre_id" name="semestre_id">
+                                <option value="">Tous les semestres</option>
+                                {% for semestre in semestres %}
+                                <option value="{{ semestre.id }}" {% if request.args.get('semestre_id')|int == semestre.id %}selected{% endif %}>
+                                    {{ semestre.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-1"></i>Filtrer
+                            </button>
+                            <a href="{{ url_for('etudiant.bulletin') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if bulletin %}
+    <!-- Informations de l'étudiant -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-graduate me-2"></i>Informations de l'étudiant
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nom complet :</strong> {{ bulletin.etudiant.prenom }} {{ bulletin.etudiant.nom }}</p>
+                            <p><strong>Matricule :</strong> {{ bulletin.etudiant.matricule }}</p>
+                            <p><strong>Année académique :</strong> {{ bulletin.etudiant.annee_academique.nom if bulletin.etudiant.annee_academique else 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Statut :</strong> 
+                                <span class="badge badge-{{ 'success' if bulletin.etudiant.statut == 'actif' else 'warning' }}">
+                                    {{ bulletin.etudiant.statut|title }}
+                                </span>
+                            </p>
+                            <p><strong>Date d'inscription :</strong> {{ bulletin.etudiant.date_inscription.strftime('%d/%m/%Y') if bulletin.etudiant.date_inscription else 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Moyenne générale
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.2f"|format(bulletin.statistiques.moyenne_generale) }}/20</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total des notes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ bulletin.statistiques.total_notes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Crédits obtenus
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ bulletin.statistiques.credits_obtenus }}/{{ bulletin.statistiques.total_credits }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-certificate fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Taux de réussite
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if bulletin.statistiques.total_credits > 0 %}
+                                    {{ "%.1f"|format((bulletin.statistiques.credits_obtenus / bulletin.statistiques.total_credits) * 100) }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détail par unité d'enseignement -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-book me-2"></i>Détail par unité d'enseignement
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if bulletin.unites_enseignement %}
+                        {% for unite_id, unite_data in bulletin.unites_enseignement.items() %}
+                        <div class="unite-enseignement mb-4">
+                            <div class="unite-header bg-light p-3 rounded">
+                                <h5 class="mb-2">
+                                    <i class="fas fa-book me-2"></i>{{ unite_data.unite.nom }}
+                                    <small class="text-muted">({{ unite_data.unite.code }})</small>
+                                </h5>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>Moyenne :</strong> 
+                                        <span class="badge badge-{{ 'success' if unite_data.moyenne >= 10 else 'danger' }}">
+                                            {{ "%.2f"|format(unite_data.moyenne) }}/20
+                                        </span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Crédits :</strong> {{ unite_data.unite.credits }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Coefficient :</strong> {{ unite_data.unite.coefficient }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>Statut :</strong>
+                                        {% if unite_data.moyenne >= 10 %}
+                                            <span class="badge badge-success">Validé</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Non validé</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="matieres-detail mt-3">
+                                {% for matiere_id, matiere_data in unite_data.matieres.items() %}
+                                <div class="matiere-item border rounded p-3 mb-3">
+                                    <h6 class="mb-3">
+                                        <i class="fas fa-chalkboard-teacher me-2"></i>{{ matiere_data.matiere.nom }}
+                                        <small class="text-muted">({{ matiere_data.matiere.code }})</small>
+                                    </h6>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <strong>Moyenne :</strong> 
+                                            <span class="badge badge-{{ 'success' if matiere_data.moyenne >= 10 else 'danger' }}">
+                                                {{ "%.2f"|format(matiere_data.moyenne) }}/20
+                                            </span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Volume horaire :</strong> {{ matiere_data.matiere.volume_horaire }}h
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Coefficient :</strong> {{ matiere_data.matiere.coefficient }}
+                                        </div>
+                                    </div>
+                                    
+                                    {% if matiere_data.notes %}
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Type d'évaluation</th>
+                                                    <th>Note</th>
+                                                    <th>Coefficient</th>
+                                                    <th>Note pondérée</th>
+                                                    <th>Date</th>
+                                                    <th>Enseignant</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for note in matiere_data.notes %}
+                                                <tr>
+                                                    <td>{{ note.type_evaluation|title }}</td>
+                                                    <td>
+                                                        <span class="badge badge-{{ 'success' if note.note >= 10 else 'danger' }}">
+                                                            {{ note.note }}/20
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ note.coefficient }}</td>
+                                                    <td>{{ "%.2f"|format(note.note * note.coefficient) }}</td>
+                                                    <td>{{ note.date_evaluation.strftime('%d/%m/%Y') if note.date_evaluation else 'N/A' }}</td>
+                                                    <td>{{ note.enseignant.nom if note.enseignant else 'N/A' }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-3">
+                                        <i class="fas fa-inbox fa-2x text-gray-300 mb-2"></i>
+                                        <p class="text-muted">Aucune note disponible</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                            <h5 class="text-muted">Aucune unité d'enseignement trouvée</h5>
+                            <p class="text-muted">Aucune note n'a été saisie pour cette période</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-file-alt fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-muted">Aucun bulletin disponible</h5>
+                    <p class="text-muted">Aucune note n'a été saisie pour cette période</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function exportBulletin() {
+    // Fonction pour exporter le bulletin en PDF
+    alert('Fonctionnalité d\'export PDF à implémenter');
+}
+
+// Auto-submit form when filters change
+document.querySelectorAll('#annee_id, #semestre_id').forEach(select => {
+    select.addEventListener('change', function() {
+        this.form.submit();
+    });
+});
+</script>
+
+<style>
+@media print {
+    .btn, .card-header, .breadcrumb {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .card-body {
+        padding: 0 !important;
+    }
+}
+</style>
+{% endblock %} 

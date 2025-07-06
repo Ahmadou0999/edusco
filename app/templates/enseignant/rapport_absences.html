@@ -1,21 +1,323 @@
-{% extends 'base.html' %}
+{% extends "enseignant/base.html" %}
+
+{% block title %}Rapport des absences - Enseignant{% endblock %}
+
+{% block page_title %}Rapport des absences{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Rapport des absences</li>
+{% endblock %}
+
 {% block content %}
-<h2>Rapport des absences - {{ groupe.nom }}</h2>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Étudiant</th>
-            <th>Taux d'absence (%)</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for etudiant in etudiants %}
-        <tr>
-            <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
-            <td>{{ taux_absences[etudiant.id]['taux_absence']|round(2) }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<a href="{{ url_for('enseignant.absences') }}" class="btn btn-secondary">Retour</a>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-chart-pie me-2"></i>Rapport des absences
+        </h1>
+        <div>
+            <button onclick="exporterRapport()" class="btn btn-success btn-sm me-2">
+                <i class="fas fa-download me-1"></i>Exporter
+            </button>
+            <a href="{{ url_for('enseignant.absences') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Retour aux absences
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtres
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="matiere_id" class="form-label">Matière</label>
+                    <select name="matiere_id" id="matiere_id" class="form-select">
+                        <option value="">Toutes les matières</option>
+                        {% for matiere in matieres %}
+                        <option value="{{ matiere.id }}" {% if request.args.get('matiere_id')|int == matiere.id %}selected{% endif %}>
+                            {{ matiere.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="groupe_id" class="form-label">Groupe</label>
+                    <select name="groupe_id" id="groupe_id" class="form-select">
+                        <option value="">Tous les groupes</option>
+                        {% for groupe in groupes %}
+                        <option value="{{ groupe.id }}" {% if request.args.get('groupe_id')|int == groupe.id %}selected{% endif %}>
+                            {{ groupe.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="date_debut" class="form-label">Date début</label>
+                    <input type="date" name="date_debut" id="date_debut" class="form-control" 
+                           value="{{ request.args.get('date_debut', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_fin" class="form-label">Date fin</label>
+                    <input type="date" name="date_fin" id="date_fin" class="form-control" 
+                           value="{{ request.args.get('date_fin', '') }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Filtrer
+                    </button>
+                    <a href="{{ url_for('enseignant.rapport_absences') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total des absences
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rapport.total_absences }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Absences justifiées
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rapport.absences_justifiees }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Absences non justifiées
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rapport.absences_non_justifiees }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Taux de justification
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rapport.taux_justification }}%</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row">
+        <!-- Répartition justifiées/non justifiées -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-pie me-2"></i>Répartition des absences
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="repartitionChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Absences par matière -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar me-2"></i>Absences par matière
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Graphique en cours de développement...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détails par matière -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Détails par matière
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if rapport.absences_par_matiere %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Matière</th>
+                                <th>Total absences</th>
+                                <th>Justifiées</th>
+                                <th>Non justifiées</th>
+                                <th>Taux justification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for matiere, stats in rapport.absences_par_matiere.items() %}
+                            <tr>
+                                <td>{{ matiere }}</td>
+                                <td>{{ stats.total }}</td>
+                                <td class="text-success">{{ stats.justifiees }}</td>
+                                <td class="text-danger">{{ stats.non_justifiees }}</td>
+                                <td>
+                                    {% if stats.total > 0 %}
+                                        {{ "%.1f"|format(stats.justifiees / stats.total * 100) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                    <p class="text-muted">Aucune absence trouvée pour les critères sélectionnés</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Détails par groupe -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-users me-2"></i>Détails par groupe
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if rapport.absences_par_groupe %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable2" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Groupe</th>
+                                <th>Total absences</th>
+                                <th>Justifiées</th>
+                                <th>Non justifiées</th>
+                                <th>Taux justification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for groupe, stats in rapport.absences_par_groupe.items() %}
+                            <tr>
+                                <td>{{ groupe }}</td>
+                                <td>{{ stats.total }}</td>
+                                <td class="text-success">{{ stats.justifiees }}</td>
+                                <td class="text-danger">{{ stats.non_justifiees }}</td>
+                                <td>
+                                    {% if stats.total > 0 %}
+                                        {{ "%.1f"|format(stats.justifiees / stats.total * 100) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                    <p class="text-muted">Aucune absence trouvée pour les critères sélectionnés</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Données pour le graphique de répartition
+const repartitionData = {
+    labels: ['Justifiées', 'Non justifiées'],
+    datasets: [{
+        data: [
+            {{ rapport.absences_justifiees }},
+            {{ rapport.absences_non_justifiees }}
+        ],
+        backgroundColor: [
+            '#1cc88a',
+            '#e74a3b'
+        ]
+    }]
+};
+
+// Graphique de répartition
+const repartitionChart = new Chart(document.getElementById('repartitionChart'), {
+    type: 'pie',
+    data: repartitionData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Fonction d'export
+function exporterRapport() {
+    // Ici on pourrait implémenter l'export en PDF ou Excel
+    alert('Fonctionnalité d\'export à implémenter');
+}
+</script>
 {% endblock %} 

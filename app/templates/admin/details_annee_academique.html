@@ -1,0 +1,232 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Détails année académique - Administration{% endblock %}
+
+{% block page_title %}Détails de l'année académique{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.annees_academiques') }}">Années académiques</a></li>
+<li class="breadcrumb-item active">{{ annee.nom }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-calendar-alt"></i> {{ annee.nom }}
+                    {% if annee.active %}
+                        <span class="badge badge-success ml-2">Active</span>
+                    {% endif %}
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.modifier_annee_academique', annee_id=annee.id) }}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{{ url_for('admin.annees_academiques') }}" 
+                       class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Informations générales -->
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-info-circle"></i> Informations générales</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Nom :</strong></td>
+                                <td>{{ annee.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date de début :</strong></td>
+                                <td>{{ annee.date_debut.strftime('%d/%m/%Y') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date de fin :</strong></td>
+                                <td>{{ annee.date_fin.strftime('%d/%m/%Y') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Statut :</strong></td>
+                                <td>
+                                    {% if annee.active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Durée :</strong></td>
+                                <td>{{ ((annee.date_fin - annee.date_debut).days / 365.25) | round(1) }} année(s)</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Statistiques -->
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-chart-bar"></i> Statistiques</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon"><i class="fas fa-calendar"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Semestres</span>
+                                        <span class="info-box-number">{{ stats.total_semestres }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-box bg-success">
+                                    <span class="info-box-icon"><i class="fas fa-user-graduate"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Étudiants</span>
+                                        <span class="info-box-number">{{ stats.total_etudiants }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-box bg-warning">
+                                    <span class="info-box-icon"><i class="fas fa-chalkboard-teacher"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Enseignants</span>
+                                        <span class="info-box-number">{{ stats.total_enseignants }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-box bg-primary">
+                                    <span class="info-box-icon"><i class="fas fa-book"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Matières</span>
+                                        <span class="info-box-number">{{ stats.total_matieres }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Semestres -->
+                <div class="row">
+                    <div class="col-12">
+                        <h5><i class="fas fa-calendar-week"></i> Semestres ({{ annee.semestres|length }})</h5>
+                        {% if annee.semestres %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Date début</th>
+                                        <th>Date fin</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for semestre in annee.semestres %}
+                                    <tr>
+                                        <td>{{ semestre.nom }}</td>
+                                        <td>{{ semestre.date_debut.strftime('%d/%m/%Y') }}</td>
+                                        <td>{{ semestre.date_fin.strftime('%d/%m/%Y') }}</td>
+                                        <td>
+                                            {% if semestre.active %}
+                                                <span class="badge badge-success">Active</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('admin.modifier_semestre', semestre_id=semestre.id) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-calendar-week fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucun semestre défini pour cette année académique.</p>
+                            <a href="{{ url_for('admin.creer_semestre') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Créer un semestre
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Étudiants -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5><i class="fas fa-user-graduate"></i> Étudiants ({{ annee.etudiants|length }})</h5>
+                        {% if annee.etudiants %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Matricule</th>
+                                        <th>Nom</th>
+                                        <th>Prénom</th>
+                                        <th>Groupe</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for etudiant in annee.etudiants[:10] %}
+                                    <tr>
+                                        <td>{{ etudiant.matricule }}</td>
+                                        <td>{{ etudiant.utilisateur.nom }}</td>
+                                        <td>{{ etudiant.utilisateur.prenom }}</td>
+                                        <td>
+                                            {% if etudiant.inscriptions_groupes %}
+                                                {% for inscription in etudiant.inscriptions_groupes %}
+                                                    <span class="badge badge-info">{{ inscription.groupe.nom }}</span>
+                                                {% endfor %}
+                                            {% else %}
+                                                <span class="badge badge-warning">Non assigné</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('admin.profil_etudiant', etudiant_id=etudiant.id) }}" 
+                                               class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% if annee.etudiants|length > 10 %}
+                            <div class="text-center mt-2">
+                                <p class="text-muted">Affichage des 10 premiers étudiants sur {{ annee.etudiants|length }}</p>
+                                <a href="{{ url_for('admin.etudiants') }}?annee={{ annee.id }}" class="btn btn-primary btn-sm">
+                                    Voir tous les étudiants
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-user-graduate fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">Aucun étudiant inscrit pour cette année académique.</p>
+                            <a href="{{ url_for('admin.creer_etudiant') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Créer un étudiant
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

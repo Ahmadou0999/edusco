@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Messagerie - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-envelope me-2"></i>Messagerie
+        </h1>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('principal.envoyer_message') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i>Nouveau message
+            </a>
+            <button onclick="actualiserMessages()" class="btn btn-secondary btn-sm">
+                <i class="fas fa-sync-alt me-1"></i>Actualiser
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h4>{{ messages_recus|length }}</h4>
+                    <p class="mb-0">Messages reçus</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h4>{{ messages_envoyes|length }}</h4>
+                    <p class="mb-0">Messages envoyés</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h4>{{ messages_non_lus }}</h4>
+                    <p class="mb-0">Non lus</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h4>{{ (messages_non_lus / messages_recus|length * 100)|round(1) if messages_recus|length > 0 else 0 }}%</h4>
+                    <p class="mb-0">Taux de lecture</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Messages reçus -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-inbox me-2"></i>Messages reçus
+                        {% if messages_non_lus > 0 %}
+                        <span class="badge badge-danger ms-2">{{ messages_non_lus }}</span>
+                        {% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if messages_recus %}
+                    <div class="list-group list-group-flush">
+                        {% for message in messages_recus %}
+                        <div class="list-group-item list-group-item-action {% if not message.lu %}list-group-item-warning{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    {% if not message.lu %}
+                                    <i class="fas fa-circle text-primary me-1"></i>
+                                    {% endif %}
+                                    {{ message.sujet }}
+                                </h6>
+                                <small class="text-muted">{{ message.date_envoi.strftime('%d/%m %H:%M') }}</small>
+                            </div>
+                            <p class="mb-1 text-muted">
+                                <i class="fas fa-user me-1"></i>{{ message.expediteur.nom }} {{ message.expediteur.prenom }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-truncate" style="max-width: 300px;">
+                                    {{ message.contenu[:100] }}{% if message.contenu|length > 100 %}...{% endif %}
+                                </small>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('principal.voir_message', message_id=message.id) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                            onclick="supprimerMessage({{ message.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-2x text-gray-300 mb-3"></i>
+                        <p class="text-muted">Aucun message reçu</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages envoyés -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Messages envoyés
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if messages_envoyes %}
+                    <div class="list-group list-group-flush">
+                        {% for message in messages_envoyes %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ message.sujet }}</h6>
+                                <small class="text-muted">{{ message.date_envoi.strftime('%d/%m %H:%M') }}</small>
+                            </div>
+                            <p class="mb-1 text-muted">
+                                <i class="fas fa-user me-1"></i>{{ message.destinataire.nom }} {{ message.destinataire.prenom }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-truncate" style="max-width: 300px;">
+                                    {{ message.contenu[:100] }}{% if message.contenu|length > 100 %}...{% endif %}
+                                </small>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('principal.voir_message', message_id=message.id) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                            onclick="supprimerMessage({{ message.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            {% if message.lu %}
+                            <small class="text-success">
+                                <i class="fas fa-check-double me-1"></i>Lu le {{ message.date_lecture.strftime('%d/%m/%Y à %H:%M') if message.date_lecture else 'N/A' }}
+                            </small>
+                            {% else %}
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>Non lu
+                            </small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-paper-plane fa-2x text-gray-300 mb-3"></i>
+                        <p class="text-muted">Aucun message envoyé</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function supprimerMessage(messageId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/messagerie/supprimer/${messageId}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function actualiserMessages() {
+    location.reload();
+}
+
+// Actualisation automatique toutes les 30 secondes
+setInterval(function() {
+    // Vérifier s'il y a de nouveaux messages
+    fetch('/messagerie/check-nouveaux')
+        .then(response => response.json())
+        .then(data => {
+            if (data.nouveaux > 0) {
+                // Afficher une notification
+                if (Notification.permission === 'granted') {
+                    new Notification('Nouveaux messages', {
+                        body: `Vous avez ${data.nouveaux} nouveau(x) message(s)`,
+                        icon: '/static/img/logo.png'
+                    });
+                }
+            }
+        })
+        .catch(error => console.log('Erreur lors de la vérification:', error));
+}, 30000);
+</script>
+{% endblock %} 

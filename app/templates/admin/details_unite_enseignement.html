@@ -1,0 +1,211 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Détails de l'unité d'enseignement - Administration{% endblock %}
+
+{% block page_title %}Détails de l'unité d'enseignement{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.unites_enseignement') }}">Unités d'enseignement</a></li>
+<li class="breadcrumb-item active">{{ ue.nom }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-book"></i> {{ ue.nom }}
+                    <span class="badge badge-primary ml-2">{{ ue.code }}</span>
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.modifier_unite_enseignement', ue_id=ue.id) }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Informations générales</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Code :</strong></td>
+                                <td><span class="badge badge-primary">{{ ue.code }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nom :</strong></td>
+                                <td>{{ ue.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Semestre :</strong></td>
+                                <td>
+                                    <span class="badge badge-info">{{ ue.semestre.code }}</span>
+                                    {{ ue.semestre.nom }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Crédits :</strong></td>
+                                <td><span class="badge badge-secondary">{{ ue.credits }} ECTS</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Coefficient :</strong></td>
+                                <td><span class="badge badge-warning">{{ ue.coefficient }}</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Statistiques</h5>
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info"><i class="fas fa-book"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Matières</span>
+                                <span class="info-box-number">{{ matieres|length }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success"><i class="fas fa-users"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Groupes</span>
+                                <span class="info-box-number">{{ ue.groupes|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if ue.description %}
+                <div class="mt-4">
+                    <h5>Description</h5>
+                    <div class="alert alert-light">
+                        {{ ue.description }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Liste des matières -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chalkboard"></i> Matières de cette UE
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.creer_matiere') }}?ue_id={{ ue.id }}" 
+                       class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter une matière
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if matieres %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Nom</th>
+                                <th>Volume horaire</th>
+                                <th>Coefficient</th>
+                                <th>Enseignant</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for matiere in matieres %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-primary">{{ matiere.code }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ matiere.nom }}</strong>
+                                    {% if matiere.description %}
+                                        <br><small class="text-muted">{{ matiere.description[:50] }}{% if matiere.description|length > 50 %}...{% endif %}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">{{ matiere.volume_horaire }}h</span>
+                                </td>
+                                <td>{{ matiere.coefficient }}</td>
+                                <td>
+                                    {% if matiere.enseignant %}
+                                        <span class="badge badge-success">{{ matiere.enseignant.nom_complet }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Non assigné</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('admin.modifier_matiere', matiere_id=matiere.id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.details_matiere', matiere_id=matiere.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="Détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chalkboard fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune matière</h5>
+                    <p class="text-muted">Aucune matière n'est définie pour cette unité d'enseignement.</p>
+                    <a href="{{ url_for('admin.creer_matiere') }}?ue_id={{ ue.id }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter la première matière
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Actions rapides</h3>
+            </div>
+            <div class="card-body">
+                <div class="btn-group-vertical w-100">
+                    <a href="{{ url_for('admin.modifier_unite_enseignement', ue_id=ue.id) }}" 
+                       class="btn btn-outline-primary mb-2">
+                        <i class="fas fa-edit"></i> Modifier l'UE
+                    </a>
+                    <a href="{{ url_for('admin.creer_matiere') }}?ue_id={{ ue.id }}" 
+                       class="btn btn-outline-success mb-2">
+                        <i class="fas fa-plus"></i> Ajouter une matière
+                    </a>
+                    <a href="{{ url_for('admin.matieres') }}" 
+                       class="btn btn-outline-info mb-2">
+                        <i class="fas fa-list"></i> Voir toutes les matières
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> À propos des UEs</h6>
+                    <p class="mb-0">Une unité d'enseignement regroupe plusieurs matières liées. Elle permet d'organiser le programme d'études de manière cohérente.</p>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Attention</h6>
+                    <p class="mb-0">La modification d'une UE peut affecter les notes et les groupes d'étudiants associés.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

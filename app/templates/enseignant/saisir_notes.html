@@ -1,32 +1,500 @@
-{% extends 'base.html' %}
+{% extends "enseignant/base.html" %}
+
+{% block title %}Saisir des notes - Enseignant{% endblock %}
+
+{% block page_title %}Saisir des notes{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Saisir des notes</li>
+{% endblock %}
+
 {% block content %}
-<h2>Saisie des notes - {{ matiere.nom }}</h2>
-<form method="post">
-    <input type="hidden" name="type_evaluation" value="{{ type_evaluation }}">
-    <input type="hidden" name="date_evaluation" value="{{ date_evaluation }}">
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Étudiant</th>
-                <th>Note</th>
-                <th>Commentaire</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for etudiant in etudiants %}
-            <tr>
-                <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
-                <td>
-                    <input type="number" name="note_{{ etudiant.id }}" min="0" max="20" step="0.01" class="form-control" value="{{ notes_existantes[etudiant.id].note if notes_existantes[etudiant.id] is defined else '' }}">
-                </td>
-                <td>
-                    <input type="text" name="commentaire_{{ etudiant.id }}" class="form-control" value="{{ notes_existantes[etudiant.id].commentaire if notes_existantes[etudiant.id] is defined else '' }}">
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <button type="submit" class="btn btn-success">Enregistrer</button>
-    <a href="{{ url_for('enseignant.notes') }}" class="btn btn-secondary">Retour</a>
-</form>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-edit me-2"></i>Saisir des notes
+        </h1>
+        <a href="{{ url_for('enseignant.notes') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Retour aux notes
+        </a>
+    </div>
+
+    <!-- Formulaire de sélection -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-cog me-2"></i>Sélection de l'évaluation
+            </h6>
+        </div>
+        <div class="card-body">
+            <form id="selectionForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="matiere" class="form-label">Matière *</label>
+                        <select class="form-select" id="matiere" name="matiere" required>
+                            <option value="">Sélectionner une matière</option>
+                            {% for matiere in matieres %}
+                            <option value="{{ matiere.id }}" 
+                                    data-coefficient="{{ matiere.coefficient }}"
+                                    data-semestre="{{ matiere.unite_enseignement.semestre.nom if matiere.unite_enseignement and matiere.unite_enseignement.semestre else 'N/A' }}">
+                                {{ matiere.nom }} (Coeff: {{ matiere.coefficient }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Le coefficient de la matière est automatiquement appliqué
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="groupe" class="form-label">Groupe *</label>
+                        <select class="form-select" id="groupe" name="groupe" required>
+                            <option value="">Sélectionner un groupe</option>
+                            {% for groupe in groupes %}
+                            <option value="{{ groupe.id }}">{{ groupe.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="type_evaluation" class="form-label">Type d'évaluation *</label>
+                        <select class="form-select" id="type_evaluation" name="type_evaluation" required>
+                            <option value="">Sélectionner le type</option>
+                            <option value="controle">Contrôle</option>
+                            <option value="examen">Examen</option>
+                            <option value="tp">Travaux pratiques</option>
+                            <option value="projet">Projet</option>
+                            <option value="participation">Participation</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="date_evaluation" class="form-label">Date d'évaluation *</label>
+                        <input type="date" class="form-control" id="date_evaluation" name="date_evaluation" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="commentaire" class="form-label">Commentaire général</label>
+                        <textarea class="form-control" id="commentaire" name="commentaire" rows="2" placeholder="Commentaire sur l'évaluation..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Informations automatiques -->
+                <div class="row" id="autoInfo" style="display: none;">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Informations automatiques</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Semestre:</strong> <span id="infoSemestre"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Coefficient matière:</strong> <span id="infoCoefficientMatiere"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Coefficient total:</strong> <span id="infoCoefficientTotal"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <button type="button" class="btn btn-primary" id="chargerEtudiants">
+                        <i class="fas fa-users me-2"></i>Charger les étudiants
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Formulaire de saisie des notes -->
+    <div class="card shadow mb-4" id="notesForm" style="display: none;">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-star me-2"></i>Saisie des notes
+            </h6>
+            <div>
+                <button type="button" class="btn btn-success btn-sm" id="sauvegarderNotes">
+                    <i class="fas fa-save me-2"></i>Sauvegarder
+                </button>
+                <button type="button" class="btn btn-info btn-sm" id="validerNotes">
+                    <i class="fas fa-check me-2"></i>Valider
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="notesTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="15%">Matricule</th>
+                            <th width="25%">Nom</th>
+                            <th width="25%">Prénom</th>
+                            <th width="15%">Note /20</th>
+                            <th width="15%">Appréciation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="etudiantsList">
+                        <!-- Les étudiants seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résumé -->
+    <div class="card shadow mb-4" id="resumeCard" style="display: none;">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-chart-bar me-2"></i>Résumé des notes
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-primary" id="moyenne">0.00</h4>
+                        <small class="text-muted">Moyenne</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-success" id="noteMax">0</h4>
+                        <small class="text-muted">Note maximale</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-danger" id="noteMin">0</h4>
+                        <small class="text-muted">Note minimale</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <h4 class="text-info" id="totalNotes">0</h4>
+                        <small class="text-muted">Notes saisies</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir sauvegarder ces notes ?</p>
+                <p class="text-muted small">Cette action ne peut pas être annulée.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="confirmerSauvegarde">Confirmer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectionForm = document.getElementById('selectionForm');
+    const notesForm = document.getElementById('notesForm');
+    const resumeCard = document.getElementById('resumeCard');
+    const chargerEtudiantsBtn = document.getElementById('chargerEtudiants');
+    const sauvegarderNotesBtn = document.getElementById('sauvegarderNotes');
+    const validerNotesBtn = document.getElementById('validerNotes');
+    const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+    
+    // Éléments du formulaire
+    const matiereSelect = document.getElementById('matiere');
+    const groupeSelect = document.getElementById('groupe');
+    const typeEvaluationSelect = document.getElementById('type_evaluation');
+    const dateEvaluationInput = document.getElementById('date_evaluation');
+    const commentaireInput = document.getElementById('commentaire');
+    
+    // Informations automatiques
+    const autoInfo = document.getElementById('autoInfo');
+    const infoSemestre = document.getElementById('infoSemestre');
+    const infoCoefficientMatiere = document.getElementById('infoCoefficientMatiere');
+    const infoCoefficientTotal = document.getElementById('infoCoefficientTotal');
+    
+    // Afficher les informations automatiques quand la matière est sélectionnée
+    matiereSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (this.value) {
+            const coefficientMatiere = parseFloat(selectedOption.dataset.coefficient);
+            const semestre = selectedOption.dataset.semestre;
+            infoSemestre.textContent = semestre;
+            infoCoefficientMatiere.textContent = coefficientMatiere;
+            infoCoefficientTotal.textContent = coefficientMatiere.toFixed(2);
+            autoInfo.style.display = 'block';
+        } else {
+            autoInfo.style.display = 'none';
+        }
+    });
+    
+    // Charger les étudiants
+    chargerEtudiantsBtn.addEventListener('click', function() {
+        const matiere = matiereSelect.value;
+        const groupe = groupeSelect.value;
+        const typeEvaluation = typeEvaluationSelect.value;
+        const dateEvaluation = dateEvaluationInput.value;
+        
+        if (!matiere || !groupe || !typeEvaluation || !dateEvaluation) {
+            alert('Veuillez remplir tous les champs obligatoires');
+            return;
+        }
+        
+        chargerEtudiants(groupe);
+    });
+    
+    // Sauvegarder les notes
+    sauvegarderNotesBtn.addEventListener('click', function() {
+        if (validerFormulaire()) {
+            confirmationModal.show();
+        }
+    });
+    
+    // Confirmer la sauvegarde
+    document.getElementById('confirmerSauvegarde').addEventListener('click', function() {
+        sauvegarderNotes();
+        confirmationModal.hide();
+    });
+    
+    // Valider les notes
+    validerNotesBtn.addEventListener('click', function() {
+        if (validerFormulaire()) {
+            validerNotes();
+        }
+    });
+    
+    // Validation en temps réel
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('note-input')) {
+            validerNote(e.target);
+            calculerResume();
+        }
+    });
+});
+
+function chargerEtudiants(groupe) {
+    const tbody = document.getElementById('etudiantsList');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="spinner-border" role="status"></div></td></tr>';
+
+    fetch(`/enseignant/get-etudiants-groupe/${groupe}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.forEach((etudiant, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${etudiant.matricule}</td>
+                    <td>${etudiant.nom}</td>
+                    <td>${etudiant.prenom}</td>
+                    <td>
+                        <input type="number" class="form-control note-input" 
+                               data-etudiant-id="${etudiant.id}" 
+                               min="0" max="20" step="0.25" 
+                               placeholder="0-20">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control appreciation-input" 
+                               data-etudiant-id="${etudiant.id}" 
+                               placeholder="Appréciation...">
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('notesForm').style.display = 'block';
+            document.getElementById('resumeCard').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors du chargement des étudiants');
+        });
+}
+
+function validerNote(input) {
+    const note = parseFloat(input.value);
+    if (note < 0 || note > 20) {
+        input.classList.add('is-invalid');
+        return false;
+    } else {
+        input.classList.remove('is-invalid');
+        return true;
+    }
+}
+
+function validerFormulaire() {
+    const notes = document.querySelectorAll('.note-input');
+    let valide = true;
+
+    notes.forEach(note => {
+        if (note.value && !validerNote(note)) {
+            valide = false;
+        }
+    });
+
+    if (!valide) {
+        alert('Veuillez corriger les notes invalides (0-20)');
+    }
+
+    return valide;
+}
+
+function calculerResume() {
+    const notes = Array.from(document.querySelectorAll('.note-input'))
+        .map(input => parseFloat(input.value))
+        .filter(note => !isNaN(note) && note >= 0 && note <= 20);
+
+    if (notes.length === 0) {
+        document.getElementById('moyenne').textContent = '0.00';
+        document.getElementById('noteMax').textContent = '0';
+        document.getElementById('noteMin').textContent = '0';
+        document.getElementById('totalNotes').textContent = '0';
+        return;
+    }
+
+    const moyenne = notes.reduce((a, b) => a + b, 0) / notes.length;
+    const noteMax = Math.max(...notes);
+    const noteMin = Math.min(...notes);
+
+    document.getElementById('moyenne').textContent = moyenne.toFixed(2);
+    document.getElementById('noteMax').textContent = noteMax;
+    document.getElementById('noteMin').textContent = noteMin;
+    document.getElementById('totalNotes').textContent = notes.length;
+}
+
+function sauvegarderNotes() {
+    const formData = {
+        matiere_id: document.getElementById('matiere').value,
+        groupe_id: document.getElementById('groupe').value,
+        type_evaluation: document.getElementById('type_evaluation').value,
+        date_evaluation: document.getElementById('date_evaluation').value,
+        commentaire: document.getElementById('commentaire').value,
+        notes: []
+    };
+
+    document.querySelectorAll('.note-input').forEach(input => {
+        if (input.value) {
+            const etudiantId = input.dataset.etudiantId;
+            const appreciation = document.querySelector(`.appreciation-input[data-etudiant-id="${etudiantId}"]`).value;
+            
+            formData.notes.push({
+                etudiant_id: etudiantId,
+                note: parseFloat(input.value),
+                appreciation: appreciation
+            });
+        }
+    });
+
+    fetch('/enseignant/saisir-notes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Notes sauvegardées avec succès !');
+            window.location.href = '/enseignant/notes';
+        } else {
+            alert('Erreur: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la sauvegarde');
+    });
+}
+
+function validerNotes() {
+    // Logique de validation des notes
+    const formData = {
+        matiere_id: document.getElementById('matiere').value,
+        groupe_id: document.getElementById('groupe').value,
+        type_evaluation: document.getElementById('type_evaluation').value,
+        date_evaluation: document.getElementById('date_evaluation').value,
+        commentaire: document.getElementById('commentaire').value,
+        notes: []
+    };
+
+    document.querySelectorAll('.note-input').forEach(input => {
+        if (input.value) {
+            const etudiantId = input.dataset.etudiantId;
+            const appreciation = document.querySelector(`.appreciation-input[data-etudiant-id="${etudiantId}"]`).value;
+            
+            formData.notes.push({
+                etudiant_id: etudiantId,
+                note: parseFloat(input.value),
+                appreciation: appreciation
+            });
+        }
+    });
+
+    // Confirmation avant validation
+    if (confirm('Êtes-vous sûr de vouloir VALIDER ces notes ? Cette action les rendra définitives et elles ne pourront plus être modifiées facilement.')) {
+        fetch('/enseignant/valider-notes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ Notes validées avec succès ! Elles sont maintenant définitives.');
+                window.location.href = '/enseignant/notes';
+            } else {
+                alert('❌ Erreur: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('❌ Erreur lors de la validation');
+        });
+    }
+}
+
+// Initialiser la date d'évaluation à aujourd'hui
+document.getElementById('date_evaluation').value = new Date().toISOString().split('T')[0];
+</script>
+
+<style>
+.note-input.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.table th {
+    background-color: #4e73df !important;
+    color: white !important;
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+</style>
 {% endblock %} 

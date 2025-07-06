@@ -1,0 +1,256 @@
+{% extends "etudiant/base.html" %}
+
+{% block title %}Tableau de bord - Étudiant{% endblock %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+        </h1>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('etudiant.notes') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-star me-1"></i>Voir mes notes
+            </a>
+            <a href="{{ url_for('etudiant.bulletin') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-file-alt me-1"></i>Mon bulletin
+            </a>
+        </div>
+    </div>
+
+    <!-- Informations de l'étudiant -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-graduate me-2"></i>Informations académiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nom complet :</strong> {{ etudiant.prenom }} {{ etudiant.nom }}</p>
+                            <p><strong>Matricule :</strong> {{ etudiant.matricule }}</p>
+                            <p><strong>Année académique :</strong> {{ etudiant.annee_academique.nom if etudiant.annee_academique else 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Statut :</strong> 
+                                <span class="badge badge-{{ 'success' if etudiant.statut == 'actif' else 'warning' }}">
+                                    {{ etudiant.statut|title }}
+                                </span>
+                            </p>
+                            <p><strong>Date d'inscription :</strong> {{ etudiant.date_inscription.strftime('%d/%m/%Y') if etudiant.date_inscription else 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Notes obtenues
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ resultats.total_notes if resultats else 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Moyenne générale
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.2f"|format(resultats.moyenne_generale) if resultats and resultats.moyenne_generale else "0.00" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Absences
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ resultats.total_absences if resultats else 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Crédits obtenus
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ resultats.credits_obtenus if resultats else 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-certificate fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="row">
+        <!-- Notes récentes -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-star me-2"></i>Notes récentes
+                    </h6>
+                    <a href="{{ url_for('etudiant.notes') }}" class="btn btn-primary btn-sm">
+                        Voir toutes
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if resultats and resultats.notes_recentes %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Matière</th>
+                                        <th>Note</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for note in resultats.notes_recentes[:5] %}
+                                    <tr>
+                                        <td>{{ note.matiere.nom if note.matiere else 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge badge-{{ 'success' if note.note >= 10 else 'danger' }}">
+                                                {{ note.note }}/20
+                                            </span>
+                                        </td>
+                                        <td>{{ note.type_evaluation|title }}</td>
+                                        <td>{{ note.date_evaluation.strftime('%d/%m/%Y') if note.date_evaluation else 'N/A' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-star fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-muted">Aucune note disponible</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions rapides -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bolt me-2"></i>Actions rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('etudiant.notes') }}" class="btn btn-primary">
+                            <i class="fas fa-star me-2"></i>Voir mes notes
+                        </a>
+                        <a href="{{ url_for('etudiant.bulletin') }}" class="btn btn-success">
+                            <i class="fas fa-file-alt me-2"></i>Mon bulletin
+                        </a>
+                        <a href="{{ url_for('etudiant.emploi_du_temps') }}" class="btn btn-info">
+                            <i class="fas fa-calendar me-2"></i>Emploi du temps
+                        </a>
+                        <a href="{{ url_for('etudiant.absences') }}" class="btn btn-warning">
+                            <i class="fas fa-user-times me-2"></i>Mes absences
+                        </a>
+                        <a href="{{ url_for('etudiant.profil') }}" class="btn btn-secondary">
+                            <i class="fas fa-user-circle me-2"></i>Mon profil
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications récentes -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bell me-2"></i>Notifications récentes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        <div class="notifications-list">
+                            {% for notification in notifications[:3] %}
+                            <div class="notification-item mb-2 p-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ notification.titre }}</h6>
+                                        <p class="text-muted small mb-1">{{ notification.message[:50] }}...</p>
+                                        <small class="text-muted">{{ notification.date_creation.strftime('%d/%m/%Y') }}</small>
+                                    </div>
+                                    {% if not notification.lue %}
+                                        <span class="badge badge-primary">Nouveau</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('etudiant.notifications') }}" class="btn btn-outline-primary btn-sm">
+                                Voir toutes les notifications
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-bell-slash fa-2x text-gray-300 mb-2"></i>
+                            <p class="text-muted small">Aucune notification</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard étudiant chargé');
+});
+</script>
+{% endblock %} 

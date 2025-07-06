@@ -1,0 +1,149 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Modifier une matière - Administration{% endblock %}
+
+{% block page_title %}Modifier la matière{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.matieres') }}">Matières</a></li>
+<li class="breadcrumb-item active">Modifier {{ matiere.code }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Modifier les informations de la matière</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ formulaire.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.code.label(class="form-label") }}
+                                {{ formulaire.code(class="form-control" + (" is-invalid" if formulaire.code.errors else "")) }}
+                                {% if formulaire.code.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.code.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Exemple: MAT101, PHY101</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.unite_enseignement_id.label(class="form-label") }}
+                                {{ formulaire.unite_enseignement_id(class="form-control" + (" is-invalid" if formulaire.unite_enseignement_id.errors else "")) }}
+                                {% if formulaire.unite_enseignement_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.unite_enseignement_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.nom.label(class="form-label") }}
+                        {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                        {% if formulaire.nom.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in formulaire.nom.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.description.label(class="form-label") }}
+                        {{ formulaire.description(class="form-control", rows="3") }}
+                        <small class="form-text text-muted">Description optionnelle de la matière</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.volume_horaire.label(class="form-label") }}
+                                {{ formulaire.volume_horaire(class="form-control" + (" is-invalid" if formulaire.volume_horaire.errors else "")) }}
+                                {% if formulaire.volume_horaire.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.volume_horaire.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Volume horaire en heures</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.coefficient.label(class="form-label") }}
+                                {{ formulaire.coefficient(class="form-control" + (" is-invalid" if formulaire.coefficient.errors else "")) }}
+                                {% if formulaire.coefficient.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.coefficient.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Coefficient pour le calcul de la moyenne</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.enseignant_id.label(class="form-label") }}
+                        {{ formulaire.enseignant_id(class="form-control" + (" is-invalid" if formulaire.enseignant_id.errors else "")) }}
+                        {% if formulaire.enseignant_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in formulaire.enseignant_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Enseignant responsable de cette matière (optionnel)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.matieres') }}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Modification d'une matière</h5>
+                    <p>Modifiez les informations de la matière selon vos besoins.</p>
+                    <ul class="mb-0">
+                        <li>Le code doit rester unique</li>
+                        <li>Le volume horaire influence l'emploi du temps</li>
+                        <li>Le coefficient affecte la moyenne générale</li>
+                        <li>Vous pouvez changer l'UE d'affectation</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Attention</h6>
+                    <p class="mb-0">La modification peut affecter les notes et emplois du temps existants.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

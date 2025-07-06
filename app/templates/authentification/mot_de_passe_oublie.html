@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Mot de passe oublié - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-dark text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-key me-2"></i>
+                        Mot de passe oublié
+                    </h3>
+                    <p class="mb-0 mt-2">Réinitialisez votre mot de passe</p>
+                </div>
+                <div class="card-body p-4">
+                    <h4 class="text-center mb-4">Récupération</h4>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" action="{{ url_for('authentification.mot_de_passe_oublie') }}">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="votre@email.com" required>
+                            <div class="form-text">
+                                Entrez votre adresse email pour recevoir un lien de réinitialisation
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer le lien
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-2">Vous vous souvenez de votre mot de passe ?</p>
+                        <a href="{{ url_for('authentification.connexion') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <a href="{{ url_for('principal.accueil') }}" class="text-decoration-none">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à l'accueil
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

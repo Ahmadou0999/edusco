@@ -1,0 +1,321 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Rapport d'Assiduité{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Rapport d'Assiduité</h1>
+        <a href="{{ url_for('admin.rapports_pedagogiques') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Étudiants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_etudiants }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Total Absences
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_absences }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Taux de Présence
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.1f"|format(taux_presence) }}%</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Absences Moyennes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if total_etudiants > 0 %}
+                                    {{ "%.1f"|format(total_absences / total_etudiants) }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assiduité par groupe -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Assiduité par Groupe</h6>
+                </div>
+                <div class="card-body">
+                    {% if groupes_assiduite %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Groupe</th>
+                                    <th>UE</th>
+                                    <th>Enseignant</th>
+                                    <th>Nombre d'Étudiants</th>
+                                    <th>Absences</th>
+                                    <th>Taux de Présence</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assiduite in groupes_assiduite %}
+                                <tr>
+                                    <td>{{ assiduite.groupe.nom }}</td>
+                                    <td>{{ assiduite.groupe.unite_enseignement.nom if assiduite.groupe.unite_enseignement else 'N/A' }}</td>
+                                    <td>{{ assiduite.groupe.enseignant.nom if assiduite.groupe.enseignant else 'N/A' }}</td>
+                                    <td>{{ assiduite.etudiants }}</td>
+                                    <td>{{ assiduite.absences }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar {% if assiduite.taux_presence >= 90 %}bg-success{% elif assiduite.taux_presence >= 75 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 style="width: {{ assiduite.taux_presence }}%">
+                                                {{ "%.1f"|format(assiduite.taux_presence) }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if assiduite.taux_presence >= 90 %}
+                                        <span class="badge badge-success">Excellent</span>
+                                        {% elif assiduite.taux_presence >= 75 %}
+                                        <span class="badge badge-warning">Bon</span>
+                                        {% else %}
+                                        <span class="badge badge-danger">Faible</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Aucune donnée d'assiduité disponible.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques d'assiduité -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition des Absences</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="repartitionAbsences"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-success"></i> Présent (≥90%)
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-warning"></i> Moyen (75-89%)
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-danger"></i> Faible (<75%)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Évolution de l'Assiduité</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="evolutionAssiduite"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Graphique de répartition des absences (simulation)
+document.addEventListener('DOMContentLoaded', function() {
+    // Répartition des absences
+    var ctx = document.getElementById("repartitionAbsences");
+    var repartitionAbsences = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ["Présent", "Moyen", "Faible"],
+            datasets: [{
+                data: [60, 25, 15],
+                backgroundColor: ['#1cc88a', '#f6c23e', '#e74a3b'],
+                hoverBackgroundColor: ['#17a673', '#f4b619', '#d52a1a'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+            },
+            legend: {
+                display: false
+            },
+            cutoutPercentage: 80,
+        },
+    });
+
+    // Évolution de l'assiduité
+    var ctx2 = document.getElementById("evolutionAssiduite");
+    var evolutionAssiduite = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"],
+            datasets: [{
+                label: "Taux de présence",
+                lineTension: 0.3,
+                backgroundColor: "rgba(28, 200, 138, 0.05)",
+                borderColor: "rgba(28, 200, 138, 1)",
+                pointRadius: 3,
+                pointBackgroundColor: "rgba(28, 200, 138, 1)",
+                pointBorderColor: "rgba(28, 200, 138, 1)",
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: "rgba(28, 200, 138, 1)",
+                pointHoverBorderColor: "rgba(28, 200, 138, 1)",
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                data: [88, 85, 87, 90, 92, 89],
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 25,
+                    top: 25,
+                    bottom: 0
+                }
+            },
+            scales: {
+                xAxes: [{
+                    time: {
+                        unit: 'date'
+                    },
+                    gridLines: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 7
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        maxTicksLimit: 5,
+                        padding: 10,
+                        callback: function(value, index, values) {
+                            return value + '%';
+                        }
+                    },
+                    gridLines: {
+                        color: "rgb(234, 236, 244)",
+                        zeroLineColor: "rgb(234, 236, 244)",
+                        drawBorder: false,
+                        borderDash: [2],
+                        zeroLineBorderDash: [2]
+                    }
+                }],
+            },
+            legend: {
+                display: false
+            },
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                titleMarginBottom: 10,
+                titleFontColor: '#6e707e',
+                titleFontSize: 14,
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                intersect: false,
+                mode: 'index',
+                caretPadding: 10,
+                callbacks: {
+                    label: function(tooltipItem, chart) {
+                        var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                        return datasetLabel + ': ' + tooltipItem.yLabel + '%';
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

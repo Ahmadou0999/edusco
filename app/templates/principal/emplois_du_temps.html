@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Emplois du temps - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Emplois du temps</h1>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filtres</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="groupe_id" class="form-label">Groupe</label>
+                            <select class="form-select" id="groupe_id" name="groupe_id">
+                                <option value="">Tous les groupes</option>
+                                {% for groupe in groupes %}
+                                <option value="{{ groupe.id }}" {% if request.args.get('groupe_id')|int == groupe.id %}selected{% endif %}>
+                                    {{ groupe.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="jour" class="form-label">Jour</label>
+                            <select class="form-select" id="jour" name="jour">
+                                <option value="">Tous les jours</option>
+                                <option value="lundi" {% if request.args.get('jour') == 'lundi' %}selected{% endif %}>Lundi</option>
+                                <option value="mardi" {% if request.args.get('jour') == 'mardi' %}selected{% endif %}>Mardi</option>
+                                <option value="mercredi" {% if request.args.get('jour') == 'mercredi' %}selected{% endif %}>Mercredi</option>
+                                <option value="jeudi" {% if request.args.get('jour') == 'jeudi' %}selected{% endif %}>Jeudi</option>
+                                <option value="vendredi" {% if request.args.get('jour') == 'vendredi' %}selected{% endif %}>Vendredi</option>
+                                <option value="samedi" {% if request.args.get('jour') == 'samedi' %}selected{% endif %}>Samedi</option>
+                                <option value="dimanche" {% if request.args.get('jour') == 'dimanche' %}selected{% endif %}>Dimanche</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="enseignant_id" class="form-label">Enseignant</label>
+                            <select class="form-select" id="enseignant_id" name="enseignant_id">
+                                <option value="">Tous les enseignants</option>
+                                {% for enseignant in enseignants %}
+                                <option value="{{ enseignant.id }}" {% if request.args.get('enseignant_id')|int == enseignant.id %}selected{% endif %}>
+                                    {{ enseignant.nom_complet }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Filtrer</button>
+                                <a href="{{ url_for('principal.emplois_du_temps') }}" class="btn btn-secondary">Réinitialiser</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emplois du temps -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Emplois du temps</h5>
+                </div>
+                <div class="card-body">
+                    {% if emplois_du_temps %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Horaire</th>
+                                    <th>Lundi</th>
+                                    <th>Mardi</th>
+                                    <th>Mercredi</th>
+                                    <th>Jeudi</th>
+                                    <th>Vendredi</th>
+                                    <th>Samedi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for horaire in horaires %}
+                                <tr>
+                                    <td class="table-secondary fw-bold">{{ horaire }}</td>
+                                    {% for jour in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'] %}
+                                    <td>
+                                        {% for emploi in emplois_du_temps %}
+                                            {% if emploi.jour == jour and emploi.horaire == horaire %}
+                                            <div class="p-2 border rounded bg-light">
+                                                <strong>{{ emploi.matiere.nom if emploi.matiere else 'N/A' }}</strong><br>
+                                                <small class="text-muted">
+                                                    {{ emploi.enseignant.nom_complet if emploi.enseignant else 'N/A' }}<br>
+                                                    {{ emploi.salle if emploi.salle else 'N/A' }}
+                                                </small>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun emploi du temps disponible</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

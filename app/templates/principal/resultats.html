@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Résultats académiques - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Résultats académiques</h1>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filtres</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="annee_id" class="form-label">Année académique</label>
+                            <select class="form-select" id="annee_id" name="annee_id">
+                                <option value="">Toutes les années</option>
+                                {% for annee in annees %}
+                                <option value="{{ annee.id }}" {% if request.args.get('annee_id')|int == annee.id %}selected{% endif %}>
+                                    {{ annee.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="semestre_id" class="form-label">Semestre</label>
+                            <select class="form-select" id="semestre_id" name="semestre_id">
+                                <option value="">Tous les semestres</option>
+                                {% for semestre in semestres %}
+                                <option value="{{ semestre.id }}" {% if request.args.get('semestre_id')|int == semestre.id %}selected{% endif %}>
+                                    {{ semestre.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="unite_id" class="form-label">Unité d'enseignement</label>
+                            <select class="form-select" id="unite_id" name="unite_id">
+                                <option value="">Toutes les unités</option>
+                                {% for unite in unites %}
+                                <option value="{{ unite.id }}" {% if request.args.get('unite_id')|int == unite.id %}selected{% endif %}>
+                                    {{ unite.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Filtrer</button>
+                                <a href="{{ url_for('principal.resultats') }}" class="btn btn-secondary">Réinitialiser</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résultats -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Résultats</h5>
+                </div>
+                <div class="card-body">
+                    {% if resultats %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th>Matière</th>
+                                    <th>Note</th>
+                                    <th>Coefficient</th>
+                                    <th>Type d'évaluation</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resultat in resultats %}
+                                <tr>
+                                    <td>{{ resultat.etudiant.nom_complet if resultat.etudiant else 'N/A' }}</td>
+                                    <td>{{ resultat.matiere.nom if resultat.matiere else 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge {% if resultat.note >= 10 %}bg-success{% elif resultat.note >= 8 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ resultat.note }}/20
+                                        </span>
+                                    </td>
+                                    <td>{{ resultat.coefficient }}</td>
+                                    <td>{{ resultat.type_evaluation }}</td>
+                                    <td>{{ resultat.date_evaluation.strftime('%d/%m/%Y') if resultat.date_evaluation else 'N/A' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun résultat disponible</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

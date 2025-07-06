@@ -1,0 +1,159 @@
+{% extends "enseignant/base.html" %}
+
+{% block title %}Mon profil - Enseignant{% endblock %}
+
+{% block page_title %}Mon profil{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Mon profil</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user me-2"></i>Mon profil
+        </h1>
+        <a href="{{ url_for('enseignant.dashboard') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Retour au dashboard
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Informations personnelles -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-circle me-2"></i>Informations personnelles
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Nom complet</label>
+                            <p class="form-control-plaintext">{{ enseignant.nom_complet }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Matricule</label>
+                            <p class="form-control-plaintext">{{ enseignant.matricule }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Date de naissance</label>
+                            <p class="form-control-plaintext">{{ enseignant.date_naissance.strftime('%d/%m/%Y') if enseignant.date_naissance else 'Non renseigné' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Sexe</label>
+                            <p class="form-control-plaintext">{{ enseignant.sexe|title if enseignant.sexe else 'Non renseigné' }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Date d'embauche</label>
+                            <p class="form-control-plaintext">{{ enseignant.date_embauche.strftime('%d/%m/%Y') if enseignant.date_embauche else 'Non renseigné' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Statut</label>
+                            <span class="badge bg-{{ 'success' if enseignant.statut == 'actif' else 'warning' if enseignant.statut == 'inactif' else 'danger' }}">
+                                {{ enseignant.statut|title if enseignant.statut else 'Non défini' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Spécialité</label>
+                            <p class="form-control-plaintext">{{ enseignant.specialite if enseignant.specialite else 'Non renseigné' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Grade</label>
+                            <p class="form-control-plaintext">{{ enseignant.grade if enseignant.grade else 'Non renseigné' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coordonnées -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-address-book me-2"></i>Coordonnées
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <p class="form-control-plaintext">{{ enseignant.email if enseignant.email else 'Non renseigné' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Téléphone</label>
+                            <p class="form-control-plaintext">{{ enseignant.telephone if enseignant.telephone else 'Non renseigné' }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Lieu de naissance</label>
+                            <p class="form-control-plaintext">{{ enseignant.lieu_naissance if enseignant.lieu_naissance else 'Non renseigné' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Adresse</label>
+                            <p class="form-control-plaintext">{{ enseignant.adresse if enseignant.adresse else 'Non renseigné' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques et actions -->
+        <div class="col-lg-4">
+            <!-- Statistiques -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar me-2"></i>Statistiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ enseignant.matieres|length if enseignant.matieres else 0 }}</h4>
+                                <small class="text-muted">Matières</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success">{{ enseignant.groupes|length if enseignant.groupes else 0 }}</h4>
+                            <small class="text-muted">Groupes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs me-2"></i>Actions rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('principal.changer_mot_de_passe') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-key me-1"></i>Changer mot de passe
+                        </a>
+                        <a href="{{ url_for('enseignant.notifications') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-bell me-1"></i>Mes notifications
+                        </a>
+                        <a href="{{ url_for('enseignant.emploi_du_temps') }}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-calendar me-1"></i>Mon emploi du temps
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

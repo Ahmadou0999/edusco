@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Actualités - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Actualités</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Dernières actualités</h5>
+                </div>
+                <div class="card-body">
+                    {% if actualites %}
+                    <div class="row">
+                        {% for actualite in actualites %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                {% if actualite.image %}
+                                <img src="{{ url_for('static', filename=actualite.image) }}" 
+                                     class="card-img-top" 
+                                     alt="{{ actualite.titre }}"
+                                     style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center"
+                                     style="height: 200px;">
+                                    <i class="fas fa-newspaper fa-3x text-white"></i>
+                                </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ actualite.titre }}</h5>
+                                    <p class="card-text text-muted">
+                                        <small>
+                                            <i class="fas fa-calendar me-1"></i>
+                                            {{ actualite.date_publication.strftime('%d/%m/%Y') if actualite.date_publication else 'N/A' }}
+                                        </small>
+                                    </p>
+                                    <p class="card-text">
+                                        {{ actualite.resume or actualite.contenu[:150] + '...' if actualite.contenu|length > 150 else actualite.contenu }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{{ url_for('principal.detail_actualite', actualite_id=actualite.id) }}" 
+                                           class="btn btn-primary btn-sm">
+                                            Lire la suite
+                                        </a>
+                                        {% if actualite.categorie %}
+                                        <span class="badge bg-secondary">{{ actualite.categorie }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune actualité disponible pour le moment</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if actualites and actualites.pages > 1 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Navigation des actualités">
+                <ul class="pagination justify-content-center">
+                    {% if actualites.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('principal.actualites', page=actualites.prev_num) }}">
+                            <i class="fas fa-chevron-left"></i> Précédent
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in actualites.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != actualites.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('principal.actualites', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if actualites.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('principal.actualites', page=actualites.next_num) }}">
+                            Suivant <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

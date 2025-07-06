@@ -1,0 +1,558 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Gestion des utilisateurs - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Gestion des utilisateurs</h1>
+                <a href="{{ url_for('admin.creer_utilisateur') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Créer un utilisateur
+                </a>
+            </div>
+            
+            <!-- Alert d'information -->
+            <div class="alert alert-info">
+                <h6><i class="fas fa-info-circle"></i> Information importante</h6>
+                <p class="mb-0">
+                    <strong>Gestion des utilisateurs vs Profils académiques :</strong><br>
+                    • <strong>Utilisateurs</strong> : Comptes de connexion avec rôles et permissions<br>
+                    • <strong>Profils académiques</strong> : Informations détaillées (matricule, spécialité, etc.)<br>
+                    • Les utilisateurs avec rôles "enseignant" ou "étudiant" peuvent avoir des profils académiques associés
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Liste des utilisateurs</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Composant de recherche et import/export -->
+                    {% set export_route = 'admin.exporter_utilisateurs' %}
+                    {% set import_route = 'admin.importer_utilisateurs' %}
+                    {% include 'admin/components/search_export.html' %}
+                    
+
+                    {% if utilisateurs %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nom complet</th>
+                                    <th>Email</th>
+                                    <th>Rôle</th>
+                                    <th>Statut</th>
+                                    <th>Profil académique</th>
+                                    <th>Date création</th>
+                                    <th>Dernière connexion</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for utilisateur in utilisateurs.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm me-3">
+                                                {% if utilisateur.photo %}
+                                                <img src="{{ url_for('static', filename=utilisateur.photo) }}" 
+                                                     alt="Photo" class="rounded-circle" width="40">
+                                                {% else %}
+                                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                                     style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <strong>{{ utilisateur.prenom }} {{ utilisateur.nom }}</strong>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ utilisateur.email }}</td>
+                                    <td>
+                                        <span class="badge {% if utilisateur.role == 'admin' %}bg-danger{% elif utilisateur.role == 'enseignant' %}bg-primary{% else %}bg-success{% endif %}">
+                                            {{ utilisateur.role|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if utilisateur.actif %}
+                                        <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if utilisateur.role == 'enseignant' %}
+                                            {% if utilisateur.enseignant %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check"></i> Profil enseignant
+                                                </span>
+                                                <br><small class="text-muted">{{ utilisateur.enseignant.matricule }}</small>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary mt-1" 
+                                                        onclick="modifierProfilEnseignant({{ utilisateur.id }}, '{{ utilisateur.prenom }} {{ utilisateur.nom }}', '{{ utilisateur.enseignant.matricule }}', '{{ utilisateur.enseignant.specialite|default('') }}', '{{ utilisateur.enseignant.grade|default('') }}', '{{ utilisateur.enseignant.date_embauche.strftime('%Y-%m-%d') if utilisateur.enseignant.date_embauche else '' }}', '{{ utilisateur.enseignant.telephone|default('') }}', `{{ utilisateur.enseignant.adresse|default('') }}`)"
+                                                        title="Modifier profil enseignant">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            {% else %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-exclamation-triangle"></i> Pas de profil
+                                                </span>
+                                            {% endif %}
+                                        {% elif utilisateur.role == 'etudiant' %}
+                                            {% if utilisateur.etudiant %}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check"></i> Profil étudiant
+                                                </span>
+                                                <br><small class="text-muted">{{ utilisateur.etudiant.matricule }}</small>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary mt-1" 
+                                                        onclick="modifierProfilEtudiant({{ utilisateur.id }}, '{{ utilisateur.prenom }} {{ utilisateur.nom }}', '{{ utilisateur.etudiant.matricule }}', '{{ utilisateur.etudiant.date_naissance.strftime('%Y-%m-%d') if utilisateur.etudiant.date_naissance else '' }}', '{{ utilisateur.etudiant.sexe }}', '{{ utilisateur.etudiant.telephone|default('') }}', `{{ utilisateur.etudiant.adresse|default('') }}`)"
+                                                        title="Modifier profil étudiant">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            {% else %}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-exclamation-triangle"></i> Pas de profil
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ utilisateur.date_creation.strftime('%d/%m/%Y %H:%M') if utilisateur.date_creation else 'N/A' }}</td>
+                                    <td>{{ utilisateur.derniere_connexion.strftime('%d/%m/%Y %H:%M') if utilisateur.derniere_connexion else 'Jamais' }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('admin.modifier_utilisateur', utilisateur_id=utilisateur.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            
+                                            <!-- Boutons pour créer les profils académiques -->
+                                            {% if utilisateur.role == 'enseignant' and not utilisateur.enseignant %}
+                                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                                        onclick="creerProfilEnseignant({{ utilisateur.id }}, '{{ utilisateur.prenom }} {{ utilisateur.nom }}')" 
+                                                        title="Créer profil enseignant">
+                                                    <i class="fas fa-chalkboard-teacher"></i>
+                                                </button>
+                                            {% endif %}
+                                            
+                                            {% if utilisateur.role == 'etudiant' and not utilisateur.etudiant %}
+                                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                                        onclick="creerProfilEtudiant({{ utilisateur.id }}, '{{ utilisateur.prenom }} {{ utilisateur.nom }}')" 
+                                                        title="Créer profil étudiant">
+                                                    <i class="fas fa-user-graduate"></i>
+                                                </button>
+                                            {% endif %}
+                                            
+                                            {% if utilisateur.id != current_user.id %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="confirmerSuppression({{ utilisateur.id }}, '{{ utilisateur.prenom }} {{ utilisateur.nom }}')" 
+                                                    title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <!-- Pagination -->
+                        {% if utilisateurs.pages > 1 %}
+                        <nav aria-label="Pagination des utilisateurs">
+                            <ul class="pagination justify-content-center">
+                                {% if utilisateurs.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.utilisateurs', page=utilisateurs.prev_num) }}">Précédent</a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page_num in utilisateurs.iter_pages() %}
+                                    {% if page_num %}
+                                        {% if page_num != utilisateurs.page %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="{{ url_for('admin.utilisateurs', page=page_num) }}">{{ page_num }}</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ page_num }}</span>
+                                            </li>
+                                        {% endif %}
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if utilisateurs.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.utilisateurs', page=utilisateurs.next_num) }}">Suivant</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun utilisateur trouvé</p>
+                        <a href="{{ url_for('admin.creer_utilisateur') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Créer le premier utilisateur
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="modalSuppression" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong id="nomUtilisateur"></strong> ?</p>
+                <p class="text-danger"><small>Cette action est irréversible.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="formSuppression" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de création de profil enseignant -->
+<div class="modal fade" id="modalProfilEnseignant" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Créer un profil enseignant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Vous allez créer un profil enseignant pour <strong id="nomEnseignant"></strong>.</p>
+                <p class="text-info"><small>Un compte utilisateur sera automatiquement lié à ce profil.</small></p>
+                
+                <form id="formProfilEnseignant" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="matricule" class="form-label">Matricule *</label>
+                                <input type="text" class="form-control" id="matricule" name="matricule" required>
+                                <small class="form-text text-muted">Ex: ENS001, ENS002</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="specialite" class="form-label">Spécialité</label>
+                                <input type="text" class="form-control" id="specialite" name="specialite">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="grade" class="form-label">Grade</label>
+                                <input type="text" class="form-control" id="grade" name="grade">
+                                <small class="form-text text-muted">Ex: Maître Assistant, Professeur</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date_embauche" class="form-label">Date d'embauche *</label>
+                                <input type="date" class="form-control" id="date_embauche" name="date_embauche" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="telephone" class="form-label">Téléphone</label>
+                        <input type="text" class="form-control" id="telephone" name="telephone">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="adresse" name="adresse" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="soumettreProfilEnseignant()">Créer le profil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de création de profil étudiant -->
+<div class="modal fade" id="modalProfilEtudiant" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Créer un profil étudiant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Vous allez créer un profil étudiant pour <strong id="nomEtudiant"></strong>.</p>
+                <p class="text-info"><small>Un compte utilisateur sera automatiquement lié à ce profil.</small></p>
+                
+                <form id="formProfilEtudiant" method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="matricule_etudiant" class="form-label">Matricule *</label>
+                                <input type="text" class="form-control" id="matricule_etudiant" name="matricule" required>
+                                <small class="form-text text-muted">Ex: 2024-001, 2024-002</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="date_naissance" class="form-label">Date de naissance *</label>
+                                <input type="date" class="form-control" id="date_naissance" name="date_naissance" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sexe" class="form-label">Sexe *</label>
+                                <select class="form-control" id="sexe" name="sexe" required>
+                                    <option value="">Sélectionner</option>
+                                    <option value="M">Masculin</option>
+                                    <option value="F">Féminin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="telephone_etudiant" class="form-label">Téléphone</label>
+                                <input type="text" class="form-control" id="telephone_etudiant" name="telephone">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="adresse_etudiant" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="adresse_etudiant" name="adresse" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-info" onclick="soumettreProfilEtudiant()">Créer le profil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de modification de profil enseignant -->
+<div class="modal fade" id="modalEditProfilEnseignant" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier le profil enseignant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditProfilEnseignant" method="POST">
+                    <input type="hidden" id="edit_utilisateur_id_enseignant" name="utilisateur_id">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_matricule" class="form-label">Matricule *</label>
+                                <input type="text" class="form-control" id="edit_matricule" name="matricule" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_specialite" class="form-label">Spécialité</label>
+                                <input type="text" class="form-control" id="edit_specialite" name="specialite">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_grade" class="form-label">Grade</label>
+                                <input type="text" class="form-control" id="edit_grade" name="grade">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_date_embauche" class="form-label">Date d'embauche *</label>
+                                <input type="date" class="form-control" id="edit_date_embauche" name="date_embauche" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_telephone" class="form-label">Téléphone</label>
+                        <input type="text" class="form-control" id="edit_telephone" name="telephone">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_adresse" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="edit_adresse" name="adresse" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="soumettreEditProfilEnseignant()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de modification de profil étudiant -->
+<div class="modal fade" id="modalEditProfilEtudiant" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier le profil étudiant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditProfilEtudiant" method="POST">
+                    <input type="hidden" id="edit_utilisateur_id_etudiant" name="utilisateur_id">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_matricule_etudiant" class="form-label">Matricule *</label>
+                                <input type="text" class="form-control" id="edit_matricule_etudiant" name="matricule" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_date_naissance" class="form-label">Date de naissance *</label>
+                                <input type="date" class="form-control" id="edit_date_naissance" name="date_naissance" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_sexe" class="form-label">Sexe *</label>
+                                <select class="form-control" id="edit_sexe" name="sexe" required>
+                                    <option value="">Sélectionner</option>
+                                    <option value="M">Masculin</option>
+                                    <option value="F">Féminin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_telephone_etudiant" class="form-label">Téléphone</label>
+                                <input type="text" class="form-control" id="edit_telephone_etudiant" name="telephone">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_adresse_etudiant" class="form-label">Adresse</label>
+                        <textarea class="form-control" id="edit_adresse_etudiant" name="adresse" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-info" onclick="soumettreEditProfilEtudiant()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmerSuppression(utilisateurId, nomUtilisateur) {
+    document.getElementById('nomUtilisateur').textContent = nomUtilisateur;
+    document.getElementById('formSuppression').action = `/admin/utilisateurs/${utilisateurId}/supprimer`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalSuppression'));
+    modal.show();
+}
+
+function creerProfilEnseignant(utilisateurId, nomUtilisateur) {
+    document.getElementById('nomEnseignant').textContent = nomUtilisateur;
+    document.getElementById('formProfilEnseignant').action = `/admin/utilisateurs/${utilisateurId}/creer-profil-enseignant`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalProfilEnseignant'));
+    modal.show();
+}
+
+function creerProfilEtudiant(utilisateurId, nomUtilisateur) {
+    document.getElementById('nomEtudiant').textContent = nomUtilisateur;
+    document.getElementById('formProfilEtudiant').action = `/admin/utilisateurs/${utilisateurId}/creer-profil-etudiant`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalProfilEtudiant'));
+    modal.show();
+}
+
+function soumettreProfilEnseignant() {
+    const form = document.getElementById('formProfilEnseignant');
+    if (form.checkValidity()) {
+        form.submit();
+    } else {
+        form.reportValidity();
+    }
+}
+
+function soumettreProfilEtudiant() {
+    const form = document.getElementById('formProfilEtudiant');
+    if (form.checkValidity()) {
+        form.submit();
+    } else {
+        form.reportValidity();
+    }
+}
+
+function modifierProfilEnseignant(id, nom, matricule, specialite, grade, date_embauche, telephone, adresse) {
+    document.getElementById('edit_utilisateur_id_enseignant').value = id;
+    document.getElementById('edit_matricule').value = matricule;
+    document.getElementById('edit_specialite').value = specialite;
+    document.getElementById('edit_grade').value = grade;
+    document.getElementById('edit_date_embauche').value = date_embauche;
+    document.getElementById('edit_telephone').value = telephone;
+    document.getElementById('edit_adresse').value = adresse;
+    const modal = new bootstrap.Modal(document.getElementById('modalEditProfilEnseignant'));
+    modal.show();
+}
+
+function soumettreEditProfilEnseignant() {
+    document.getElementById('formEditProfilEnseignant').action = '/admin/utilisateurs/' + document.getElementById('edit_utilisateur_id_enseignant').value + '/modifier-profil-enseignant';
+    document.getElementById('formEditProfilEnseignant').submit();
+}
+
+function modifierProfilEtudiant(id, nom, matricule, date_naissance, sexe, telephone, adresse) {
+    document.getElementById('edit_utilisateur_id_etudiant').value = id;
+    document.getElementById('edit_matricule_etudiant').value = matricule;
+    document.getElementById('edit_date_naissance').value = date_naissance;
+    document.getElementById('edit_sexe').value = sexe;
+    document.getElementById('edit_telephone_etudiant').value = telephone;
+    document.getElementById('edit_adresse_etudiant').value = adresse;
+    const modal = new bootstrap.Modal(document.getElementById('modalEditProfilEtudiant'));
+    modal.show();
+}
+
+function soumettreEditProfilEtudiant() {
+    document.getElementById('formEditProfilEtudiant').action = '/admin/utilisateurs/' + document.getElementById('edit_utilisateur_id_etudiant').value + '/modifier-profil-etudiant';
+    document.getElementById('formEditProfilEtudiant').submit();
+}
+</script>
+{% endblock %} 

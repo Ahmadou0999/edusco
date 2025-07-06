@@ -1,180 +1,247 @@
 {% extends "admin/base.html" %}
 
-{% block title %}Créer un étudiant - Administration{% endblock %}
-
-{% block page_title %}Nouvel étudiant{% endblock %}
-
-{% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{{ url_for('admin.etudiants') }}">Étudiants</a></li>
-<li class="breadcrumb-item active">Nouvel étudiant</li>
-{% endblock %}
+{% block title %}Créer un Étudiant{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Informations de l'étudiant</h3>
-            </div>
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
-                    {{ formulaire.hidden_tag() }}
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.matricule.label(class="form-label") }}
-                                {{ formulaire.matricule(class="form-control" + (" is-invalid" if formulaire.matricule.errors else "")) }}
-                                {% if formulaire.matricule.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.matricule.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                <small class="form-text text-muted">Exemple: 2023-001, 2023-002</small>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Créer un Nouvel Étudiant</h1>
+        <a href="{{ url_for('admin.etudiants') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations de l'Étudiant</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ formulaire.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ formulaire.matricule.label(class="form-label") }}
+                                    {{ formulaire.matricule(class="form-control" + (" is-invalid" if formulaire.matricule.errors else "")) }}
+                                    {% if formulaire.matricule.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.matricule.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Exemple: 2024-001, 2024-002</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ formulaire.annee_academique_id.label(class="form-label") }}
+                                    {{ formulaire.annee_academique_id(class="form-control" + (" is-invalid" if formulaire.annee_academique_id.errors else "")) }}
+                                    {% if formulaire.annee_academique_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.annee_academique_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.statut.label(class="form-label") }}
-                                {{ formulaire.statut(class="form-control" + (" is-invalid" if formulaire.statut.errors else "")) }}
-                                {% if formulaire.statut.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.statut.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ formulaire.nom.label(class="form-label") }}
+                                    {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                                    {% if formulaire.nom.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.nom.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ formulaire.prenom.label(class="form-label") }}
+                                    {{ formulaire.prenom(class="form-control" + (" is-invalid" if formulaire.prenom.errors else "")) }}
+                                    {% if formulaire.prenom.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.prenom.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.nom.label(class="form-label") }}
-                                {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
-                                {% if formulaire.nom.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.nom.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ formulaire.date_naissance.label(class="form-label") }}
+                                    {{ formulaire.date_naissance(class="form-control" + (" is-invalid" if formulaire.date_naissance.errors else ""), type="date") }}
+                                    {% if formulaire.date_naissance.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.date_naissance.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ formulaire.sexe.label(class="form-label") }}
+                                    {{ formulaire.sexe(class="form-control" + (" is-invalid" if formulaire.sexe.errors else "")) }}
+                                    {% if formulaire.sexe.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.sexe.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ formulaire.statut.label(class="form-label") }}
+                                    {{ formulaire.statut(class="form-control" + (" is-invalid" if formulaire.statut.errors else "")) }}
+                                    {% if formulaire.statut.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.statut.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.prenom.label(class="form-label") }}
-                                {{ formulaire.prenom(class="form-control" + (" is-invalid" if formulaire.prenom.errors else "")) }}
-                                {% if formulaire.prenom.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.prenom.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ formulaire.email.label(class="form-label") }}
+                                    {{ formulaire.email(class="form-control" + (" is-invalid" if formulaire.email.errors else ""), type="email", autocomplete="email", placeholder="exemple@email.com") }}
+                                    {% if formulaire.email.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Format: nom@domaine.com</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ formulaire.telephone.label(class="form-label") }}
+                                    {{ formulaire.telephone(class="form-control" + (" is-invalid" if formulaire.telephone.errors else ""), type="tel", autocomplete="tel", placeholder="0123456789") }}
+                                    {% if formulaire.telephone.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.telephone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Format: 0123456789 (8-15 chiffres)</small>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.date_naissance.label(class="form-label") }}
-                                {{ formulaire.date_naissance(class="form-control" + (" is-invalid" if formulaire.date_naissance.errors else ""), type="date") }}
-                                {% if formulaire.date_naissance.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.date_naissance.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ formulaire.mot_de_passe.label(class="form-label") }}
+                                    {{ formulaire.mot_de_passe(class="form-control" + (" is-invalid" if formulaire.mot_de_passe.errors else "")) }}
+                                    {% if formulaire.mot_de_passe.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.mot_de_passe.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Minimum 6 caractères. Laissez vide pour utiliser le mot de passe par défaut (etudiant123)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ formulaire.confirmer_mot_de_passe.label(class="form-label") }}
+                                    {{ formulaire.confirmer_mot_de_passe(class="form-control" + (" is-invalid" if formulaire.confirmer_mot_de_passe.errors else "")) }}
+                                    {% if formulaire.confirmer_mot_de_passe.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.confirmer_mot_de_passe.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.sexe.label(class="form-label") }}
-                                {{ formulaire.sexe(class="form-control" + (" is-invalid" if formulaire.sexe.errors else "")) }}
-                                {% if formulaire.sexe.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.sexe.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
+
+                        <div class="form-group">
+                            {{ formulaire.adresse.label(class="form-label") }}
+                            {{ formulaire.adresse(class="form-control", rows="3") }}
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        {{ formulaire.lieu_naissance.label(class="form-label") }}
-                        {{ formulaire.lieu_naissance(class="form-control") }}
-                    </div>
-                    
-                    <div class="form-group">
-                        {{ formulaire.adresse.label(class="form-label") }}
-                        {{ formulaire.adresse(class="form-control", rows="3") }}
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.telephone.label(class="form-label") }}
-                                {{ formulaire.telephone(class="form-control") }}
-                            </div>
+
+                        <div class="form-group">
+                            {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
+                            <a href="{{ url_for('admin.etudiants') }}" class="btn btn-secondary">Annuler</a>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.email.label(class="form-label") }}
-                                {{ formulaire.email(class="form-control" + (" is-invalid" if formulaire.email.errors else "")) }}
-                                {% if formulaire.email.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.email.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        {{ formulaire.photo.label(class="form-label") }}
-                        {{ formulaire.photo(class="form-control-file") }}
-                        <small class="form-text text-muted">Format: JPG, PNG. Taille max: 2MB</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
-                        <a href="{{ url_for('admin.etudiants') }}" class="btn btn-secondary">Annuler</a>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Informations</h3>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    <h5><i class="fas fa-info-circle"></i> Inscription d'un étudiant</h5>
-                    <p>Un étudiant sera automatiquement inscrit à l'année académique active.</p>
-                    <ul class="mb-0">
-                        <li>Le matricule doit être unique</li>
-                        <li>L'email est optionnel mais doit être unique</li>
-                        <li>La photo sera redimensionnée automatiquement</li>
-                        <li>Le statut peut être modifié plus tard</li>
-                    </ul>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations</h6>
                 </div>
-                
-                <div class="alert alert-warning">
-                    <h6><i class="fas fa-exclamation-triangle"></i> Année académique</h6>
-                    <p class="mb-0">Étudiant pour l'année <strong>{{ annee_active.nom }}</strong></p>
+                <div class="card-body">
+                    <div class="text-center">
+                        <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+                        <h5>Créer un Étudiant</h5>
+                        <p class="text-muted">
+                            Remplissez tous les champs obligatoires pour créer un nouvel étudiant.
+                            L'étudiant sera automatiquement inscrit dans l'année académique sélectionnée.
+                        </p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="font-weight-bold">Champs obligatoires :</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Matricule</li>
+                        <li><i class="fas fa-check text-success"></i> Nom</li>
+                        <li><i class="fas fa-check text-success"></i> Prénom</li>
+                        <li><i class="fas fa-check text-success"></i> Date de naissance</li>
+                        <li><i class="fas fa-check text-success"></i> Sexe</li>
+                        <li><i class="fas fa-check text-success"></i> Statut</li>
+                        <li><i class="fas fa-check text-success"></i> Email</li>
+                        <li><i class="fas fa-check text-success"></i> Année académique</li>
+                    </ul>
+                    
+                    <h6 class="font-weight-bold">Champs optionnels :</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-info text-info"></i> Téléphone</li>
+                        <li><i class="fas fa-info text-info"></i> Adresse</li>
+                    </ul>
+                    
+                    <hr>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Compte utilisateur automatique</h6>
+                        <p class="mb-2">Un compte utilisateur sera créé automatiquement pour permettre à l'étudiant de se connecter avec :</p>
+                        <ul class="mb-0 small">
+                            <li><strong>Email :</strong> L'email saisi</li>
+                            <li><strong>Mot de passe :</strong> Celui saisi dans le formulaire</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -188,6 +255,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const dateNaissance = document.getElementById('date_naissance');
     const email = document.getElementById('email');
+    const telephone = document.getElementById('telephone');
     
     // Validation de la date de naissance
     dateNaissance.addEventListener('change', function() {
@@ -206,11 +274,47 @@ document.addEventListener('DOMContentLoaded', function() {
     email.addEventListener('input', function() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (this.value && !emailRegex.test(this.value)) {
-            this.setCustomValidity('Veuillez entrer un email valide');
+            this.setCustomValidity('Veuillez entrer un email valide (exemple: nom@domaine.com)');
         } else {
             this.setCustomValidity('');
         }
     });
+    
+    // Validation du téléphone
+    telephone.addEventListener('input', function() {
+        // Nettoyer le numéro (garder seulement les chiffres)
+        const telClean = this.value.replace(/\D/g, '');
+        
+        if (this.value && (telClean.length < 8 || telClean.length > 15)) {
+            this.setCustomValidity('Le numéro de téléphone doit contenir entre 8 et 15 chiffres');
+        } else {
+            this.setCustomValidity('');
+        }
+        
+        // Formater automatiquement le numéro
+        if (telClean.length > 0) {
+            let formatted = telClean;
+            if (telClean.length >= 4) {
+                formatted = telClean.substring(0, 4) + ' ' + telClean.substring(4);
+            }
+            if (telClean.length >= 8) {
+                formatted = telClean.substring(0, 4) + ' ' + telClean.substring(4, 8) + ' ' + telClean.substring(8);
+            }
+            this.value = formatted;
+        }
+    });
+    
+    // Empêcher l'auto-complétion incorrecte
+    email.setAttribute('autocomplete', 'email');
+    telephone.setAttribute('autocomplete', 'tel');
+    
+    // Vider les champs au chargement pour éviter les valeurs pré-remplies incorrectes
+    if (!email.value) {
+        email.value = '';
+    }
+    if (!telephone.value) {
+        telephone.value = '';
+    }
 });
 </script>
 {% endblock %} 

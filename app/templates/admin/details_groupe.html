@@ -1,0 +1,224 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Détails du groupe - Administration{% endblock %}
+
+{% block page_title %}Détails du groupe{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.groupes') }}">Groupes</a></li>
+<li class="breadcrumb-item active">{{ groupe.code }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-users"></i> 
+                    {{ groupe.nom }} ({{ groupe.code }})
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.modifier_groupe', groupe_id=groupe.id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{{ url_for('admin.gestion_inscriptions_groupe', groupe_id=groupe.id) }}" class="btn btn-success btn-sm">
+                        <i class="fas fa-users"></i> Gérer les inscriptions
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-info-circle"></i> Informations générales</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Code :</strong></td>
+                                <td><span class="badge badge-primary">{{ groupe.code }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nom :</strong></td>
+                                <td>{{ groupe.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>UE :</strong></td>
+                                <td>{{ groupe.unite_enseignement.code }} - {{ groupe.unite_enseignement.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Semestre :</strong></td>
+                                <td>{{ groupe.unite_enseignement.semestre.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Capacité :</strong></td>
+                                <td>{{ groupe.capacite_max }} étudiants</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Étudiants inscrits :</strong></td>
+                                <td>
+                                    <span class="badge badge-{{ 'success' if nombre_etudiants < groupe.capacite_max else 'warning' }}">
+                                        {{ nombre_etudiants }}/{{ groupe.capacite_max }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Taux de remplissage :</strong></td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-{{ 'success' if taux_remplissage < 80 else 'warning' if taux_remplissage < 100 else 'danger' }}" 
+                                             role="progressbar" style="width: {{ taux_remplissage }}%">
+                                            {{ "%.1f"|format(taux_remplissage) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% if groupe.enseignant_responsable %}
+                            <tr>
+                                <td><strong>Responsable :</strong></td>
+                                <td>
+                                    <span class="badge badge-info">{{ groupe.enseignant_responsable.nom_complet }}</span>
+                                    <br><small class="text-muted">{{ groupe.enseignant_responsable.matricule }}</small>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-chart-bar"></i> Statistiques</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Étudiants</span>
+                                        <span class="info-box-number">{{ nombre_etudiants }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-percentage"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Remplissage</span>
+                                        <span class="info-box-number">{{ "%.1f"|format(taux_remplissage) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if moyenne_groupe %}
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning"><i class="fas fa-star"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Moyenne du groupe</span>
+                                <span class="info-box-number">{{ "%.2f"|format(moyenne_groupe) }}/20</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if groupe.description %}
+                <div class="mt-4">
+                    <h5><i class="fas fa-align-left"></i> Description</h5>
+                    <div class="alert alert-light">
+                        {{ groupe.description }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Liste des étudiants inscrits -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user-graduate"></i> 
+                    Étudiants inscrits ({{ nombre_etudiants }})
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if groupe.etudiants %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etudiant in groupe.etudiants %}
+                            <tr>
+                                <td><span class="badge badge-secondary">{{ etudiant.matricule }}</span></td>
+                                <td>{{ etudiant.nom }}</td>
+                                <td>{{ etudiant.prenom }}</td>
+                                <td>{{ etudiant.email or 'Non renseigné' }}</td>
+                                <td>
+                                    <span class="badge badge-{{ 'success' if etudiant.statut == 'actif' else 'warning' if etudiant.statut == 'suspendu' else 'secondary' }}">
+                                        {{ etudiant.statut|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun étudiant inscrit</h5>
+                    <p class="text-muted">Ce groupe ne contient aucun étudiant pour le moment.</p>
+                    <a href="{{ url_for('admin.gestion_inscriptions_groupe', groupe_id=groupe.id) }}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Inscrire des étudiants
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Actions rapides</h3>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.modifier_groupe', groupe_id=groupe.id) }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Modifier le groupe
+                    </a>
+                    <a href="{{ url_for('admin.gestion_inscriptions_groupe', groupe_id=groupe.id) }}" class="btn btn-success">
+                        <i class="fas fa-users"></i> Gérer les inscriptions
+                    </a>
+                    <a href="{{ url_for('admin.groupes') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour aux groupes
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Groupe</h6>
+                    <p class="mb-0">Ce groupe fait partie de l'UE {{ groupe.unite_enseignement.code }} du semestre {{ groupe.unite_enseignement.semestre.nom }}.</p>
+                </div>
+                
+                {% if nombre_etudiants == 0 %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Groupe vide</h6>
+                    <p class="mb-0">Ce groupe ne contient aucun étudiant. Vous pouvez le supprimer s'il n'est plus nécessaire.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

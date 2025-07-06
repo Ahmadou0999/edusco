@@ -1,0 +1,95 @@
+<!-- Composant de recherche et import/export réutilisable -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <!-- Barre de recherche -->
+        <form method="GET" class="d-flex">
+            <div class="input-group">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="Rechercher..." value="{{ search or '' }}">
+                <button class="btn btn-outline-secondary" type="submit">
+                    <i class="fas fa-search"></i>
+                </button>
+                {% if search %}
+                <a href="{{ request.path }}" class="btn btn-outline-danger">
+                    <i class="fas fa-times"></i>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    <div class="col-md-6 text-end">
+        <!-- Boutons d'import/export -->
+        <div class="btn-group">
+            {% if export_route %}
+            <a href="{{ url_for(export_route) }}" class="btn btn-success btn-sm">
+                <i class="fas fa-download me-1"></i>Exporter CSV
+            </a>
+            {% endif %}
+            {% if import_route %}
+            <button type="button" class="btn btn-primary btn-sm" onclick="ouvrirModalImport()">
+                <i class="fas fa-upload me-1"></i>Importer CSV
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'import -->
+{% if import_route %}
+<div class="modal fade" id="modalImport" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Importer des données</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formImport" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Fichier CSV</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                        <div class="form-text">
+                            Format accepté : CSV (.csv)
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="soumettreImport()">
+                    <i class="fas fa-upload me-1"></i>Importer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function ouvrirModalImport() {
+    const modal = new bootstrap.Modal(document.getElementById('modalImport'));
+    modal.show();
+}
+
+function soumettreImport() {
+    const formData = new FormData(document.getElementById('formImport'));
+    
+    fetch('{{ url_for(import_route) }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Import réussi ! ' + data.message);
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'import: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'import');
+    });
+}
+</script>
+{% endif %} 

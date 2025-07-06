@@ -1,72 +1,321 @@
-{% extends "base.html" %}
+{% extends "enseignant/base.html" %}
 
-{% block title %}Mes Notifications{% endblock %}
+{% block title %}Mes notifications - Enseignant{% endblock %}
+
+{% block page_title %}Mes notifications{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Mes notifications</li>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Mes Notifications</h1>
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-bell me-2"></i>Mes notifications
+        </h1>
+        <div>
+            <button class="btn btn-success btn-sm" onclick="marquerToutesLues()">
+                <i class="fas fa-check-double me-1"></i>Tout marquer comme lu
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="supprimerToutes()">
+                <i class="fas fa-trash me-1"></i>Tout supprimer
+            </button>
+        </div>
     </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
+    <!-- Filtres -->
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Notifications</h6>
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtres
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="type_notification" class="form-label">Type</label>
+                    <select class="form-select" id="type_notification" onchange="filtrerNotifications()">
+                        <option value="">Tous les types</option>
+                        <option value="info">Information</option>
+                        <option value="warning">Avertissement</option>
+                        <option value="success">Succès</option>
+                        <option value="error">Erreur</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="statut_notification" class="form-label">Statut</label>
+                    <select class="form-select" id="statut_notification" onchange="filtrerNotifications()">
+                        <option value="">Tous les statuts</option>
+                        <option value="non_lue">Non lue</option>
+                        <option value="lue">Lue</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_debut" class="form-label">Date début</label>
+                    <input type="date" class="form-control" id="date_debut" onchange="filtrerNotifications()">
+                </div>
+                <div class="col-md-3">
+                    <label for="date_fin" class="form-label">Date fin</label>
+                    <input type="date" class="form-control" id="date_fin" onchange="filtrerNotifications()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des notifications -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Liste des notifications
+            </h6>
         </div>
         <div class="card-body">
             {% if notifications %}
-                <div class="list-group">
-                    {% for notification in notifications %}
-                    <div class="list-group-item list-group-item-action {{ 'list-group-item-warning' if not notification.lue else '' }}">
-                        <div class="d-flex w-100 justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <h6 class="mb-1">{{ notification.titre }}</h6>
-                                <p class="mb-1">{{ notification.message }}</p>
-                                <small class="text-muted">
-                                    <i class="fas fa-clock"></i> {{ notification.date_creation.strftime('%d/%m/%Y à %H:%M') }}
-                                </small>
-                            </div>
-                            <div class="ms-3">
+            <div id="notificationsList">
+                {% for notification in notifications %}
+                <div class="notification-item mb-3 p-3 border rounded {{ 'border-primary' if not notification.lue else 'border-light' }} {{ 'bg-light' if not notification.lue else '' }}" 
+                     data-id="{{ notification.id }}" data-type="{{ notification.type }}" data-date="{{ notification.date_creation.strftime('%Y-%m-%d') }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-{{ 'primary' if notification.type == 'info' else 'warning' if notification.type == 'warning' else 'success' if notification.type == 'success' else 'danger' }} me-2">
+                                    {{ notification.type|title }}
+                                </span>
                                 {% if not notification.lue %}
-                                    <span class="badge bg-warning me-2">Nouvelle</span>
+                                <span class="badge bg-danger">Nouveau</span>
                                 {% endif %}
-                                <div class="btn-group" role="group">
+                            </div>
+                            <h6 class="mb-1">{{ notification.titre }}</h6>
+                            <p class="text-muted mb-2">{{ notification.message }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ notification.date_creation.strftime('%d/%m/%Y à %H:%M') }}
+                                </small>
+                                <div class="btn-group btn-group-sm">
                                     {% if not notification.lue %}
-                                        <a href="{{ url_for('enseignant.marquer_notification_lue', notification_id=notification.id) }}" 
-                                           class="btn btn-sm btn-outline-success" 
-                                           title="Marquer comme lue">
-                                            <i class="fas fa-check"></i>
-                                        </a>
+                                    <button type="button" class="btn btn-outline-success" 
+                                            onclick="marquerLue({{ notification.id }})" title="Marquer comme lu">
+                                        <i class="fas fa-check"></i>
+                                    </button>
                                     {% endif %}
-                                    <a href="{{ url_for('enseignant.supprimer_notification', notification_id=notification.id) }}" 
-                                       class="btn btn-sm btn-outline-danger" 
-                                       title="Supprimer"
-                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette notification ?')">
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            onclick="supprimerNotification({{ notification.id }})" title="Supprimer">
                                         <i class="fas fa-trash"></i>
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if notifications.pages > 1 %}
+            <nav aria-label="Pagination des notifications">
+                <ul class="pagination justify-content-center">
+                    {% if notifications.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enseignant.notifications', page=notifications.prev_num) }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in notifications.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != notifications.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('enseignant.notifications', page=page_num) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
                     {% endfor %}
-                </div>
+                    
+                    {% if notifications.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('enseignant.notifications', page=notifications.next_num) }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
             {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-bell fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Aucune notification pour le moment</p>
-                </div>
+            <div class="text-center py-5">
+                <i class="fas fa-bell-slash fa-3x text-gray-300 mb-3"></i>
+                <h5 class="text-muted">Aucune notification</h5>
+                <p class="text-muted">Vous n'avez aucune notification pour le moment</p>
+            </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+function marquerLue(notificationId) {
+    fetch(`/enseignant/notifications/${notificationId}/marquer-lue`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
+                notificationItem.classList.remove('border-primary', 'bg-light');
+                notificationItem.classList.add('border-light');
+                
+                // Supprimer le badge "Nouveau"
+                const nouveauBadge = notificationItem.querySelector('.badge.bg-danger');
+                if (nouveauBadge) {
+                    nouveauBadge.remove();
+                }
+                
+                // Remplacer le bouton "Marquer comme lu"
+                const btnGroup = notificationItem.querySelector('.btn-group');
+                const marquerBtn = btnGroup.querySelector('.btn-outline-success');
+                if (marquerBtn) {
+                    marquerBtn.remove();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors du marquage');
+        });
+}
+
+function supprimerNotification(notificationId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette notification ?')) {
+        fetch(`/enseignant/notifications/${notificationId}/supprimer`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
+                    notificationItem.remove();
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la suppression');
+            });
+    }
+}
+
+function marquerToutesLues() {
+    if (confirm('Marquer toutes les notifications comme lues ?')) {
+        fetch('/enseignant/notifications/marquer-toutes-lues', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors du marquage');
+            });
+    }
+}
+
+function supprimerToutes() {
+    if (confirm('Êtes-vous sûr de vouloir supprimer toutes les notifications ?')) {
+        fetch('/enseignant/notifications/supprimer-toutes', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la suppression');
+            });
+    }
+}
+
+function filtrerNotifications() {
+    const type = document.getElementById('type_notification').value;
+    const statut = document.getElementById('statut_notification').value;
+    const dateDebut = document.getElementById('date_debut').value;
+    const dateFin = document.getElementById('date_fin').value;
+    
+    const notifications = document.querySelectorAll('.notification-item');
+    
+    notifications.forEach(notification => {
+        let visible = true;
+        
+        // Filtre par type
+        if (type && notification.dataset.type !== type) {
+            visible = false;
+        }
+        
+        // Filtre par statut
+        if (statut) {
+            const isLue = !notification.classList.contains('border-primary');
+            if (statut === 'non_lue' && isLue) {
+                visible = false;
+            } else if (statut === 'lue' && !isLue) {
+                visible = false;
+            }
+        }
+        
+        // Filtre par date
+        if (dateDebut || dateFin) {
+            const notificationDate = notification.dataset.date;
+            if (dateDebut && notificationDate < dateDebut) {
+                visible = false;
+            }
+            if (dateFin && notificationDate > dateFin) {
+                visible = false;
+            }
+        }
+        
+        notification.style.display = visible ? 'block' : 'none';
+    });
+}
+
+// Actualiser les notifications toutes les 30 secondes
+setInterval(function() {
+    // Optionnel : recharger les notifications non lues
+    // fetch('/enseignant/notifications/nouvelles')
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         if (data.nouvelles > 0) {
+    //             // Mettre à jour le compteur ou recharger
+    //         }
+    //     });
+}, 30000);
+</script>
+
+<style>
+.notification-item {
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.notification-item.border-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.notification-item.bg-light {
+    background-color: #f8f9fc !important;
+}
+</style>
 {% endblock %} 

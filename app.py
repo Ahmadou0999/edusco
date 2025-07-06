@@ -3,7 +3,9 @@ Point d'entrée principal de l'application Edusco
 Lancement de l'application Flask
 """
 
-from app import app
+from app import creer_application
+
+app = creer_application()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000) 

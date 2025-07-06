@@ -50,7 +50,7 @@ def enregistrer_blueprints(app):
     """
     
     # Blueprint d'authentification
-    from app.blueprints.authentification import bp as auth_bp
+    from app.blueprints.authentification.routes import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/authentification')
     
     # Blueprint d'administration
@@ -61,9 +61,17 @@ def enregistrer_blueprints(app):
     from app.blueprints.enseignant import bp as enseignant_bp
     app.register_blueprint(enseignant_bp, url_prefix='/enseignant')
     
+    # Blueprint étudiant
+    from app.blueprints.etudiant import bp as etudiant_bp
+    app.register_blueprint(etudiant_bp, url_prefix='/etudiant')
+    
     # Blueprint principal (routes publiques)
     from app.blueprints.principal import bp as principal_bp
     app.register_blueprint(principal_bp)
+    
+    # Blueprint notifications
+    from app.blueprints.notifications import bp as notifications_bp
+    app.register_blueprint(notifications_bp, url_prefix='/notifications')
 
 # Création de l'application par défaut
 app = creer_application() 

@@ -31,6 +31,72 @@ class ServiceNotification:
         return notif
 
     @staticmethod
+    def creer_notification_avancee(titre, contenu, type_notification, destinataires, expediteur_id, envoyer_email=False):
+        """Créer des notifications avancées avec différents types de destinataires"""
+        try:
+            if destinataires == 'tous':
+                # Tous les utilisateurs
+                utilisateurs = Utilisateur.query.all()
+                for utilisateur in utilisateurs:
+                    ServiceNotification.creer_notification(
+                        utilisateur_id=utilisateur.id,
+                        titre=titre,
+                        message=contenu,
+                        envoyer_email=envoyer_email,
+                        commit=False
+                    )
+            
+            elif destinataires == 'etudiants':
+                # Tous les étudiants
+                etudiants = Etudiant.query.all()
+                for etudiant in etudiants:
+                    if hasattr(etudiant, 'utilisateur') and etudiant.utilisateur:
+                        ServiceNotification.creer_notification(
+                            utilisateur_id=etudiant.utilisateur.id,
+                            titre=titre,
+                            message=contenu,
+                            envoyer_email=envoyer_email,
+                            commit=False
+                        )
+            
+            elif destinataires == 'enseignants':
+                # Tous les enseignants
+                from app.models.academique import Enseignant
+                enseignants = Enseignant.query.all()
+                for enseignant in enseignants:
+                    if hasattr(enseignant, 'utilisateur') and enseignant.utilisateur:
+                        ServiceNotification.creer_notification(
+                            utilisateur_id=enseignant.utilisateur.id,
+                            titre=titre,
+                            message=contenu,
+                            envoyer_email=envoyer_email,
+                            commit=False
+                        )
+            
+            elif destinataires == 'admin':
+                # Administrateurs uniquement
+                admins = Utilisateur.query.filter_by(role='admin').all()
+                for admin in admins:
+                    ServiceNotification.creer_notification(
+                        utilisateur_id=admin.id,
+                        titre=titre,
+                        message=contenu,
+                        envoyer_email=envoyer_email,
+                        commit=False
+                    )
+            
+            elif destinataires == 'groupe':
+                # Groupe spécifique (sera géré par la route)
+                return False
+            
+            db.session.commit()
+            return True
+            
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+    @staticmethod
     def creer_notification_groupe(groupe_id, titre, message, envoyer_email=False):
         """Créer des notifications pour tous les étudiants d'un groupe"""
         groupe = Groupe.query.get(groupe_id)
@@ -87,6 +153,11 @@ class ServiceNotification:
         return False
 
     @staticmethod
+    def marquer_comme_lue(notification_id):
+        """Marquer une notification comme lue (version admin)"""
+        return ServiceNotification.marquer_lue(notification_id)
+
+    @staticmethod
     def supprimer_notification(notification_id, utilisateur_id=None):
         """Supprimer une notification"""
         notif = Notification.query.get(notification_id)
@@ -101,17 +172,22 @@ class ServiceNotification:
         return False
 
     @staticmethod
-    def get_user_notifications(utilisateur_id, limite=None):
+    def get_user_notifications(utilisateur_id, limit=None):
         """Récupérer les notifications d'un utilisateur"""
         query = Notification.query.filter_by(utilisateur_id=utilisateur_id).order_by(Notification.date_creation.desc())
-        if limite:
-            query = query.limit(limite)
+        if limit:
+            query = query.limit(limit)
         return query.all()
 
     @staticmethod
     def get_all_notifications():
         """Récupérer toutes les notifications (pour admin)"""
         return Notification.query.order_by(Notification.date_creation.desc()).all()
+
+    @staticmethod
+    def get_notification_by_id(notification_id):
+        """Récupérer une notification par son ID"""
+        return Notification.query.get(notification_id)
 
     @staticmethod
     def get_unread_notifications():

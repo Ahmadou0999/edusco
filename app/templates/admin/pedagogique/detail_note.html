@@ -1,0 +1,209 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Détails de la Note - Administration{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-star me-2"></i>Détails de la Note
+        </h1>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.validation_notes') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Retour
+            </a>
+            {% if not note.validee %}
+            <button onclick="validerNote({{ note.id }})" class="btn btn-success btn-sm">
+                <i class="fas fa-check me-1"></i>Valider
+            </button>
+            {% else %}
+            <button onclick="invaliderNote({{ note.id }})" class="btn btn-warning btn-sm">
+                <i class="fas fa-undo me-1"></i>Invalider
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informations de la note -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle me-2"></i>Informations de la Note
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Étudiant:</strong></td>
+                                    <td>{{ note.etudiant.nom }} {{ note.etudiant.prenom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Matricule:</strong></td>
+                                    <td>{{ note.etudiant.matricule }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Matière:</strong></td>
+                                    <td>{{ note.matiere.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Groupe:</strong></td>
+                                    <td>{{ note.groupe.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Note:</strong></td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if note.note >= 10 else 'danger' }} fs-5">
+                                            {{ note.note }}/20
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Type d'évaluation:</strong></td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ note.type_evaluation|title }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Coefficient:</strong></td>
+                                    <td>{{ note.coefficient }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Enseignant:</strong></td>
+                                    <td>{{ note.enseignant.nom if note.enseignant else 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date d'évaluation:</strong></td>
+                                    <td>{{ note.date_evaluation.strftime('%d/%m/%Y') if note.date_evaluation else 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date de saisie:</strong></td>
+                                    <td>{{ note.date_saisie.strftime('%d/%m/%Y %H:%M') if note.date_saisie else 'N/A' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if note.commentaire %}
+                    <div class="mt-3">
+                        <h6><strong>Commentaire:</strong></h6>
+                        <p class="text-muted">{{ note.commentaire }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Statut et validation -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-check-circle me-2"></i>Statut de Validation
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if note.validee %}
+                        <div class="text-center">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">Note Validée</h5>
+                            <p class="text-muted">
+                                <strong>Validée le:</strong> {{ note.date_validation.strftime('%d/%m/%Y %H:%M') if note.date_validation else 'N/A' }}<br>
+                                <strong>Par:</strong> {{ note.validateur.nom if note.validateur else 'N/A' }}
+                            </p>
+                            {% if note.commentaire_validation %}
+                            <div class="mt-3">
+                                <h6><strong>Commentaire de validation:</strong></h6>
+                                <p class="text-muted small">{{ note.commentaire_validation }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                            <h5 class="text-warning">En attente de validation</h5>
+                            <p class="text-muted">Cette note n'a pas encore été validée par un administrateur.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tools me-2"></i>Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if not note.validee %}
+                        <button onclick="validerNote({{ note.id }})" class="btn btn-success">
+                            <i class="fas fa-check me-1"></i>Valider la note
+                        </button>
+                        {% else %}
+                        <button onclick="invaliderNote({{ note.id }})" class="btn btn-warning">
+                            <i class="fas fa-undo me-1"></i>Invalider la note
+                        </button>
+                        {% endif %}
+                        <a href="{{ url_for('admin.validation_notes') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Retour à la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de validation -->
+<div class="modal fade" id="validationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Valider la note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="validationForm" method="POST">
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir valider cette note ?</p>
+                    <div class="mb-3">
+                        <label for="commentaire_validation" class="form-label">Commentaire (optionnel)</label>
+                        <textarea class="form-control" id="commentaire_validation" name="commentaire" rows="3" placeholder="Commentaire de validation..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Valider</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function validerNote(noteId) {
+    document.getElementById('validationForm').action = `/admin/pedagogique/valider-note/${noteId}`;
+    const modal = new bootstrap.Modal(document.getElementById('validationModal'));
+    modal.show();
+}
+
+function invaliderNote(noteId) {
+    if (confirm('Êtes-vous sûr de vouloir invalider cette note ?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/pedagogique/invalider-note/${noteId}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %} 

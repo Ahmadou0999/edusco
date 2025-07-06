@@ -1,92 +1,56 @@
-# Edusco - Plateforme de Gestion d'Institut Supérieur
+# 🎓 Edusco - Plateforme de Gestion Académique
 
-Edusco est une application web Flask moderne pour la gestion complète d'un institut supérieur. Elle permet de gérer les années académiques, semestres, unités d'enseignement, matières, étudiants, enseignants, groupes et bien plus encore.
+Une plateforme moderne de gestion académique pour les instituts d'enseignement supérieur, développée avec Flask et MySQL.
 
 ## 🚀 Fonctionnalités
 
-### Gestion Académique
-- **Années académiques** : Création et gestion des années d'études
-- **Semestres** : Organisation des périodes d'enseignement
-- **Unités d'enseignement** : Gestion des UEs avec crédits et coefficients
-- **Matières** : Cours individuels avec volume horaire et enseignants
-- **Groupes** : Organisation des étudiants par UE
-
-### Gestion des Personnes
-- **Étudiants** : Inscription, gestion des profils et statuts
-- **Enseignants** : Gestion du personnel enseignant avec spécialités
-- **Utilisateurs** : Système d'authentification et rôles
-
-### Fonctionnalités Pédagogiques
-- **Inscriptions** : Attribution des étudiants aux groupes
-- **Notes** : Système de notation (préparé)
-- **Absences** : Suivi des présences (préparé)
-- **Emplois du temps** : Planning des cours (préparé)
-- **Délibérations** : Processus d'évaluation (préparé)
+- **Gestion des étudiants** : Inscription, suivi académique, bulletins
+- **Gestion des enseignants** : Attribution des matières, saisie de notes
+- **Gestion pédagogique** : Unités d'enseignement, groupes, emplois du temps
+- **Validation des notes** : Système de validation par les administrateurs
+- **Rapports et statistiques** : Analyses détaillées des performances
+- **Interface moderne** : Design responsive avec AdminLTE
 
 ## 🛠️ Technologies Utilisées
 
-- **Backend** : Flask 2.3.3
-- **Base de données** : MySQL avec SQLAlchemy
-- **Authentification** : Flask-Login
-- **Formulaires** : Flask-WTF avec WTForms
-- **Interface** : Bootstrap 4 + AdminLTE
-- **Migration** : Flask-Migrate avec Alembic
-- **Sécurité** : Flask-Bcrypt pour le hachage des mots de passe
+- **Backend** : Flask (Python)
+- **Base de données** : MySQL
+- **Frontend** : HTML5, CSS3, JavaScript, Bootstrap 5, AdminLTE
+- **Authentification** : Flask-Login, Flask-Bcrypt
+- **ORM** : SQLAlchemy
+- **Migration** : Alembic
 
 ## 📋 Prérequis
 
 - Python 3.8+
-- MySQL 5.7+ ou MariaDB 10.2+
-- pip (gestionnaire de paquets Python)
+- MySQL 8.0+
+- Git
+- WSL2 (Windows) ou Linux/Mac
 
-## 🚀 Installation
+## 🔧 Installation
 
-### 1. Cloner le repository
+### 1. Cloner le projet
 ```bash
-git clone <url-du-repository>
+git clone <URL_DU_REPO>
 cd edusco
 ```
 
-### 2. Créer un environnement virtuel
+### 2. Créer l'environnement virtuel
 ```bash
 python -m venv edusco_env
+source edusco_env/bin/activate  # Linux/Mac
+# ou
+edusco_env\Scripts\activate     # Windows
 ```
 
-### 3. Activer l'environnement virtuel
-
-**Windows :**
-```bash
-edusco_env\Scripts\activate
-```
-
-**Linux/Mac :**
-```bash
-source edusco_env/bin/activate
-```
-
-### 4. Installer les dépendances
+### 3. Installer les dépendances
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Configuration de l'environnement
+### 4. Configuration de la base de données
 
-Créer un fichier `.env` à la racine du projet :
-```env
-FLASK_APP=app.py
-FLASK_ENV=development
-SECRET_KEY=votre_cle_secrete_tres_longue_et_complexe
-DATABASE_URL=mysql://utilisateur:mot_de_passe@localhost/edusco_db
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME=votre_email@gmail.com
-MAIL_PASSWORD=votre_mot_de_passe_app
-```
-
-### 6. Configuration de la base de données
-
-Créer une base de données MySQL :
+#### Créer la base de données MySQL
 ```sql
 CREATE DATABASE edusco_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'edusco_user'@'localhost' IDENTIFIED BY 'votre_mot_de_passe';
@@ -94,178 +58,167 @@ GRANT ALL PRIVILEGES ON edusco_db.* TO 'edusco_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-### 7. Initialiser la base de données
+#### Configurer les variables d'environnement
+Créer un fichier `.env` à la racine du projet :
+```env
+# Configuration de la base de données
+DATABASE_URL=mysql+pymysql://edusco_user:votre_mot_de_passe@localhost/edusco_db
+
+# Configuration Flask
+SECRET_KEY=votre_cle_secrete_tres_longue_et_complexe
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# Configuration email (optionnel)
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USERNAME=votre_email@gmail.com
+MAIL_PASSWORD=votre_mot_de_passe_app
+```
+
+### 5. Initialiser la base de données
 ```bash
+# Créer les tables
+flask db upgrade
+
+# Initialiser les données de base
 python scripts/initialiser_db.py
 ```
 
-### 8. Lancer l'application
+### 6. Créer les comptes utilisateurs
 ```bash
+python scripts/creer_comptes_utilisateurs.py
+```
+
+## 🏃‍♂️ Lancement de l'application
+
+```bash
+# Activer l'environnement virtuel
+source edusco_env/bin/activate  # Linux/Mac
+# ou
+edusco_env\Scripts\activate     # Windows
+
+# Lancer l'application
 python app.py
 ```
 
-L'application sera accessible à l'adresse : http://localhost:5000
+L'application sera accessible sur : http://127.0.0.1:5001
 
-## 👤 Identifiants par défaut
+## 👥 Comptes de Test
 
+### Administrateur
 - **Email** : admin@edusco.com
 - **Mot de passe** : admin123
 
-⚠️ **Important** : Changez ces identifiants après la première connexion !
+### Enseignant
+- **Email** : ousmane.ba@edusco.com
+- **Mot de passe** : enseignant123
+
+### Étudiant
+- **Email** : etudiant@edusco.com
+- **Mot de passe** : etudiant123
 
 ## 📁 Structure du Projet
 
 ```
 edusco/
-├── app/                          # Application principale
-│   ├── __init__.py              # Configuration Flask
-│   ├── config.py                # Configuration de l'app
-│   ├── extensions.py            # Extensions Flask
-│   ├── blueprints/              # Modules de l'application
-│   │   ├── admin/              # Interface d'administration
-│   │   ├── authentification/   # Gestion des connexions
-│   │   ├── enseignant/         # Interface enseignants
-│   │   └── principal/          # Interface publique
-│   ├── models/                 # Modèles de données
-│   │   ├── academique.py       # Modèles académiques
-│   │   ├── pedagogique.py      # Modèles pédagogiques
-│   │   └── utilisateur.py      # Modèles utilisateurs
-│   ├── services/               # Logique métier
-│   │   ├── academique.py       # Services académiques
-│   │   └── authentification.py # Services d'auth
-│   ├── forms/                  # Formulaires WTForms
-│   ├── templates/              # Templates Jinja2
-│   ├── static/                 # Fichiers statiques
-│   └── utils/                  # Utilitaires
-├── scripts/                    # Scripts utilitaires
-├── tests/                      # Tests unitaires
-├── requirements.txt            # Dépendances Python
-├── app.py                      # Point d'entrée
-└── README.md                   # Documentation
+├── app/
+│   ├── blueprints/          # Modules de l'application
+│   ├── models/             # Modèles de données
+│   ├── services/           # Logique métier
+│   ├── templates/          # Templates HTML
+│   ├── static/             # Fichiers statiques
+│   └── forms/              # Formulaires
+├── migrations/             # Migrations de base de données
+├── scripts/                # Scripts utilitaires
+├── tests/                  # Tests unitaires
+├── requirements.txt        # Dépendances Python
+├── app.py                  # Point d'entrée
+└── README.md              # Ce fichier
 ```
 
-## 🔧 Configuration
+## 🔄 Migrations de Base de Données
 
-### Variables d'environnement
+```bash
+# Créer une nouvelle migration
+flask db migrate -m "Description de la migration"
 
-| Variable | Description | Exemple |
-|----------|-------------|---------|
-| `FLASK_APP` | Application Flask | `app.py` |
-| `FLASK_ENV` | Environnement | `development` ou `production` |
-| `SECRET_KEY` | Clé secrète Flask | Chaîne aléatoire longue |
-| `DATABASE_URL` | URL de la base de données | `mysql://user:pass@localhost/db` |
-| `MAIL_SERVER` | Serveur SMTP | `smtp.gmail.com` |
-| `MAIL_PORT` | Port SMTP | `587` |
-| `MAIL_USE_TLS` | Utiliser TLS | `True` |
-| `MAIL_USERNAME` | Email SMTP | `user@gmail.com` |
-| `MAIL_PASSWORD` | Mot de passe SMTP | `app_password` |
+# Appliquer les migrations
+flask db upgrade
 
-### Configuration de la base de données
-
-L'application utilise MySQL avec les paramètres suivants :
-- **Encodage** : UTF-8
-- **Collation** : utf8mb4_unicode_ci
-- **Moteur** : InnoDB
-
-## 🎯 Utilisation
-
-### Interface d'Administration
-
-1. **Connexion** : Utilisez les identifiants par défaut
-2. **Années académiques** : Créez et gérez les années d'études
-3. **Semestres** : Organisez les périodes d'enseignement
-4. **Unités d'enseignement** : Définissez les UEs avec crédits
-5. **Matières** : Créez les cours et assignez les enseignants
-6. **Étudiants** : Inscrivez et gérez les étudiants
-7. **Enseignants** : Gérez le personnel enseignant
-8. **Groupes** : Organisez les étudiants par UE
-
-### Workflow Typique
-
-1. Créer une année académique
-2. Créer les semestres
-3. Créer les unités d'enseignement
-4. Créer les matières et assigner les enseignants
-5. Créer les groupes
-6. Inscrire les étudiants
-7. Assigner les étudiants aux groupes
-
-## 🔒 Sécurité
-
-- **Authentification** : Système de connexion sécurisé
-- **Autorisation** : Gestion des rôles et permissions
-- **Validation** : Validation côté serveur et client
-- **Hachage** : Mots de passe hachés avec Bcrypt
-- **CSRF** : Protection CSRF sur tous les formulaires
+# Revenir en arrière
+flask db downgrade
+```
 
 ## 🧪 Tests
 
-Pour exécuter les tests :
 ```bash
+# Lancer les tests
 python -m pytest tests/
+
+# Avec couverture
+python -m pytest --cov=app tests/
 ```
 
-## 📊 Base de Données
+## 📊 Fonctionnalités Principales
 
-### Tables Principales
+### Pour les Administrateurs
+- Gestion des années académiques et semestres
+- Gestion des étudiants et enseignants
+- Validation des notes
+- Génération de rapports
+- Configuration du système
 
-- **annees_academiques** : Années d'études
-- **semestres** : Périodes d'enseignement
-- **unites_enseignement** : UEs avec crédits
-- **matieres** : Cours individuels
-- **etudiants** : Données des étudiants
-- **enseignants** : Données des enseignants
-- **groupes** : Groupes d'étudiants
-- **inscriptions_groupes** : Inscriptions étudiants-groupes
-- **utilisateurs** : Comptes utilisateurs
+### Pour les Enseignants
+- Saisie et validation des notes
+- Gestion des absences
+- Consultation des emplois du temps
+- Génération de rapports pédagogiques
 
-## 🚀 Déploiement
+### Pour les Étudiants
+- Consultation des notes et bulletins
+- Emploi du temps personnel
+- Historique des absences
 
-### Production
+## 🐛 Dépannage
 
-1. **Serveur** : Utilisez un serveur WSGI comme Gunicorn
-2. **Base de données** : MySQL en production
-3. **Proxy** : Nginx comme proxy inverse
-4. **SSL** : Certificat SSL pour HTTPS
-5. **Backup** : Sauvegardes régulières de la base de données
+### Problème de connexion à la base de données
+1. Vérifier que MySQL est démarré
+2. Vérifier les paramètres de connexion dans `.env`
+3. Tester la connexion : `mysql -u edusco_user -p edusco_db`
 
-### Exemple avec Gunicorn
+### Problème de dépendances
 ```bash
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:8000 app:app
+pip install --upgrade pip
+pip install -r requirements.txt --force-reinstall
+```
+
+### Problème de migrations
+```bash
+flask db stamp head
+flask db migrate
+flask db upgrade
 ```
 
 ## 🤝 Contribution
 
 1. Fork le projet
-2. Créez une branche pour votre fonctionnalité
-3. Committez vos changements
-4. Poussez vers la branche
-5. Ouvrez une Pull Request
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
 
 ## 📝 Licence
 
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
-## 🆘 Support
+## 📞 Support
 
 Pour toute question ou problème :
-- Ouvrez une issue sur GitHub
-- Consultez la documentation
-- Contactez l'équipe de développement
-
-## 🔄 Mises à jour
-
-### Migration de base de données
-```bash
-flask db upgrade
-```
-
-### Mise à jour des dépendances
-```bash
-pip install -r requirements.txt --upgrade
-```
+- Créer une issue sur GitHub
+- Contacter l'équipe de développement
 
 ---
 
-**Edusco** - Une solution complète pour la gestion d'institut supérieur 🎓 
+**Développé avec ❤️ pour l'éducation** 

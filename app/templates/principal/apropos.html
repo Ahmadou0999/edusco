@@ -1,49 +1,351 @@
 {% extends "base.html" %}
 
 {% block title %}À propos - Edusco{% endblock %}
-{% block page_title %}À propos{% endblock %}
-{% block breadcrumb %}À propos{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    À propos d'Edusco
-                </h3>
-            </div>
-            <div class="card-body">
-                <h4>Plateforme de Gestion d'Institut Supérieur</h4>
-                
-                <p>Edusco est une solution web moderne et complète développée pour répondre aux besoins spécifiques de la gestion administrative et pédagogique des instituts supérieurs.</p>
-                
-                <h5>Technologies utilisées :</h5>
-                <ul>
-                    <li><strong>Backend :</strong> Flask (Python)</li>
-                    <li><strong>Base de données :</strong> MySQL / SQLite</li>
-                    <li><strong>Frontend :</strong> HTML5, CSS3, JavaScript</li>
-                    <li><strong>Interface :</strong> AdminLTE 3</li>
-                    <li><strong>Authentification :</strong> Flask-Login</li>
-                </ul>
-                
-                <h5>Fonctionnalités :</h5>
-                <ul>
-                    <li>Gestion complète des étudiants et enseignants</li>
-                    <li>Administration des unités d'enseignement</li>
-                    <li>Saisie de notes avec interface AJAX</li>
-                    <li>Gestion des absences et justifications</li>
-                    <li>Emplois du temps dynamiques</li>
-                    <li>Délibérations et validation d'année</li>
-                    <li>Tableaux de bord personnalisés</li>
-                    <li>Interface responsive et moderne</li>
-                </ul>
-                
-                <h5>Contact :</h5>
-                <p>Pour toute question ou support technique, contactez-nous à : <strong>admin@edusco.com</strong></p>
+<div class="container-fluid">
+    <!-- Hero Section -->
+    <section class="hero-section bg-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-4">À propos d'Edusco</h1>
+                    <p class="lead mb-4">
+                        Découvrez notre mission, notre vision et notre engagement pour l'excellence académique
+                    </p>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <i class="fas fa-graduation-cap fa-5x text-warning"></i>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Mission et Vision -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow h-100">
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-bullseye fa-3x text-primary mb-3"></i>
+                                <h3 class="fw-bold">Notre Mission</h3>
+                            </div>
+                            <p class="text-muted">
+                                Notre mission est de fournir une plateforme moderne et intuitive pour la gestion 
+                                académique des instituts d'enseignement supérieur. Nous nous engageons à :
+                            </p>
+                            <ul class="text-muted">
+                                <li>Simplifier la gestion administrative et pédagogique</li>
+                                <li>Améliorer la communication entre tous les acteurs</li>
+                                <li>Faciliter le suivi des étudiants et des enseignants</li>
+                                <li>Optimiser les processus académiques</li>
+                                <li>Contribuer à l'excellence éducative</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow h-100">
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-eye fa-3x text-success mb-3"></i>
+                                <h3 class="fw-bold">Notre Vision</h3>
+                            </div>
+                            <p class="text-muted">
+                                Nous aspirons à devenir la référence en matière de solutions de gestion académique, 
+                                en offrant des outils innovants qui transforment l'expérience éducative :
+                            </p>
+                            <ul class="text-muted">
+                                <li>Une plateforme accessible et intuitive</li>
+                                <li>Des fonctionnalités adaptées aux besoins réels</li>
+                                <li>Une technologie moderne et évolutive</li>
+                                <li>Un support technique réactif et professionnel</li>
+                                <li>Une communauté d'utilisateurs satisfaits</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Valeurs -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="display-5 fw-bold mb-3">Nos Valeurs</h2>
+                    <p class="lead text-muted">
+                        Les principes qui guident notre action au quotidien
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="text-center">
+                        <div class="value-icon bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-shield-alt fa-2x"></i>
+                        </div>
+                        <h5 class="fw-bold">Sécurité</h5>
+                        <p class="text-muted">
+                            Protection des données et confidentialité garanties
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="text-center">
+                        <div class="value-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-cogs fa-2x"></i>
+                        </div>
+                        <h5 class="fw-bold">Innovation</h5>
+                        <p class="text-muted">
+                            Technologies modernes et solutions créatives
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="text-center">
+                        <div class="value-icon bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <h5 class="fw-bold">Collaboration</h5>
+                        <p class="text-muted">
+                            Travail d'équipe et partenariats solides
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="text-center">
+                        <div class="value-icon bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-star fa-2x"></i>
+                        </div>
+                        <h5 class="fw-bold">Excellence</h5>
+                        <p class="text-muted">
+                            Qualité et performance dans tous nos services
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Équipe -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="display-5 fw-bold mb-3">Notre Équipe</h2>
+                    <p class="lead text-muted">
+                        Des experts passionnés par l'éducation et la technologie
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="card border-0 shadow text-center h-100">
+                        <div class="card-body p-4">
+                            <div class="team-avatar bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                                <i class="fas fa-user fa-3x"></i>
+                            </div>
+                            <h5 class="fw-bold">Directeur Technique</h5>
+                            <p class="text-muted">Expert en développement et architecture logicielle</p>
+                            <div class="social-links">
+                                <a href="#" class="text-muted me-2"><i class="fab fa-linkedin"></i></a>
+                                <a href="#" class="text-muted"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="card border-0 shadow text-center h-100">
+                        <div class="card-body p-4">
+                            <div class="team-avatar bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                                <i class="fas fa-user fa-3x"></i>
+                            </div>
+                            <h5 class="fw-bold">Responsable Pédagogique</h5>
+                            <p class="text-muted">Spécialiste en sciences de l'éducation</p>
+                            <div class="social-links">
+                                <a href="#" class="text-muted me-2"><i class="fab fa-linkedin"></i></a>
+                                <a href="#" class="text-muted"><i class="fas fa-envelope"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="card border-0 shadow text-center h-100">
+                        <div class="card-body p-4">
+                            <div class="team-avatar bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                                <i class="fas fa-user fa-3x"></i>
+                            </div>
+                            <h5 class="fw-bold">Chef de Projet</h5>
+                            <p class="text-muted">Gestionnaire de projet et analyste fonctionnel</p>
+                            <div class="social-links">
+                                <a href="#" class="text-muted me-2"><i class="fab fa-linkedin"></i></a>
+                                <a href="#" class="text-muted"><i class="fas fa-envelope"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistiques -->
+    <section class="py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-item">
+                        <h3 class="display-4 fw-bold mb-2">3+</h3>
+                        <p class="mb-0">Années d'expérience</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-item">
+                        <h3 class="display-4 fw-bold mb-2">100+</h3>
+                        <p class="mb-0">Utilisateurs satisfaits</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-item">
+                        <h3 class="display-4 fw-bold mb-2">50+</h3>
+                        <p class="mb-0">Instituts partenaires</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-item">
+                        <h3 class="display-4 fw-bold mb-2">99%</h3>
+                        <p class="mb-0">Taux de satisfaction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="display-5 fw-bold mb-3">Contactez-nous</h2>
+                    <p class="lead text-muted">
+                        Nous sommes là pour vous accompagner dans votre projet
+                    </p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-4">Informations de contact</h5>
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-map-marker-alt text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Adresse</strong><br>
+                                    <span class="text-muted">Université Virtuelle<br>Kaolack, Sénégal</span>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-phone text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Téléphone</strong><br>
+                                    <span class="text-muted">+221 77 630 69 21</span>
+                                </div>
+                            </div>
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-envelope text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Email</strong><br>
+                                    <span class="text-muted">contact@edusco.fr</span>
+                                </div>
+                            </div>
+                            <div class="d-flex">
+                                <i class="fas fa-clock text-primary me-3 mt-1"></i>
+                                <div>
+                                    <strong>Horaires</strong><br>
+                                    <span class="text-muted">Lun-Ven: 9h-18h<br>Sam: 9h-12h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4">
+                    <div class="card border-0 shadow h-100">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-4">Envoyez-nous un message</h5>
+                            <form>
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" placeholder="Votre nom" required>
+                                </div>
+                                <div class="mb-3">
+                                    <input type="email" class="form-control" placeholder="Votre email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" placeholder="Sujet" required>
+                                </div>
+                                <div class="mb-3">
+                                    <textarea class="form-control" rows="4" placeholder="Votre message" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Envoyer le message
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.value-icon, .team-avatar {
+    transition: transform 0.3s ease;
+}
+
+.value-icon:hover, .team-avatar:hover {
+    transform: scale(1.1);
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+}
+
+.stat-item {
+    transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+    transform: scale(1.05);
+}
+
+.social-links a {
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #4e73df !important;
+}
+</style>
 {% endblock %} 

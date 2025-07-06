@@ -1,0 +1,262 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Details de l'enseignant - Administration{% endblock %}
+
+{% block page_title %}Details de l'enseignant{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.enseignants') }}">Enseignants</a></li>
+<li class="breadcrumb-item active">Details de l'enseignant</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations de l'enseignant</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.modifier_enseignant', enseignant_id=enseignant.id) }}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{{ url_for('admin.enseignants') }}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        {% if enseignant.photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + enseignant.photo) }}" 
+                                 class="img-fluid rounded-circle mb-3" width="200" height="200" alt="Photo">
+                        {% else %}
+                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                                 style="width: 200px; height: 200px;">
+                                <i class="fas fa-chalkboard-teacher text-white fa-4x"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mt-3">
+                            {% if enseignant.statut == 'actif' %}
+                                <span class="badge badge-success badge-lg">Actif</span>
+                            {% elif enseignant.statut == 'retraite' %}
+                                <span class="badge badge-warning badge-lg">Retraite</span>
+                            {% elif enseignant.statut == 'demissionne' %}
+                                <span class="badge badge-danger badge-lg">Demissionne</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <h4>{{ enseignant.prenom }} {{ enseignant.nom }}</h4>
+                        <p class="text-muted">Matricule: {{ enseignant.matricule }}</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Informations personnelles</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Date de naissance:</strong></td>
+                                        <td>{{ enseignant.date_naissance.strftime('%d/%m/%Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Lieu de naissance:</strong></td>
+                                        <td>{{ enseignant.lieu_naissance or 'Non renseigne' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Sexe:</strong></td>
+                                        <td>{{ enseignant.sexe or 'Non renseigne' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Adresse:</strong></td>
+                                        <td>{{ enseignant.adresse or 'Non renseignee' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>Informations professionnelles</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Specialite:</strong></td>
+                                        <td>{{ enseignant.specialite or 'Non renseignee' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Grade:</strong></td>
+                                        <td>{{ enseignant.grade or 'Non renseigne' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date d'embauche:</strong></td>
+                                        <td>{{ enseignant.date_embauche.strftime('%d/%m/%Y') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Anciennete:</strong></td>
+                                        <td>{{ anciennete }} an(s)</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h5>Contact</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Telephone:</strong></td>
+                                        <td>
+                                            {% if enseignant.telephone %}
+                                                <a href="tel:{{ enseignant.telephone }}">{{ enseignant.telephone }}</a>
+                                            {% else %}
+                                                Non renseigne
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Email:</strong></td>
+                                        <td>
+                                            {% if enseignant.email %}
+                                                <a href="mailto:{{ enseignant.email }}">{{ enseignant.email }}</a>
+                                            {% else %}
+                                                Non renseigne
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if matieres %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">Matieres enseignees</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Nom</th>
+                                <th>Unite d'enseignement</th>
+                                <th>Semestre</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for matiere in matieres %}
+                            <tr>
+                                <td>{{ matiere.code }}</td>
+                                <td>{{ matiere.nom }}</td>
+                                <td>{{ matiere.unite_enseignement.nom if matiere.unite_enseignement else '-' }}</td>
+                                <td>{{ matiere.unite_enseignement.semestre.nom if matiere.unite_enseignement and matiere.unite_enseignement.semestre else '-' }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin.details_matiere', matiere_id=matiere.id) }}" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Actions rapides</h3>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.modifier_enseignant', enseignant_id=enseignant.id) }}" 
+                       class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Modifier l'enseignant
+                    </a>
+                    
+                    {% if enseignant.statut != 'actif' %}
+                    <button type="button" class="btn btn-success" 
+                            onclick="changerStatut({{ enseignant.id }}, 'actif')">
+                        <i class="fas fa-check"></i> Activer
+                    </button>
+                    {% endif %}
+                    
+                    {% if enseignant.statut != 'retraite' %}
+                    <button type="button" class="btn btn-warning" 
+                            onclick="changerStatut({{ enseignant.id }}, 'retraite')">
+                        <i class="fas fa-user-clock"></i> Mettre a la retraite
+                    </button>
+                    {% endif %}
+                    
+                    {% if enseignant.statut != 'demissionne' %}
+                    <button type="button" class="btn btn-danger" 
+                            onclick="changerStatut({{ enseignant.id }}, 'demissionne')">
+                        <i class="fas fa-user-times"></i> Marquer comme demissionne
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3 class="card-title">Statistiques</h3>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info">
+                                <i class="fas fa-book"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Matieres</span>
+                                <span class="info-box-number">{{ matieres|length if matieres else 0 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success">
+                                <i class="fas fa-calendar"></i>
+                            </span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Anciennete</span>
+                                <span class="info-box-number">
+                                    {{ anciennete }} an(s)
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changerStatut(enseignantId, statut) {
+    const statuts = {
+        'actif': 'activer',
+        'retraite': 'mettre a la retraite',
+        'demissionne': 'marquer comme demissionne'
+    };
+    
+    if (confirm(`Etes-vous sur de vouloir ${statuts[statut]} cet enseignant ?`)) {
+        // TODO: Implémenter le changement de statut via AJAX
+        window.location.href = `/admin/enseignants/${enseignantId}/statut/${statut}`;
+    }
+}
+</script>
+{% endblock %}

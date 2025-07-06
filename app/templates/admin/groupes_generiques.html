@@ -1,0 +1,300 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Groupes Génériques - Administration{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête de la page -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-layer-group"></i> Groupes Génériques
+        </h1>
+        <div class="d-flex">
+            <button type="button" class="btn btn-success mr-2" data-toggle="modal" data-target="#modalCreerAutomatiquement">
+                <i class="fas fa-magic"></i> Créer Automatiquement
+            </button>
+            <a href="{{ url_for('admin.creer_groupe_generique') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouveau Groupe
+            </a>
+        </div>
+    </div>
+
+    <!-- Cartes d'information -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Groupes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ groupes|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-layer-group fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Groupes Utilisés
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ groupes|selectattr('utilisations_ue')|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-link fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Étudiants Inscrits
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ groupes|sum(attribute='nombre_etudiants') }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Places Disponibles
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ groupes|sum(attribute='capacite_max') - groupes|sum(attribute='nombre_etudiants') }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-door-open fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des groupes génériques -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des Groupes Génériques</h6>
+        </div>
+        <div class="card-body">
+            {% if groupes %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Nom</th>
+                            <th>Capacité</th>
+                            <th>Étudiants</th>
+                            <th>Taux de remplissage</th>
+                            <th>Enseignant Responsable</th>
+                            <th>UE Liées</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for groupe in groupes %}
+                        <tr>
+                            <td>
+                                <span class="badge badge-primary">{{ groupe.code }}</span>
+                            </td>
+                            <td>{{ groupe.nom }}</td>
+                            <td>{{ groupe.capacite_max }}</td>
+                            <td>
+                                <span class="badge badge-info">{{ groupe.nombre_etudiants }}</span>
+                            </td>
+                            <td>
+                                {% set taux = (groupe.nombre_etudiants / groupe.capacite_max * 100) if groupe.capacite_max > 0 else 0 %}
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar {% if taux >= 90 %}bg-danger{% elif taux >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ taux }}%"
+                                         aria-valuenow="{{ taux }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ "%.1f"|format(taux) }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if groupe.enseignant_responsable %}
+                                    {{ groupe.enseignant_responsable.nom }} {{ groupe.enseignant_responsable.prenom }}
+                                {% else %}
+                                    <span class="text-muted">Aucun</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-secondary">{{ groupe.utilisations_ue|length }}</span>
+                                {% if groupe.utilisations_ue %}
+                                    <button type="button" class="btn btn-sm btn-outline-info ml-1" 
+                                            data-toggle="tooltip" 
+                                            title="{% for usage in groupe.utilisations_ue %}{{ usage.unite_enseignement.code }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('admin.details_groupe_generique', groupe_id=groupe.id) }}" 
+                                       class="btn btn-sm btn-info" title="Détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.modifier_groupe_generique', groupe_id=groupe.id) }}" 
+                                       class="btn btn-sm btn-warning" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.gestion_inscriptions_groupe_generique', groupe_id=groupe.id) }}" 
+                                       class="btn btn-sm btn-success" title="Gérer les inscriptions">
+                                        <i class="fas fa-users"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.lier_groupe_generique_ue', groupe_id=groupe.id) }}" 
+                                       class="btn btn-sm btn-primary" title="Lier à une UE">
+                                        <i class="fas fa-link"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-danger" title="Supprimer"
+                                            onclick="confirmerSuppression({{ groupe.id }}, '{{ groupe.code }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-layer-group fa-3x text-gray-300 mb-3"></i>
+                <h5 class="text-gray-500">Aucun groupe générique trouvé</h5>
+                <p class="text-gray-400">Commencez par créer des groupes génériques ou utilisez la création automatique.</p>
+                <a href="{{ url_for('admin.creer_groupe_generique') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Créer le premier groupe
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour création automatique -->
+<div class="modal fade" id="modalCreerAutomatiquement" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-magic"></i> Créer des Groupes Automatiquement
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for('admin.creer_groupes_generiques_automatiquement') }}" method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="nombre_groupes">Nombre de groupes à créer</label>
+                        <input type="number" class="form-control" id="nombre_groupes" name="nombre_groupes" 
+                               value="3" min="1" max="10" required>
+                        <small class="form-text text-muted">Entre 1 et 10 groupes (A, B, C, etc.)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="capacite_max">Capacité maximale par groupe</label>
+                        <input type="number" class="form-control" id="capacite_max" name="capacite_max" 
+                               value="30" min="1" max="100" required>
+                        <small class="form-text text-muted">Nombre maximum d'étudiants par groupe</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-magic"></i> Créer Automatiquement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="modalSuppression" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmer la suppression
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le groupe générique <strong id="nomGroupeSuppression"></strong> ?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Attention :</strong> Cette action est irréversible et ne peut être effectuée que si le groupe n'a pas d'étudiants inscrits et n'est pas utilisé par des UE.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <form id="formSuppression" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialiser DataTable
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json"
+        },
+        "order": [[0, "asc"]],
+        "pageLength": 25
+    });
+
+    // Initialiser les tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
+function confirmerSuppression(groupeId, nomGroupe) {
+    $('#nomGroupeSuppression').text(nomGroupe);
+    $('#formSuppression').attr('action', '{{ url_for("admin.groupes_generiques") }}' + '/' + groupeId + '/supprimer');
+    $('#modalSuppression').modal('show');
+}
+</script>
+{% endblock %} 

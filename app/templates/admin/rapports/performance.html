@@ -1,0 +1,317 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Rapport de Performance{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Rapport de Performance</h1>
+        <a href="{{ url_for('admin.rapports_pedagogiques') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour
+        </a>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Étudiants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_etudiants }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Notes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_notes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Moyenne Générale
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.2f"|format(moyenne_generale) }}/20</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Taux de Réussite
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if moyenne_generale >= 10 %}
+                                    75%
+                                {% else %}
+                                    45%
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-trophy fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance par groupe -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Performance par Groupe</h6>
+                </div>
+                <div class="card-body">
+                    {% if groupes_performance %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Groupe</th>
+                                    <th>UE</th>
+                                    <th>Enseignant</th>
+                                    <th>Nombre d'Étudiants</th>
+                                    <th>Moyenne</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for perf in groupes_performance %}
+                                <tr>
+                                    <td>{{ perf.groupe.nom }}</td>
+                                    <td>{{ perf.groupe.unite_enseignement.nom if perf.groupe.unite_enseignement else 'N/A' }}</td>
+                                    <td>{{ perf.groupe.enseignant.nom if perf.groupe.enseignant else 'N/A' }}</td>
+                                    <td>{{ perf.etudiants }}</td>
+                                    <td>
+                                        <span class="{% if perf.moyenne >= 10 %}text-success{% else %}text-danger{% endif %}">
+                                            {{ "%.2f"|format(perf.moyenne) }}/20
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if perf.moyenne >= 10 %}
+                                        <span class="badge badge-success">Réussi</span>
+                                        {% else %}
+                                        <span class="badge badge-danger">Échec</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Aucune donnée de performance disponible.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques de performance -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition des Notes</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="repartitionNotes"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-success"></i> Excellent (16-20)
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-primary"></i> Bien (12-15.99)
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-warning"></i> Passable (10-11.99)
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-danger"></i> Insuffisant (0-9.99)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Évolution des Performances</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="evolutionPerformance"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Graphique de répartition des notes (simulation)
+document.addEventListener('DOMContentLoaded', function() {
+    // Répartition des notes
+    var ctx = document.getElementById("repartitionNotes");
+    var repartitionNotes = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ["Excellent", "Bien", "Passable", "Insuffisant"],
+            datasets: [{
+                data: [15, 35, 30, 20],
+                backgroundColor: ['#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                hoverBackgroundColor: ['#17a673', '#2c9faf', '#f4b619', '#d52a1a'],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+            },
+            legend: {
+                display: false
+            },
+            cutoutPercentage: 80,
+        },
+    });
+
+    // Évolution des performances
+    var ctx2 = document.getElementById("evolutionPerformance");
+    var evolutionPerformance = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"],
+            datasets: [{
+                label: "Moyenne générale",
+                lineTension: 0.3,
+                backgroundColor: "rgba(78, 115, 223, 0.05)",
+                borderColor: "rgba(78, 115, 223, 1)",
+                pointRadius: 3,
+                pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                pointBorderColor: "rgba(78, 115, 223, 1)",
+                pointHoverRadius: 3,
+                pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                pointHitRadius: 10,
+                pointBorderWidth: 2,
+                data: [12.5, 13.2, 13.8, 14.1, 14.5, 14.8],
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 25,
+                    top: 25,
+                    bottom: 0
+                }
+            },
+            scales: {
+                xAxes: [{
+                    time: {
+                        unit: 'date'
+                    },
+                    gridLines: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        maxTicksLimit: 7
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        maxTicksLimit: 5,
+                        padding: 10,
+                        callback: function(value, index, values) {
+                            return value + '/20';
+                        }
+                    },
+                    gridLines: {
+                        color: "rgb(234, 236, 244)",
+                        zeroLineColor: "rgb(234, 236, 244)",
+                        drawBorder: false,
+                        borderDash: [2],
+                        zeroLineBorderDash: [2]
+                    }
+                }],
+            },
+            legend: {
+                display: false
+            },
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                titleMarginBottom: 10,
+                titleFontColor: '#6e707e',
+                titleFontSize: 14,
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                intersect: false,
+                mode: 'index',
+                caretPadding: 10,
+                callbacks: {
+                    label: function(tooltipItem, chart) {
+                        var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                        return datasetLabel + ': ' + tooltipItem.yLabel + '/20';
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Base de données MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: edusco_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: edusco_db
+      MYSQL_USER: edusco_user
+      MYSQL_PASSWORD: edusco_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql_init:/docker-entrypoint-initdb.d
+    networks:
+      - edusco_network
+
+  # Application Flask
+  app:
+    build: .
+    container_name: edusco_app
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - DATABASE_URL=mysql+pymysql://edusco_user:edusco_password@mysql:3306/edusco_db
+      - SECRET_KEY=your_secret_key_here_change_in_production
+      - FLASK_ENV=development
+      - FLASK_DEBUG=True
+    volumes:
+      - ./app/static/uploads:/app/app/static/uploads
+    depends_on:
+      - mysql
+    networks:
+      - edusco_network
+    command: >
+      sh -c "
+        echo 'Waiting for MySQL to be ready...' &&
+        while ! mysqladmin ping -h mysql -u edusco_user -pedusco_password --silent; do
+          sleep 1
+        done &&
+        echo 'MySQL is ready!' &&
+        flask db upgrade &&
+        python scripts/initialiser_db.py &&
+        python scripts/creer_comptes_utilisateurs.py &&
+        python app.py
+      "
+
+volumes:
+  mysql_data:
+
+networks:
+  edusco_network:
+    driver: bridge 

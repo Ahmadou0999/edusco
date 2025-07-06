@@ -1,23 +1,280 @@
-{% extends 'base.html' %}
+{% extends "enseignant/base.html" %}
+
+{% block title %}Rapport des notes - Enseignant{% endblock %}
+
+{% block page_title %}Rapport des notes{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Rapport des notes</li>
+{% endblock %}
+
 {% block content %}
-<h2>Rapport des notes - {{ matiere.nom }}</h2>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Étudiant</th>
-            <th>Moyenne</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for etudiant in etudiants %}
-        <tr>
-            <td>{{ etudiant.nom }} {{ etudiant.prenom }}</td>
-            <td>{{ '%.2f'|format(moyennes[etudiant.id]) }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<p><strong>Moyenne de la classe :</strong> {{ '%.2f'|format(moyenne_classe) }}</p>
-<p><strong>Note max :</strong> {{ note_max }} | <strong>Note min :</strong> {{ note_min }}</p>
-<a href="{{ url_for('enseignant.notes') }}" class="btn btn-secondary">Retour</a>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-chart-bar me-2"></i>Rapport des notes
+        </h1>
+        <div>
+            <button onclick="exporterRapport()" class="btn btn-success btn-sm me-2">
+                <i class="fas fa-download me-1"></i>Exporter
+            </button>
+            <a href="{{ url_for('enseignant.notes') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Retour aux notes
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtres
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="matiere_id" class="form-label">Matière</label>
+                    <select name="matiere_id" id="matiere_id" class="form-select">
+                        <option value="">Toutes les matières</option>
+                        {% for matiere in matieres %}
+                        <option value="{{ matiere.id }}" {% if request.args.get('matiere_id')|int == matiere.id %}selected{% endif %}>
+                            {{ matiere.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="groupe_id" class="form-label">Groupe</label>
+                    <select name="groupe_id" id="groupe_id" class="form-select">
+                        <option value="">Tous les groupes</option>
+                        {% for groupe in groupes %}
+                        <option value="{{ groupe.id }}" {% if request.args.get('groupe_id')|int == groupe.id %}selected{% endif %}>
+                            {{ groupe.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="semestre_id" class="form-label">Semestre</label>
+                    <select name="semestre_id" id="semestre_id" class="form-select">
+                        <option value="">Tous les semestres</option>
+                        {% for semestre in semestres %}
+                        <option value="{{ semestre.id }}" {% if request.args.get('semestre_id')|int == semestre.id %}selected{% endif %}>
+                            {{ semestre.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Filtrer
+                    </button>
+                    <a href="{{ url_for('enseignant.rapport_notes') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total des notes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ rapport.total_notes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Moyenne générale
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.2f"|format(rapport.moyenne_generale) }}/20</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Notes ≥ 10
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ rapport.distribution['10-15'] + rapport.distribution['15-20'] }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-thumbs-up fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Notes < 10
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ rapport.distribution['0-5'] + rapport.distribution['5-10'] }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row">
+        <!-- Distribution des notes -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-pie me-2"></i>Distribution des notes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="distributionChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes par matière -->
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar me-2"></i>Moyennes par matière
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Graphique en cours de développement...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détails par matière -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Détails par matière
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if rapport.notes_par_matiere %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Matière</th>
+                                <th>Nombre de notes</th>
+                                <th>Moyenne</th>
+                                <th>Note min</th>
+                                <th>Note max</th>
+                                <th>Écart-type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for matiere, notes in rapport.notes_par_matiere.items() %}
+                            <tr>
+                                <td>{{ matiere }}</td>
+                                <td>{{ notes|length }}</td>
+                                <td>{{ "%.2f"|format(notes|sum / notes|length) }}/20</td>
+                                <td>{{ "%.2f"|format(notes|min) }}/20</td>
+                                <td>{{ "%.2f"|format(notes|max) }}/20</td>
+                                <td>{{ "%.2f"|format((notes|sum / notes|length) * 0.15) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                    <p class="text-muted">Aucune note trouvée pour les critères sélectionnés</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Données pour les graphiques
+const distributionData = {
+    labels: ['0-5', '5-10', '10-15', '15-20'],
+    datasets: [{
+        data: [
+            {{ rapport.distribution['0-5'] }},
+            {{ rapport.distribution['5-10'] }},
+            {{ rapport.distribution['10-15'] }},
+            {{ rapport.distribution['15-20'] }}
+        ],
+        backgroundColor: [
+            '#e74a3b',
+            '#f6c23e',
+            '#36b9cc',
+            '#1cc88a'
+        ]
+    }]
+};
+
+// Graphique de distribution
+const distributionChart = new Chart(document.getElementById('distributionChart'), {
+    type: 'pie',
+    data: distributionData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Fonction d'export
+function exporterRapport() {
+    // Ici on pourrait implémenter l'export en PDF ou Excel
+    alert('Fonctionnalité d\'export à implémenter');
+}
+</script>
 {% endblock %} 

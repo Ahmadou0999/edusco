@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Profil de l'enseignant - {{ enseignant.prenom }} {{ enseignant.nom }}{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Profil de l'enseignant</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ url_for('principal.accueil') }}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('principal.recherche') }}">Recherche</a></li>
+                        <li class="breadcrumb-item active">Profil enseignant</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Informations de l'enseignant</h3>
+                            <div class="card-tools">
+                                <a href="{{ url_for('principal.recherche') }}" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 text-center">
+                                    {% if enseignant.photo %}
+                                        <img src="{{ url_for('static', filename='uploads/' + enseignant.photo) }}" 
+                                             class="img-fluid rounded-circle mb-3" width="200" height="200" alt="Photo">
+                                    {% else %}
+                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                                             style="width: 200px; height: 200px;">
+                                            <i class="fas fa-chalkboard-teacher text-white fa-4x"></i>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="mt-3">
+                                        {% if enseignant.statut == 'actif' %}
+                                            <span class="badge badge-success badge-lg">Actif</span>
+                                        {% elif enseignant.statut == 'retraite' %}
+                                            <span class="badge badge-warning badge-lg">Retraite</span>
+                                        {% elif enseignant.statut == 'demissionne' %}
+                                            <span class="badge badge-danger badge-lg">Demissionne</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-8">
+                                    <h4>{{ enseignant.prenom }} {{ enseignant.nom }}</h4>
+                                    <p class="text-muted">Matricule: {{ enseignant.matricule }}</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>Informations professionnelles</h5>
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Specialite:</strong></td>
+                                                    <td>{{ enseignant.specialite or 'Non renseignee' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Grade:</strong></td>
+                                                    <td>{{ enseignant.grade or 'Non renseigne' }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Date d'embauche:</strong></td>
+                                                    <td>{{ enseignant.date_embauche.strftime('%d/%m/%Y') }}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <h5>Contact</h5>
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Telephone:</strong></td>
+                                                    <td>
+                                                        {% if enseignant.telephone %}
+                                                            <a href="tel:{{ enseignant.telephone }}">{{ enseignant.telephone }}</a>
+                                                        {% else %}
+                                                            Non renseigne
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Email:</strong></td>
+                                                    <td>
+                                                        {% if enseignant.email %}
+                                                            <a href="mailto:{{ enseignant.email }}">{{ enseignant.email }}</a>
+                                                        {% else %}
+                                                            Non renseigne
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if matieres %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Matieres enseignees</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Nom</th>
+                                            <th>Unite d'enseignement</th>
+                                            <th>Semestre</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for matiere in matieres %}
+                                        <tr>
+                                            <td>{{ matiere.code }}</td>
+                                            <td>{{ matiere.nom }}</td>
+                                            <td>{{ matiere.unite_enseignement.nom if matiere.unite_enseignement else '-' }}</td>
+                                            <td>{{ matiere.unite_enseignement.semestre.nom if matiere.unite_enseignement and matiere.unite_enseignement.semestre else '-' }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if groupes %}
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3 class="card-title">Groupes enseignes</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom du groupe</th>
+                                            <th>Niveau</th>
+                                            <th>Annee academique</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for groupe in groupes %}
+                                        <tr>
+                                            <td>{{ groupe.nom }}</td>
+                                            <td>{{ groupe.niveau or '-' }}</td>
+                                            <td>{{ groupe.annee_academique.nom if groupe.annee_academique else '-' }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Statistiques</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-info">
+                                            <i class="fas fa-book"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Matieres</span>
+                                            <span class="info-box-number">{{ matieres|length if matieres else 0 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-success">
+                                            <i class="fas fa-users"></i>
+                                        </span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Groupes</span>
+                                            <span class="info-box-number">{{ groupes|length if groupes else 0 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title">Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                {% if enseignant.email %}
+                                <a href="mailto:{{ enseignant.email }}" class="btn btn-primary">
+                                    <i class="fas fa-envelope"></i> Contacter par email
+                                </a>
+                                {% endif %}
+                                
+                                {% if enseignant.telephone %}
+                                <a href="tel:{{ enseignant.telephone }}" class="btn btn-success">
+                                    <i class="fas fa-phone"></i> Appeler
+                                </a>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('principal.recherche') }}" class="btn btn-secondary">
+                                    <i class="fas fa-search"></i> Autre recherche
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %} 

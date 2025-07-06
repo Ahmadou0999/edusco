@@ -1,0 +1,131 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Détails de la matière - Administration{% endblock %}
+
+{% block page_title %}Détails de {{ matiere.code }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.matieres') }}">Matières</a></li>
+<li class="breadcrumb-item active">{{ matiere.code }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informations de la matière</h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('admin.modifier_matiere', matiere_id=matiere.id) }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">Code :</th>
+                                <td><span class="badge badge-info">{{ matiere.code }}</span></td>
+                            </tr>
+                            <tr>
+                                <th>Nom :</th>
+                                <td>{{ matiere.nom }}</td>
+                            </tr>
+                            <tr>
+                                <th>Volume horaire :</th>
+                                <td>{{ matiere.volume_horaire }} heures</td>
+                            </tr>
+                            <tr>
+                                <th>Coefficient :</th>
+                                <td>{{ matiere.coefficient }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">Unité d'enseignement :</th>
+                                <td>
+                                    {% if matiere.unite_enseignement %}
+                                        <span class="badge badge-secondary">{{ matiere.unite_enseignement.code }}</span>
+                                        {{ matiere.unite_enseignement.nom }}
+                                    {% else %}
+                                        <span class="text-muted">Non assignée</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Enseignant :</th>
+                                <td>
+                                    {% if matiere.enseignant %}
+                                        {{ matiere.enseignant.nom_complet }}
+                                        <br><small class="text-muted">{{ matiere.enseignant.matricule }}</small>
+                                    {% else %}
+                                        <span class="text-muted">Non assigné</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date de création :</th>
+                                <td>{{ matiere.date_creation.strftime('%d/%m/%Y') if matiere.date_creation else 'N/A' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if matiere.description %}
+                <div class="mt-3">
+                    <h6>Description :</h6>
+                    <p class="text-muted">{{ matiere.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Actions rapides</h3>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('admin.modifier_matiere', matiere_id=matiere.id) }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-edit"></i> Modifier la matière
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user-plus"></i> Assigner un enseignant
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-calendar-alt"></i> Gérer l'emploi du temps
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar"></i> Voir les statistiques
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3 class="card-title">Informations</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> À propos de cette matière</h6>
+                    <p class="mb-0">Cette matière fait partie de l'unité d'enseignement <strong>{{ matiere.unite_enseignement.code if matiere.unite_enseignement else 'Non assignée' }}</strong>.</p>
+                </div>
+                
+                {% if not matiere.enseignant %}
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Enseignant manquant</h6>
+                    <p class="mb-0">Aucun enseignant n'est assigné à cette matière.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Mes Absences - Étudiant{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Mes Absences</h1>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filtres</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="annee_id" class="form-label">Année académique</label>
+                            <select class="form-select" id="annee_id" name="annee_id">
+                                <option value="">Toutes les années</option>
+                                {% for annee in annees %}
+                                <option value="{{ annee.id }}" {% if request.args.get('annee_id')|int == annee.id %}selected{% endif %}>
+                                    {{ annee.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="semestre_id" class="form-label">Semestre</label>
+                            <select class="form-select" id="semestre_id" name="semestre_id">
+                                <option value="">Tous les semestres</option>
+                                {% for semestre in semestres %}
+                                <option value="{{ semestre.id }}" {% if request.args.get('semestre_id')|int == semestre.id %}selected{% endif %}>
+                                    {{ semestre.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="matiere_id" class="form-label">Matière</label>
+                            <select class="form-select" id="matiere_id" name="matiere_id">
+                                <option value="">Toutes les matières</option>
+                                {% for matiere in matieres %}
+                                <option value="{{ matiere.id }}" {% if request.args.get('matiere_id')|int == matiere.id %}selected{% endif %}>
+                                    {{ matiere.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Filtrer</button>
+                                <a href="{{ url_for('etudiant.absences') }}" class="btn btn-secondary">Réinitialiser</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Absences -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Mes Absences</h5>
+                </div>
+                <div class="card-body">
+                    {% if absences %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Matière</th>
+                                    <th>Enseignant</th>
+                                    <th>Horaire</th>
+                                    <th>Justifiée</th>
+                                    <th>Motif</th>
+                                    <th>Semestre</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for absence in absences %}
+                                <tr>
+                                    <td>{{ absence.date_absence.strftime('%d/%m/%Y') if absence.date_absence else 'N/A' }}</td>
+                                    <td>{{ absence.matiere.nom if absence.matiere else 'N/A' }}</td>
+                                    <td>{{ absence.enseignant.nom if absence.enseignant else 'N/A' }}</td>
+                                    <td>{{ absence.horaire if absence.horaire else 'N/A' }}</td>
+                                    <td>
+                                        {% if absence.justifiee %}
+                                        <span class="badge bg-success">Justifiée</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Non justifiée</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ absence.motif if absence.motif else 'Aucun motif' }}</td>
+                                    <td>{{ absence.semestre.nom if absence.semestre else 'N/A' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Statistiques -->
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ absences|length }}</h4>
+                                    <p class="mb-0">Total des absences</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ absences|selectattr('justifiee', 'equalto', True)|list|length }}</h4>
+                                    <p class="mb-0">Absences justifiées</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ absences|selectattr('justifiee', 'equalto', False)|list|length }}</h4>
+                                    <p class="mb-0">Absences non justifiées</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h4>{{ "%.1f"|format((absences|selectattr('justifiee', 'equalto', True)|list|length / absences|length * 100) if absences|length > 0 else 0) }}%</h4>
+                                    <p class="mb-0">Taux de justification</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <p class="text-muted">Aucune absence enregistrée</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

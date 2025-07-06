@@ -14,26 +14,13 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Modifier le semestre {{ semestre.nom }}</h3>
+                <h3 class="card-title">Modifier le semestre</h3>
             </div>
             <div class="card-body">
                 <form method="POST">
                     {{ formulaire.hidden_tag() }}
                     
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.nom.label(class="form-label") }}
-                                {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
-                                {% if formulaire.nom.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.nom.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 {{ formulaire.code.label(class="form-label") }}
@@ -45,15 +32,42 @@
                                         {% endfor %}
                                     </div>
                                 {% endif %}
+                                <small class="form-text text-muted">Exemple: S1, S2</small>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.annee_academique_id.label(class="form-label") }}
+                                {{ formulaire.annee_academique_id(class="form-control" + (" is-invalid" if formulaire.annee_academique_id.errors else "")) }}
+                                {% if formulaire.annee_academique_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.annee_academique_id.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ formulaire.nom.label(class="form-label") }}
+                        {{ formulaire.nom(class="form-control" + (" is-invalid" if formulaire.nom.errors else "")) }}
+                        {% if formulaire.nom.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in formulaire.nom.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Exemple: Premier semestre, Deuxième semestre</small>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 {{ formulaire.date_debut.label(class="form-label") }}
-                                {{ formulaire.date_debut(class="form-control" + (" is-invalid" if formulaire.date_debut.errors else ""), type="date") }}
+                                {{ formulaire.date_debut(class="form-control" + (" is-invalid" if formulaire.date_debut.errors else "")) }}
                                 {% if formulaire.date_debut.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in formulaire.date_debut.errors %}
@@ -66,7 +80,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 {{ formulaire.date_fin.label(class="form-label") }}
-                                {{ formulaire.date_fin(class="form-control" + (" is-invalid" if formulaire.date_fin.errors else ""), type="date") }}
+                                {{ formulaire.date_fin(class="form-control" + (" is-invalid" if formulaire.date_fin.errors else "")) }}
                                 {% if formulaire.date_fin.errors %}
                                     <div class="invalid-feedback">
                                         {% for error in formulaire.date_fin.errors %}
@@ -98,21 +112,27 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Statistiques</h3>
+                <h3 class="card-title">Informations</h3>
             </div>
             <div class="card-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-info"><i class="fas fa-book"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Unités d'enseignement</span>
-                        <span class="info-box-number">{{ semestre.unites_enseignement|length }}</span>
-                    </div>
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Modification du semestre</h5>
+                    <p>Modifiez les informations du semestre {{ semestre.nom }}.</p>
+                    <ul class="mb-0">
+                        <li>Le code doit être unique</li>
+                        <li>Les dates doivent être cohérentes</li>
+                        <li>Un seul semestre peut être actif</li>
+                        <li>Les UE existantes seront conservées</li>
+                    </ul>
                 </div>
                 
+                {% if semestre.unites_enseignement %}
                 <div class="alert alert-warning">
-                    <h6><i class="fas fa-exclamation-triangle"></i> Attention</h6>
-                    <p class="mb-0">La modification d'un semestre peut affecter les UEs et matières associées.</p>
+                    <h6><i class="fas fa-exclamation-triangle"></i> Unités d'enseignement</h6>
+                    <p class="mb-0">Ce semestre contient {{ semestre.unites_enseignement|length }} UE(s).</p>
+                    <small>Modifiez avec précaution pour éviter les conflits.</small>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -121,21 +141,21 @@
 
 {% block extra_js %}
 <script>
-// Validation côté client pour les dates
+// Validation côté client
 document.addEventListener('DOMContentLoaded', function() {
     const dateDebut = document.getElementById('date_debut');
     const dateFin = document.getElementById('date_fin');
     
-    dateDebut.addEventListener('change', function() {
-        if (dateFin.value && dateDebut.value > dateFin.value) {
-            dateFin.setCustomValidity('La date de fin doit être postérieure à la date de début');
+    dateFin.addEventListener('change', function() {
+        if (dateDebut.value && this.value && this.value <= dateDebut.value) {
+            this.setCustomValidity('La date de fin doit être postérieure à la date de début');
         } else {
-            dateFin.setCustomValidity('');
+            this.setCustomValidity('');
         }
     });
     
-    dateFin.addEventListener('change', function() {
-        if (dateDebut.value && dateFin.value < dateDebut.value) {
+    dateDebut.addEventListener('change', function() {
+        if (dateFin.value && this.value && dateFin.value <= this.value) {
             dateFin.setCustomValidity('La date de fin doit être postérieure à la date de début');
         } else {
             dateFin.setCustomValidity('');

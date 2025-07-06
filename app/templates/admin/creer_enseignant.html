@@ -143,6 +143,36 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
+                                {{ formulaire.mot_de_passe.label(class="form-label") }}
+                                {{ formulaire.mot_de_passe(class="form-control" + (" is-invalid" if formulaire.mot_de_passe.errors else "")) }}
+                                {% if formulaire.mot_de_passe.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.mot_de_passe.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Minimum 6 caractères</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ formulaire.confirmer_mot_de_passe.label(class="form-label") }}
+                                {{ formulaire.confirmer_mot_de_passe(class="form-control" + (" is-invalid" if formulaire.confirmer_mot_de_passe.errors else "")) }}
+                                {% if formulaire.confirmer_mot_de_passe.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in formulaire.confirmer_mot_de_passe.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
                                 {{ formulaire.specialite.label(class="form-label") }}
                                 {{ formulaire.specialite(class="form-control") }}
                                 <small class="form-text text-muted">Domaine de spécialisation</small>
@@ -195,9 +225,20 @@
                     <p>Un enseignant peut être assigné à plusieurs matières.</p>
                     <ul class="mb-0">
                         <li>Le matricule doit être unique</li>
-                        <li>L'email est optionnel mais doit être unique</li>
+                        <li>L'email est obligatoire et doit être unique</li>
+                        <li>Le mot de passe est obligatoire (minimum 6 caractères)</li>
                         <li>La spécialité et le grade sont optionnels</li>
                         <li>La photo sera redimensionnée automatiquement</li>
+                        <li><strong>Un compte utilisateur sera créé automatiquement</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-user-check"></i> Compte utilisateur automatique</h6>
+                    <p class="mb-2">L'enseignant pourra se connecter avec :</p>
+                    <ul class="mb-0 small">
+                        <li><strong>Email :</strong> L'email saisi</li>
+                        <li><strong>Mot de passe :</strong> Celui saisi dans le formulaire</li>
                     </ul>
                 </div>
             </div>

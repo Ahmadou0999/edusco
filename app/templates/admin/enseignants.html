@@ -29,6 +29,13 @@
                 </div>
             </div>
             <div class="card-body">
+                    <!-- Composant de recherche et import/export -->
+                    {% set export_route = 'admin.exporter_enseignants' %}
+                    {% set import_route = 'admin.importer_enseignants' %}
+                    {% include 'admin/components/search_export.html' %}
+
+                    
+
                 {% if enseignants %}
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped" id="enseignantsTable">
@@ -101,10 +108,10 @@
                                 <td>
                                     {% if enseignant.statut == 'actif' %}
                                         <span class="badge badge-success">Actif</span>
-                                    {% elif enseignant.statut == 'retraité' %}
-                                        <span class="badge badge-warning">Retraité</span>
-                                    {% elif enseignant.statut == 'démissionné' %}
-                                        <span class="badge badge-danger">Démissionné</span>
+                                    {% elif enseignant.statut == 'retraite' %}
+                                        <span class="badge badge-warning">Retraite</span>
+                                    {% elif enseignant.statut == 'demissionne' %}
+                                        <span class="badge badge-danger">Demissionne</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -114,16 +121,35 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a href="{{ url_for('admin.details_enseignant', enseignant_id=enseignant.id) }}" 
-                                           class="btn btn-sm btn-outline-info" title="Détails">
+                                           class="btn btn-sm btn-outline-info" title="Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-outline-success" 
-                                                onclick="changerStatut({{ enseignant.id }}, 'actif')" title="Activer">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-warning" 
-                                                onclick="changerStatut({{ enseignant.id }}, 'retraité')" title="Retraiter">
-                                            <i class="fas fa-user-clock"></i>
+                                        {% if enseignant.statut == 'actif' %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="changerStatut({{ enseignant.id }}, 'inactif')" title="Desactiver">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        {% else %}
+                                            <button type="button" class="btn btn-sm btn-outline-success" 
+                                                    onclick="changerStatut({{ enseignant.id }}, 'actif')" title="Activer">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        {% endif %}
+                                        {% if enseignant.statut != 'retraite' %}
+                                            <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                    onclick="changerStatut({{ enseignant.id }}, 'retraite')" title="Mettre a la retraite">
+                                                <i class="fas fa-user-clock"></i>
+                                            </button>
+                                        {% endif %}
+                                        {% if enseignant.statut != 'demissionne' %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="changerStatut({{ enseignant.id }}, 'demissionne')" title="Marquer comme demissionne">
+                                                <i class="fas fa-user-times"></i>
+                                            </button>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="supprimerEnseignant({{ enseignant.id }})" title="Supprimer définitivement">
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -153,7 +179,8 @@
 function rechercherEnseignants() {
     const terme = document.getElementById('searchInput').value;
     if (terme.trim()) {
-        window.location.href = `{{ url_for('admin.rechercher_enseignants') }}?q=${encodeURIComponent(terme)}`;
+        // TODO: Implémenter admin.rechercher_enseignants
+        window.location.href = '/admin/enseignants/rechercher?q=' + encodeURIComponent(terme);
     }
 }
 
@@ -167,13 +194,44 @@ document.getElementById('searchInput').addEventListener('keypress', function(e) 
 function changerStatut(enseignantId, statut) {
     const statuts = {
         'actif': 'activer',
-        'retraité': 'mettre à la retraite',
-        'démissionné': 'marquer comme démissionné'
+        'inactif': 'desactiver',
+        'retraite': 'mettre a la retraite',
+        'demissionne': 'marquer comme demissionne'
     };
     
-    if (confirm(`Êtes-vous sûr de vouloir ${statuts[statut]} cet enseignant ?`)) {
-        // TODO: Implémenter le changement de statut via AJAX
-        window.location.href = `/admin/enseignants/${enseignantId}/statut/${statut}`;
+    if (confirm(`Etes-vous sur de vouloir ${statuts[statut]} cet enseignant ?`)) {
+        // Créer un formulaire pour envoyer la requête POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/enseignants/${enseignantId}/statut/${statut}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function supprimerEnseignant(enseignantId) {
+    if (confirm('⚠️ ATTENTION : Cette action est irréversible !\n\nÊtes-vous sûr de vouloir supprimer définitivement cet enseignant ?')) {
+        fetch('/admin/enseignants/supprimer/' + enseignantId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        })
+        .catch(function(error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression');
+        });
     }
 }
 

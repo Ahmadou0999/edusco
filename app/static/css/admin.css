@@ -28,6 +28,25 @@
     letter-spacing: 0.5px;
 }
 
+/* Styles spécifiques pour les en-têtes de tableau des étudiants */
+#etudiantsTable thead th {
+    background-color: #343a40 !important;
+    color: white !important;
+    font-weight: bold !important;
+    text-transform: none !important;
+    font-size: 14px !important;
+    padding: 12px 8px !important;
+    border: 1px solid #495057 !important;
+}
+
+#etudiantsTable thead th.text-center {
+    text-align: center !important;
+}
+
+#etudiantsTable thead th:not(.text-center) {
+    text-align: left !important;
+}
+
 .table-striped tbody tr:nth-of-type(odd) {
     background-color: rgba(0, 123, 255, 0.05);
 }

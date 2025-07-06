@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Contact - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Contact</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informations de contact -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations de contact</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6><i class="fas fa-map-marker-alt text-primary me-2"></i>Adresse</h6>
+                        <p class="mb-0">
+                            Université Virtuelle<br>
+                            Kaolack, Sénégal<br>
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6><i class="fas fa-phone text-primary me-2"></i>Téléphone</h6>
+                        <p class="mb-0">
+                            <a href="tel:+1234567890" class="text-decoration-none">+221 (77) 630 69 21</a><br>
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6><i class="fas fa-envelope text-primary me-2"></i>Email</h6>
+                        <p class="mb-0">
+                            <a href="mailto:contact@edusco.edu" class="text-decoration-none">contact@edusco.edu</a><br>
+                            <a href="mailto:info@edusco.edu" class="text-decoration-none">info@edusco.edu</a>
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6><i class="fas fa-clock text-primary me-2"></i>Horaires d'ouverture</h6>
+                        <p class="mb-0">
+                            <strong>Lundi - Vendredi:</strong> 8h00 - 18h00<br>
+                            <strong>Samedi:</strong> 9h00 - 12h00<br>
+                            <strong>Dimanche:</strong> Fermé
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <h6><i class="fas fa-globe text-primary me-2"></i>Réseaux sociaux</h6>
+                        <div class="d-flex gap-2">
+                            <a href="#" class="btn btn-outline-primary btn-sm">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-info btn-sm">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-danger btn-sm">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-primary btn-sm">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire de contact -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Nous envoyer un message</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% if form and form.hidden_tag %}{{ form.hidden_tag() }}{% endif %}
+                        <div class="mb-3">
+                            <label class="form-label" for="nom">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="sujet">Sujet</label>
+                            <input type="text" class="form-control" id="sujet" name="sujet" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="message">Message</label>
+                            <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer le message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carte -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Notre localisation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="ratio ratio-21x9">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.8!2d-73.935242!3d40.712776!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQyJzQ2LjAiTiA3M8KwNTYnMDYuOSJX!5e0!3m2!1sfr!2sfr!4v1234567890" 
+                                style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

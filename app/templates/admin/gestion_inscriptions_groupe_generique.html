@@ -1,0 +1,411 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Gestion des inscriptions - Groupe Générique - Administration{% endblock %}
+
+{% block page_title %}Gestion des inscriptions - Groupe Générique{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.groupes_generiques') }}">Groupes Génériques</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.details_groupe_generique', groupe_id=groupe.id) }}">{{ groupe.code }}</a></li>
+<li class="breadcrumb-item active">Gestion des inscriptions</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user-plus"></i> 
+                    Étudiants disponibles
+                </h3>
+                <small class="text-muted">Étudiants non inscrits dans ce groupe générique</small>
+            </div>
+            <div class="card-body">
+                {% if etudiants_disponibles %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etudiant in etudiants_disponibles %}
+                            <tr data-etudiant-id="{{ etudiant.id }}">
+                                <td><span class="badge badge-secondary">{{ etudiant.matricule }}</span></td>
+                                <td>{{ etudiant.nom }}</td>
+                                <td>{{ etudiant.prenom }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-success" 
+                                            onclick="inscrireEtudiant({{ etudiant.id }}, {{ groupe.id }})">
+                                        <i class="fas fa-plus"></i> Inscrire
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="text-success">Tous les étudiants sont inscrits</h5>
+                    <p class="text-muted">Aucun étudiant disponible pour l'inscription dans ce groupe générique.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-users"></i> 
+                    Étudiants inscrits ({{ etudiants_inscrits|length }})
+                </h3>
+                <small class="text-muted">Capacité: {{ groupe.capacite_max }} étudiants</small>
+            </div>
+            <div class="card-body">
+                {% if etudiants_inscrits %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for etudiant in etudiants_inscrits %}
+                            <tr data-etudiant-id="{{ etudiant.id }}">
+                                <td><span class="badge badge-secondary">{{ etudiant.matricule }}</span></td>
+                                <td>{{ etudiant.nom }}</td>
+                                <td>{{ etudiant.prenom }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            onclick="desinscrireEtudiant({{ etudiant.id }}, {{ groupe.id }})">
+                                        <i class="fas fa-minus"></i> Désinscrire
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun étudiant inscrit</h5>
+                    <p class="text-muted">Ce groupe générique ne contient aucun étudiant pour le moment.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle"></i> 
+                    Informations du groupe générique
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-info"><i class="fas fa-users"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Étudiants inscrits</span>
+                                <span class="info-box-number">{{ etudiants_inscrits|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-success"><i class="fas fa-percentage"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Taux de remplissage</span>
+                                <span class="info-box-number">{{ "%.1f"|format((etudiants_inscrits|length / groupe.capacite_max * 100) if groupe.capacite_max > 0 else 0) }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-warning"><i class="fas fa-user-plus"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Places disponibles</span>
+                                <span class="info-box-number">{{ groupe.capacite_max - etudiants_inscrits|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="info-box">
+                            <span class="info-box-icon bg-primary"><i class="fas fa-link"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">UE Liées</span>
+                                <span class="info-box-number">{{ groupe.utilisations_ue|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Variable globale pour l'ID du groupe
+const groupeId = {{ groupe.id }};
+
+function inscrireEtudiant(etudiantId, groupeId) {
+    if (confirm('Voulez-vous inscrire cet étudiant dans ce groupe générique ?')) {
+        fetch(`/admin/groupes-generiques/${groupeId}/inscrire-etudiant`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ etudiant_id: etudiantId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mettre à jour les statistiques sans recharger la page
+                updateStatistics(data.nouveau_nombre_etudiants, data.nouveau_taux_remplissage, data.nouveau_places_disponibles);
+                
+                // Supprimer l'étudiant de la liste des disponibles
+                removeStudentFromAvailableList(etudiantId);
+                
+                // Ajouter l'étudiant à la liste des inscrits
+                addStudentToEnrolledList(data.etudiant);
+                
+                // Afficher le message de succès
+                showSuccessMessage(data.message);
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de l\'inscription');
+        });
+    }
+}
+
+function desinscrireEtudiant(etudiantId, groupeId) {
+    if (confirm('Voulez-vous désinscrire cet étudiant de ce groupe générique ?')) {
+        fetch(`/admin/groupes-generiques/${groupeId}/desinscrire-etudiant`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ etudiant_id: etudiantId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mettre à jour les statistiques sans recharger la page
+                updateStatistics(data.nouveau_nombre_etudiants, data.nouveau_taux_remplissage, data.nouveau_places_disponibles);
+                
+                // Supprimer l'étudiant de la liste des inscrits
+                removeStudentFromEnrolledList(etudiantId);
+                
+                // Ajouter l'étudiant à la liste des disponibles
+                addStudentToAvailableList(data.etudiant);
+                
+                // Afficher le message de succès
+                showSuccessMessage(data.message);
+            } else {
+                alert('Erreur : ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la désinscription');
+        });
+    }
+}
+
+// Fonctions pour mettre à jour les statistiques dynamiquement
+function updateStatistics(nombreEtudiants, tauxRemplissage, placesDisponibles) {
+    console.log('Mise à jour des statistiques:', { nombreEtudiants, tauxRemplissage, placesDisponibles });
+    
+    // Trouver la section "Informations du groupe"
+    const infoSection = document.querySelector('.card-header h3.card-title');
+    if (infoSection && infoSection.textContent.includes('Informations du groupe générique')) {
+        const infoCard = infoSection.closest('.card');
+        if (infoCard) {
+            // Mettre à jour le nombre d'étudiants inscrits (première info-box)
+            const infoBoxNombre = infoCard.querySelector('.info-box-number');
+            if (infoBoxNombre) {
+                infoBoxNombre.textContent = nombreEtudiants;
+                console.log('Nombre d\'étudiants mis à jour:', nombreEtudiants);
+            }
+            
+            // Mettre à jour le taux de remplissage (deuxième info-box)
+            const infoBoxes = infoCard.querySelectorAll('.info-box');
+            if (infoBoxes.length >= 2) {
+                const tauxElement = infoBoxes[1].querySelector('.info-box-number');
+                if (tauxElement) {
+                    tauxElement.textContent = tauxRemplissage + '%';
+                    console.log('Taux de remplissage mis à jour:', tauxRemplissage + '%');
+                }
+            }
+            
+            // Mettre à jour les places disponibles (troisième info-box)
+            if (infoBoxes.length >= 3) {
+                const placesElement = infoBoxes[2].querySelector('.info-box-number');
+                if (placesElement) {
+                    placesElement.textContent = placesDisponibles;
+                    console.log('Places disponibles mises à jour:', placesDisponibles);
+                }
+            }
+        }
+    }
+    
+    // Mettre à jour le titre de la section des étudiants inscrits
+    const titreInscrits = document.querySelector('.card-title');
+    if (titreInscrits && titreInscrits.textContent.includes('Étudiants inscrits')) {
+        titreInscrits.innerHTML = `<i class="fas fa-users"></i> Étudiants inscrits (${nombreEtudiants})`;
+        console.log('Titre des étudiants inscrits mis à jour');
+    }
+}
+
+function removeStudentFromAvailableList(etudiantId) {
+    const tableaux = document.querySelectorAll('.table-responsive');
+    if (tableaux.length >= 1) {
+        const tableauDisponibles = tableaux[0]; // Premier tableau (disponibles)
+        const row = tableauDisponibles.querySelector(`tr[data-etudiant-id="${etudiantId}"]`);
+        if (row) {
+            row.remove();
+        }
+        
+        // Vérifier s'il reste des étudiants disponibles
+        const tbody = tableauDisponibles.querySelector('tbody');
+        if (tbody && tbody.children.length === 0) {
+            const cardBody = tbody.closest('.card-body');
+            if (cardBody) {
+                cardBody.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5 class="text-success">Tous les étudiants sont inscrits</h5>
+                        <p class="text-muted">Aucun étudiant disponible pour l'inscription dans ce groupe générique.</p>
+                    </div>
+                `;
+            }
+        }
+    }
+}
+
+function addStudentToEnrolledList(etudiant) {
+    const tableaux = document.querySelectorAll('.table-responsive');
+    if (tableaux.length >= 2) {
+        const tableauInscrits = tableaux[1]; // Deuxième tableau (inscrits)
+        const tbody = tableauInscrits.querySelector('tbody');
+        if (tbody) {
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-etudiant-id', etudiant.id);
+            newRow.innerHTML = `
+                <td><span class="badge badge-secondary">${etudiant.matricule}</span></td>
+                <td>${etudiant.nom}</td>
+                <td>${etudiant.prenom}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-danger" 
+                            onclick="desinscrireEtudiant(${etudiant.id}, {{ groupe.id }})">
+                        <i class="fas fa-minus"></i> Désinscrire
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+        }
+    }
+}
+
+function removeStudentFromEnrolledList(etudiantId) {
+    // Trouver la ligne de l'étudiant dans le tableau des inscrits (deuxième tableau)
+    const tableaux = document.querySelectorAll('.table-responsive');
+    if (tableaux.length >= 2) {
+        const tableauInscrits = tableaux[1]; // Deuxième tableau (inscrits)
+        const row = tableauInscrits.querySelector(`tr[data-etudiant-id="${etudiantId}"]`);
+        if (row) {
+            row.remove();
+        }
+    }
+    
+    // Vérifier s'il reste des étudiants inscrits
+    const tableauxInscrits = document.querySelectorAll('.table-responsive');
+    if (tableauxInscrits.length >= 2) {
+        const tbodyInscrits = tableauxInscrits[1].querySelector('tbody');
+        if (tbodyInscrits && tbodyInscrits.children.length === 0) {
+            const cardBody = tbodyInscrits.closest('.card-body');
+            if (cardBody) {
+                cardBody.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Aucun étudiant inscrit</h5>
+                        <p class="text-muted">Aucun étudiant n'est actuellement inscrit dans ce groupe générique.</p>
+                    </div>
+                `;
+            }
+        }
+    }
+}
+
+function addStudentToAvailableList(etudiant) {
+    const tableaux = document.querySelectorAll('.table-responsive');
+    if (tableaux.length >= 1) {
+        const tableauDisponibles = tableaux[0]; // Premier tableau (disponibles)
+        const tbody = tableauDisponibles.querySelector('tbody');
+        if (tbody) {
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-etudiant-id', etudiant.id);
+            newRow.innerHTML = `
+                <td><span class="badge badge-secondary">${etudiant.matricule}</span></td>
+                <td>${etudiant.nom}</td>
+                <td>${etudiant.prenom}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-success" 
+                            onclick="inscrireEtudiant(${etudiant.id}, {{ groupe.id }})">
+                        <i class="fas fa-plus"></i> Inscrire
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+        }
+    }
+}
+
+function showSuccessMessage(message) {
+    // Créer une notification toast
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    // Supprimer automatiquement après 3 secondes
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 3000);
+}
+</script>
+{% endblock %} 

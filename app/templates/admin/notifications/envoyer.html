@@ -28,61 +28,79 @@
         </div>
         <div class="card-body">
             <form method="POST" id="notificationForm">
+                {{ formulaire.hidden_tag() }}
+                
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="destinataire_type" class="form-label">Type de destinataire *</label>
-                            <select class="form-select" id="destinataire_type" name="destinataire_type" required>
-                                <option value="">Sélectionner un type</option>
-                                <option value="utilisateur">Utilisateur spécifique</option>
-                                <option value="groupe">Groupe d'étudiants</option>
-                                <option value="tous">Tous les utilisateurs</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3" id="utilisateur_select" style="display: none;">
-                            <label for="destinataire_id" class="form-label">Sélectionner l'utilisateur *</label>
-                            <select class="form-select" id="destinataire_id" name="destinataire_id">
-                                <option value="">Choisir un utilisateur</option>
-                                {% for user in utilisateurs %}
-                                    <option value="{{ user.id }}">
-                                        {{ user.nom }} {{ user.prenom }} ({{ user.role }})
-                                    </option>
-                                {% endfor %}
-                            </select>
+                            <label for="{{ formulaire.destinataires.id }}" class="form-label">Destinataires *</label>
+                            {{ formulaire.destinataires(class="form-select", id="destinataires") }}
+                            {% if formulaire.destinataires.errors %}
+                                <div class="text-danger">
+                                    {% for error in formulaire.destinataires.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <div class="mb-3" id="groupe_select" style="display: none;">
-                            <label for="groupe_id" class="form-label">Sélectionner le groupe *</label>
-                            <select class="form-select" id="groupe_id" name="destinataire_id">
-                                <option value="">Choisir un groupe</option>
-                                {% for groupe in groupes %}
-                                    <option value="{{ groupe.id }}">
-                                        {{ groupe.nom }} - {{ groupe.annee_academique.nom if groupe.annee_academique else 'N/A' }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                            <label for="{{ formulaire.groupe_id.id }}" class="form-label">Groupe *</label>
+                            {{ formulaire.groupe_id(class="form-select") }}
+                            {% if formulaire.groupe_id.errors %}
+                                <div class="text-danger">
+                                    {% for error in formulaire.groupe_id.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ formulaire.type_notification.id }}" class="form-label">Type de notification *</label>
+                            {{ formulaire.type_notification(class="form-select") }}
+                            {% if formulaire.type_notification.errors %}
+                                <div class="text-danger">
+                                    {% for error in formulaire.type_notification.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
 
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="titre" class="form-label">Titre *</label>
-                            <input type="text" class="form-control" id="titre" name="titre" required maxlength="100">
+                            <label for="{{ formulaire.titre.id }}" class="form-label">Titre *</label>
+                            {{ formulaire.titre(class="form-control", maxlength="100") }}
+                            {% if formulaire.titre.errors %}
+                                <div class="text-danger">
+                                    {% for error in formulaire.titre.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <div class="mb-3">
-                            <label for="message" class="form-label">Message *</label>
-                            <textarea class="form-control" id="message" name="message" rows="4" required maxlength="500"></textarea>
+                            <label for="{{ formulaire.contenu.id }}" class="form-label">Contenu *</label>
+                            {{ formulaire.contenu(class="form-control", rows="4", maxlength="1000") }}
                             <div class="form-text">
-                                <span id="char_count">0</span>/500 caractères
+                                <span id="char_count">0</span>/1000 caractères
                             </div>
+                            {% if formulaire.contenu.errors %}
+                                <div class="text-danger">
+                                    {% for error in formulaire.contenu.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
 
                         <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="envoyer_email" name="envoyer_email">
-                                <label class="form-check-label" for="envoyer_email">
+                                {{ formulaire.envoyer_email(class="form-check-input") }}
+                                <label class="form-check-label" for="{{ formulaire.envoyer_email.id }}">
                                     Envoyer également par email
                                 </label>
                             </div>
@@ -112,44 +130,41 @@
 <script>
 $(document).ready(function() {
     // Gestion du type de destinataire
-    $('#destinataire_type').change(function() {
+    $('#destinataires').change(function() {
         const type = $(this).val();
         
-        // Masquer tous les sélecteurs
-        $('#utilisateur_select, #groupe_select').hide();
-        $('#destinataire_id, #groupe_id').prop('required', false);
+        // Masquer le sélecteur de groupe
+        $('#groupe_select').hide();
+        $('#{{ formulaire.groupe_id.id }}').prop('required', false);
         
-        // Afficher le bon sélecteur
-        if (type === 'utilisateur') {
-            $('#utilisateur_select').show();
-            $('#destinataire_id').prop('required', true);
-        } else if (type === 'groupe') {
+        // Afficher le sélecteur de groupe si nécessaire
+        if (type === 'groupe') {
             $('#groupe_select').show();
-            $('#groupe_id').prop('required', true);
+            $('#{{ formulaire.groupe_id.id }}').prop('required', true);
         }
     });
 
     // Compteur de caractères
-    $('#message').on('input', function() {
+    $('#{{ formulaire.contenu.id }}').on('input', function() {
         const count = $(this).val().length;
         $('#char_count').text(count);
         
-        if (count > 450) {
+        if (count > 900) {
             $('#char_count').addClass('text-warning');
         } else {
             $('#char_count').removeClass('text-warning');
         }
         
-        if (count > 480) {
+        if (count > 950) {
             $('#char_count').removeClass('text-warning').addClass('text-danger');
         }
     });
 
     // Validation du formulaire
     $('#notificationForm').submit(function(e) {
-        const type = $('#destinataire_type').val();
-        const titre = $('#titre').val().trim();
-        const message = $('#message').val().trim();
+        const destinataires = $('#destinataires').val();
+        const titre = $('#{{ formulaire.titre.id }}').val().trim();
+        const contenu = $('#{{ formulaire.contenu.id }}').val().trim();
         
         if (!titre) {
             alert('Le titre est obligatoire');
@@ -157,19 +172,13 @@ $(document).ready(function() {
             return false;
         }
         
-        if (!message) {
-            alert('Le message est obligatoire');
+        if (!contenu) {
+            alert('Le contenu est obligatoire');
             e.preventDefault();
             return false;
         }
         
-        if (type === 'utilisateur' && !$('#destinataire_id').val()) {
-            alert('Veuillez sélectionner un utilisateur');
-            e.preventDefault();
-            return false;
-        }
-        
-        if (type === 'groupe' && !$('#groupe_id').val()) {
+        if (destinataires === 'groupe' && !$('#{{ formulaire.groupe_id.id }}').val()) {
             alert('Veuillez sélectionner un groupe');
             e.preventDefault();
             return false;

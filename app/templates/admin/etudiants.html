@@ -1,203 +1,326 @@
 {% extends "admin/base.html" %}
 
-{% block title %}Étudiants - Administration{% endblock %}
-
-{% block page_title %}Gestion des étudiants{% endblock %}
-
-{% block breadcrumb %}
-<li class="breadcrumb-item active">Étudiants</li>
-{% endblock %}
+{% block title %}Étudiants - Administrateur{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Liste des étudiants</h3>
-                <div class="card-tools">
-                    <div class="input-group input-group-sm" style="width: 250px;">
-                        <input type="text" id="searchInput" class="form-control float-right" placeholder="Rechercher un étudiant...">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-default" onclick="rechercherEtudiants()">
-                                <i class="fas fa-search"></i>
-                            </button>
+
+
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-users me-2"></i>Gestion des étudiants
+        </h1>
+        <a href="{{ url_for('admin.creer_etudiant') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i>Ajouter un étudiant
+        </a>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-filter me-2"></i>Filtres
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label for="groupe_id" class="form-label">Groupe</label>
+                    <select class="form-select" id="groupe_id" name="groupe_id">
+                        <option value="">Tous les groupes</option>
+                        {% for groupe in groupes %}
+                        <option value="{{ groupe.id }}" {{ 'selected' if request.args.get('groupe_id')|int == groupe.id }}>
+                            {{ groupe.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="annee_academique_id" class="form-label">Année académique</label>
+                    <select class="form-select" id="annee_academique_id" name="annee_academique_id">
+                        <option value="">Toutes les années</option>
+                        {% for annee in annees_academiques %}
+                        <option value="{{ annee.id }}" {{ 'selected' if request.args.get('annee_academique_id')|int == annee.id }}>
+                            {{ annee.nom }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="statut" class="form-label">Statut</label>
+                    <select class="form-select" id="statut" name="statut">
+                        <option value="">Tous les statuts</option>
+                        <option value="actif" {{ 'selected' if request.args.get('statut') == 'actif' }}>Actif</option>
+                        <option value="inactif" {{ 'selected' if request.args.get('statut') == 'inactif' }}>Inactif</option>
+                        <option value="diplome" {{ 'selected' if request.args.get('statut') == 'diplome' }}>Diplômé</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-1"></i>Filtrer
+                    </button>
+                    <a href="{{ url_for('admin.etudiants') }}" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des étudiants -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Liste des étudiants
+            </h6>
+            <div>
+                <button class="btn btn-success btn-sm" onclick="exporterEtudiants()">
+                    <i class="fas fa-download me-1"></i>Exporter
+                </button>
+                <button class="btn btn-info btn-sm" onclick="importerEtudiants()">
+                    <i class="fas fa-upload me-1"></i>Importer
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Composant de recherche et import/export -->
+            {% set export_route = 'admin.exporter_etudiants' %}
+            {% set import_route = 'admin.importer_etudiants' %}
+            {% include 'admin/components/search_export.html' %}
+
+            {% if etudiants.items %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="etudiantsTable">
+                    <thead class="bg-dark text-white">
+                        <tr>
+                            <th class="text-center">Photo</th>
+                            <th>Informations</th>
+                            <th>Groupe</th>
+                            <th>Année</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for etudiant in etudiants.items %}
+                        <tr>
+                            <td class="text-center">
+                                {% if etudiant.photo %}
+                                <img src="{{ url_for('static', filename='uploads/' + etudiant.photo) }}" 
+                                     class="rounded-circle" width="50" height="50" alt="Photo">
+                                {% else %}
+                                <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ etudiant.nom }} {{ etudiant.prenom }}</strong><br>
+                                <small class="text-muted">{{ etudiant.matricule }}</small><br>
+                                <small class="text-muted">{{ etudiant.email }}</small>
+                            </td>
+                            <td>
+                                {% set groupes_etudiant = etudiant.inscriptions_groupes %}
+                                {% if groupes_etudiant %}
+                                    {% for inscription in groupes_etudiant %}
+                                        <span class="badge bg-primary">{{ inscription.groupe.nom }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Non assigné</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ etudiant.annee_academique.nom if etudiant.annee_academique else 'Non définie' }}
+                            </td>
+                            <td>
+                                {% if etudiant.statut == 'actif' %}
+                                <span class="badge bg-success">Actif</span>
+                                {% elif etudiant.statut == 'inactif' %}
+                                <span class="badge bg-danger">Inactif</span>
+                                {% elif etudiant.statut == 'diplome' %}
+                                <span class="badge bg-warning">Diplômé</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ etudiant.statut|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('admin.modifier_etudiant', etudiant_id=etudiant.id) }}" 
+                                       class="btn btn-outline-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.profil_etudiant', etudiant_id=etudiant.id) }}" 
+                                       class="btn btn-outline-info" title="Profil">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            onclick="supprimerEtudiant({{ etudiant.id }})" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if etudiants.pages > 1 %}
+            <nav aria-label="Pagination des étudiants">
+                <ul class="pagination justify-content-center">
+                    {% if etudiants.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.etudiants', page=etudiants.prev_num, **request.args) }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% for page_num in etudiants.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != etudiants.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.etudiants', page=page_num, **request.args) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if etudiants.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.etudiants', page=etudiants.next_num, **request.args) }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-gray-300 mb-3"></i>
+                <h5 class="text-muted">Aucun étudiant trouvé</h5>
+                <p class="text-muted">Commencez par ajouter des étudiants à votre institut</p>
+                <a href="{{ url_for('admin.creer_etudiant') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Ajouter un étudiant
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'import -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Importer des étudiants</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="importForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Fichier Excel/CSV</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">
+                            Formats acceptés : Excel (.xlsx, .xls) ou CSV (.csv)
                         </div>
                     </div>
-                    <a href="{{ url_for('admin.creer_etudiant') }}" class="btn btn-primary btn-sm ml-2">
-                        <i class="fas fa-plus"></i> Nouvel étudiant
-                    </a>
-                </div>
-            </div>
-            <div class="card-body">
-                {% if annee_active %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> 
-                    Affichage des étudiants de l'année académique <strong>{{ annee_active.nom }}</strong>
-                </div>
-                
-                {% if etudiants %}
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped" id="etudiantsTable">
-                        <thead>
-                            <tr>
-                                <th>Matricule</th>
-                                <th>Photo</th>
-                                <th>Nom complet</th>
-                                <th>Date naissance</th>
-                                <th>Sexe</th>
-                                <th>Téléphone</th>
-                                <th>Email</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for etudiant in etudiants %}
-                            <tr>
-                                <td>
-                                    <span class="badge badge-secondary">{{ etudiant.matricule }}</span>
-                                </td>
-                                <td>
-                                    {% if etudiant.photo %}
-                                        <img src="{{ url_for('static', filename='uploads/' + etudiant.photo) }}" 
-                                             class="img-circle" width="40" height="40" alt="Photo">
-                                    {% else %}
-                                        <div class="img-circle bg-secondary d-flex align-items-center justify-content-center" 
-                                             style="width: 40px; height: 40px;">
-                                            <i class="fas fa-user text-white"></i>
-                                        </div>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <strong>{{ etudiant.prenom }} {{ etudiant.nom }}</strong>
-                                    {% if etudiant.lieu_naissance %}
-                                        <br><small class="text-muted">{{ etudiant.lieu_naissance }}</small>
-                                    {% endif %}
-                                </td>
-                                <td>{{ etudiant.date_naissance.strftime('%d/%m/%Y') }}</td>
-                                <td>
-                                    {% if etudiant.sexe == 'M' %}
-                                        <span class="badge badge-info">Masculin</span>
-                                    {% else %}
-                                        <span class="badge badge-pink">Féminin</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if etudiant.telephone %}
-                                        <a href="tel:{{ etudiant.telephone }}">{{ etudiant.telephone }}</a>
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if etudiant.email %}
-                                        <a href="mailto:{{ etudiant.email }}">{{ etudiant.email }}</a>
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if etudiant.statut == 'actif' %}
-                                        <span class="badge badge-success">Actif</span>
-                                    {% elif etudiant.statut == 'suspendu' %}
-                                        <span class="badge badge-warning">Suspendu</span>
-                                    {% elif etudiant.statut == 'diplômé' %}
-                                        <span class="badge badge-primary">Diplômé</span>
-                                    {% elif etudiant.statut == 'abandon' %}
-                                        <span class="badge badge-danger">Abandon</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="{{ url_for('admin.modifier_etudiant', etudiant_id=etudiant.id) }}" 
-                                           class="btn btn-sm btn-outline-primary" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ url_for('admin.details_etudiant', etudiant_id=etudiant.id) }}" 
-                                           class="btn btn-sm btn-outline-info" title="Détails">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-outline-success" 
-                                                onclick="changerStatut({{ etudiant.id }}, 'actif')" title="Activer">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-warning" 
-                                                onclick="changerStatut({{ etudiant.id }}, 'suspendu')" title="Suspendre">
-                                            <i class="fas fa-pause"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                    <div class="mb-3">
+                        <label for="groupe_id_import" class="form-label">Groupe par défaut</label>
+                        <select class="form-select" id="groupe_id_import" name="groupe_id">
+                            <option value="">Sélectionner un groupe</option>
+                            {% for groupe in groupes %}
+                            <option value="{{ groupe.id }}">{{ groupe.nom }}</option>
                             {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">Aucun étudiant</h5>
-                    <p class="text-muted">Aucun étudiant n'est inscrit pour cette année académique.</p>
-                    <a href="{{ url_for('admin.creer_etudiant') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Inscrire le premier étudiant
-                    </a>
-                </div>
-                {% endif %}
-                {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                    <h5 class="text-warning">Aucune année académique active</h5>
-                    <p class="text-muted">Vous devez créer et activer une année académique avant d'inscrire des étudiants.</p>
-                    <a href="{{ url_for('admin.annees_academiques') }}" class="btn btn-warning">
-                        <i class="fas fa-calendar-alt"></i> Gérer les années académiques
-                    </a>
-                </div>
-                {% endif %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="soumettreImport()">
+                    <i class="fas fa-upload me-1"></i>Importer
+                </button>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-function rechercherEtudiants() {
-    const terme = document.getElementById('searchInput').value;
-    if (terme.trim()) {
-        window.location.href = `{{ url_for('admin.rechercher_etudiants') }}?q=${encodeURIComponent(terme)}`;
+function supprimerEtudiant(etudiantId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ? Cette action est irréversible.')) {
+        fetch(`/admin/etudiants/supprimer/${etudiantId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression');
+        });
     }
 }
 
-// Recherche en temps réel
-document.getElementById('searchInput').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        rechercherEtudiants();
-    }
-});
-
-function changerStatut(etudiantId, statut) {
-    const statuts = {
-        'actif': 'activer',
-        'suspendu': 'suspendre',
-        'diplômé': 'diplômer',
-        'abandon': 'marquer comme abandon'
-    };
-    
-    if (confirm(`Êtes-vous sûr de vouloir ${statuts[statut]} cet étudiant ?`)) {
-        // TODO: Implémenter le changement de statut via AJAX
-        window.location.href = `/admin/etudiants/${etudiantId}/statut/${statut}`;
-    }
+function exporterEtudiants() {
+    const params = new URLSearchParams(window.location.search);
+    window.open(`/admin/etudiants/export?${params.toString()}`, '_blank');
 }
 
-// Filtrage en temps réel
-document.getElementById('searchInput').addEventListener('input', function() {
-    const terme = this.value.toLowerCase();
-    const table = document.getElementById('etudiantsTable');
-    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+function importerEtudiants() {
+    const modal = new bootstrap.Modal(document.getElementById('importModal'));
+    modal.show();
+}
+
+function soumettreImport() {
+    const formData = new FormData(document.getElementById('importForm'));
     
-    for (let row of rows) {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(terme) ? '' : 'none';
-    }
+    fetch('/admin/etudiants/importer', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Import réussi ! ' + data.message);
+            location.reload();
+        } else {
+            alert('Erreur lors de l\'import: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'import');
+    });
+}
+
+// Auto-submit form when filters change
+document.querySelectorAll('#groupe_id, #annee_academique_id, #statut').forEach(select => {
+    select.addEventListener('change', function() {
+        this.form.submit();
+    });
 });
 </script>
 {% endblock %} 

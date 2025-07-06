@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Profil - Étudiant{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Mon Profil</h1>
+        </div>
+    </div>
+
+    <!-- Informations personnelles -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations personnelles</h5>
+                </div>
+                <div class="card-body">
+                    {% if etudiant %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img src="{{ url_for('static', filename='img/default-avatar.png') }}" 
+                                 alt="Photo de profil" 
+                                 class="img-fluid rounded-circle mb-3"
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                        </div>
+                        <div class="col-md-8">
+                            <h4>{{ etudiant.nom }} {{ etudiant.prenom }}</h4>
+                            <p class="text-muted">{{ etudiant.matricule }}</p>
+                            
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Email :</strong></td>
+                                    <td>{{ etudiant.email }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Téléphone :</strong></td>
+                                    <td>{{ etudiant.telephone if etudiant.telephone else 'Non renseigné' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Date de naissance :</strong></td>
+                                    <td>{{ etudiant.date_naissance.strftime('%d/%m/%Y') if etudiant.date_naissance else 'Non renseignée' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Lieu de naissance :</strong></td>
+                                    <td>{{ etudiant.lieu_naissance if etudiant.lieu_naissance else 'Non renseigné' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Adresse :</strong></td>
+                                    <td>{{ etudiant.adresse if etudiant.adresse else 'Non renseignée' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Informations non disponibles</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Informations académiques</h5>
+                </div>
+                <div class="card-body">
+                    {% if informations_academiques %}
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Année académique :</strong></td>
+                            <td>{{ informations_academiques.annee_academique.nom if informations_academiques.annee_academique else 'Non définie' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Semestre actuel :</strong></td>
+                            <td>{{ informations_academiques.semestre_actuel.nom if informations_academiques.semestre_actuel else 'Non défini' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Niveau :</strong></td>
+                            <td>{{ informations_academiques.niveau }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Groupe :</strong></td>
+                            <td>{{ etudiant.groupe.nom if etudiant and etudiant.groupe else 'Non assigné' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Spécialité :</strong></td>
+                            <td>{{ informations_academiques.specialite if informations_academiques.specialite else 'Non définie' }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Statut :</strong></td>
+                            <td>
+                                <span class="badge bg-success">Actif</span>
+                            </td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">Informations académiques non disponibles</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résultats académiques -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Résultats académiques</h5>
+                </div>
+                <div class="card-body">
+                    {% if resultats %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Matière</th>
+                                    <th>Note</th>
+                                    <th>Coefficient</th>
+                                    <th>Type d'évaluation</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for resultat in resultats %}
+                                <tr>
+                                    <td>{{ resultat.matiere.nom if resultat.matiere else 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge {% if resultat.note >= 10 %}bg-success{% elif resultat.note >= 8 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ resultat.note }}/20
+                                        </span>
+                                    </td>
+                                    <td>{{ resultat.coefficient }}</td>
+                                    <td>{{ resultat.type_evaluation }}</td>
+                                    <td>{{ resultat.date_evaluation.strftime('%d/%m/%Y') if resultat.date_evaluation else 'N/A' }}</td>
+                                    <td>
+                                        {% if resultat.validee %}
+                                            <span class="badge bg-success">Validée</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">En attente</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Graphique des moyennes -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6>Évolution des moyennes par semestre</h6>
+                            <div class="chart-container" style="position: relative; height:300px;">
+                                <canvas id="moyennesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Répartition des notes</h6>
+                            <div class="chart-container" style="position: relative; height:300px;">
+                                <canvas id="notesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun résultat académique disponible</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('etudiant.notes') }}" class="btn btn-primary w-100 mb-2">
+                                <i class="fas fa-file-alt me-2"></i>Voir mes notes
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('etudiant.emploi_du_temps') }}" class="btn btn-info w-100 mb-2">
+                                <i class="fas fa-calendar-alt me-2"></i>Emploi du temps
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('etudiant.absences') }}" class="btn btn-warning w-100 mb-2">
+                                <i class="fas fa-user-times me-2"></i>Mes absences
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('principal.changer_mot_de_passe') }}" class="btn btn-secondary w-100 mb-2">
+                                <i class="fas fa-key me-2"></i>Changer mot de passe
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if resultats %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Graphique des moyennes par semestre
+const moyennesCtx = document.getElementById('moyennesChart').getContext('2d');
+const moyennesChart = new Chart(moyennesCtx, {
+    type: 'line',
+    data: {
+        labels: ['Semestre 1', 'Semestre 2', 'Semestre 3', 'Semestre 4'],
+        datasets: [{
+            label: 'Moyenne',
+            data: [12.5, 13.2, 11.8, 14.1],
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 20
+            }
+        }
+    }
+});
+
+// Graphique de répartition des notes
+const notesCtx = document.getElementById('notesChart').getContext('2d');
+const notesChart = new Chart(notesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['≥ 10', '8-9.99', '< 8'],
+        datasets: [{
+            data: [15, 8, 3],
+            backgroundColor: [
+                'rgb(75, 192, 192)',
+                'rgb(255, 205, 86)',
+                'rgb(255, 99, 132)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+</script>
+{% endif %}
+{% endblock %} 

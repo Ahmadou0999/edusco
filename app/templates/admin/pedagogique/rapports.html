@@ -1,40 +1,200 @@
-{% extends 'admin/base.html' %}
+{% extends "admin/base.html" %}
+
+{% block title %}Rapports Pédagogiques{% endblock %}
+
 {% block content %}
-<h2>Rapports pédagogiques</h2>
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Étudiants</h5>
-                <p class="card-text">{{ total_etudiants }}</p>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Rapports Pédagogiques</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-download fa-sm text-white-50"></i> Exporter
+        </a>
+    </div>
+
+    <!-- Statistiques générales -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Étudiants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_etudiants }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Enseignants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_enseignants }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Groupes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_groupes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-layer-group fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Ratio Étudiant/Enseignant
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% if total_enseignants > 0 %}
+                                    {{ "%.1f"|format(total_etudiants / total_enseignants) }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-balance-scale fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Enseignants</h5>
-                <p class="card-text">{{ total_enseignants }}</p>
+
+    <!-- Répartition par sexe -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition des Étudiants par Sexe</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <div class="h4 text-primary">{{ etudiants_hommes }}</div>
+                                <div class="text-xs text-uppercase text-muted">Hommes</div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar bg-primary" style="width: {{ (etudiants_hommes / total_etudiants * 100) if total_etudiants > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <div class="h4 text-success">{{ etudiants_femmes }}</div>
+                                <div class="text-xs text-uppercase text-muted">Femmes</div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar bg-success" style="width: {{ (etudiants_femmes / total_etudiants * 100) if total_etudiants > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Actions Rapides</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.enseignants') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-chalkboard-teacher"></i> Gérer les Enseignants
+                        </a>
+                        <a href="{{ url_for('admin.etudiants') }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-users"></i> Gérer les Étudiants
+                        </a>
+                        <a href="{{ url_for('admin.groupes') }}" class="btn btn-info btn-sm">
+                            <i class="fas fa-layer-group"></i> Gérer les Groupes
+                        </a>
+                        <a href="{{ url_for('admin.pedagogique_dashboard') }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard Pédagogique
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Notes</h5>
-                <p class="card-text">{{ total_notes }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Absences</h5>
-                <p class="card-text">{{ total_absences }}</p>
+
+    <!-- Rapports détaillés -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Rapports Disponibles</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-left-primary">
+                                <div class="card-body">
+                                    <h6 class="card-title">Rapport de Performance</h6>
+                                    <p class="card-text">Analyse des performances des étudiants par matière et par groupe.</p>
+                                    <a href="{{ url_for('admin.rapport_performance') }}" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-chart-line"></i> Voir le rapport
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-left-success">
+                                <div class="card-body">
+                                    <h6 class="card-title">Rapport d'Assiduité</h6>
+                                    <p class="card-text">Statistiques sur les présences et absences des étudiants.</p>
+                                    <a href="{{ url_for('admin.rapport_assiduite') }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-calendar-check"></i> Voir le rapport
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-left-info">
+                                <div class="card-body">
+                                    <h6 class="card-title">Rapport Pédagogique</h6>
+                                    <p class="card-text">Vue d'ensemble de l'activité pédagogique et des résultats.</p>
+                                    <a href="{{ url_for('admin.rapport_pedagogique') }}" class="btn btn-info btn-sm">
+                                        <i class="fas fa-graduation-cap"></i> Voir le rapport
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-<p><strong>Moyenne générale des notes :</strong> {{ moyenne_generale|round(2) }}</p>
-<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Retour</a>
 {% endblock %} 

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Emploi du temps - Étudiant{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Mon Emploi du temps</h1>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filtres</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="annee_id" class="form-label">Année académique</label>
+                            <select class="form-select" id="annee_id" name="annee_id">
+                                <option value="">Toutes les années</option>
+                                {% for annee in annees %}
+                                <option value="{{ annee.id }}" {% if request.args.get('annee_id')|int == annee.id %}selected{% endif %}>
+                                    {{ annee.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="semestre_id" class="form-label">Semestre</label>
+                            <select class="form-select" id="semestre_id" name="semestre_id">
+                                <option value="">Tous les semestres</option>
+                                {% for semestre in semestres %}
+                                <option value="{{ semestre.id }}" {% if request.args.get('semestre_id')|int == semestre.id %}selected{% endif %}>
+                                    {{ semestre.nom }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">Filtrer</button>
+                                <a href="{{ url_for('etudiant.emploi_du_temps') }}" class="btn btn-secondary">Réinitialiser</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emploi du temps -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Emploi du temps</h5>
+                </div>
+                <div class="card-body">
+                    {% if emploi_du_temps %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 120px;">Horaire</th>
+                                    <th>Lundi</th>
+                                    <th>Mardi</th>
+                                    <th>Mercredi</th>
+                                    <th>Jeudi</th>
+                                    <th>Vendredi</th>
+                                    <th>Samedi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for horaire in emploi_du_temps %}
+                                <tr>
+                                    <td class="text-center fw-bold">
+                                        {{ horaire.heure_debut }}<br>
+                                        <small class="text-muted">{{ horaire.heure_fin }}</small>
+                                    </td>
+                                    {% for jour in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'] %}
+                                    <td class="align-middle" style="height: 100px;">
+                                        {% if emploi_du_temps[horaire][jour] %}
+                                            {% for cours in emploi_du_temps[horaire][jour] %}
+                                            <div class="cours-item p-2 border rounded mb-1" style="background-color: #f8f9fa;">
+                                                <div class="fw-bold text-primary">{{ cours.matiere.nom if cours.matiere else 'N/A' }}</div>
+                                                <div class="small text-muted">{{ cours.enseignant.nom if cours.enseignant else 'N/A' }}</div>
+                                                <div class="small text-muted">{{ cours.salle if cours.salle else 'N/A' }}</div>
+                                                {% if cours.type_cours %}
+                                                <span class="badge bg-info">{{ cours.type_cours }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="text-center text-muted">
+                                                <small>-</small>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Légende -->
+                    <div class="mt-3">
+                        <h6>Légende :</h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <span class="badge bg-primary">Cours magistral</span>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="badge bg-success">Travaux dirigés</span>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="badge bg-warning">Travaux pratiques</span>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="badge bg-info">Autre</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun emploi du temps disponible</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

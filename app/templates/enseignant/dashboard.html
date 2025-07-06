@@ -1,103 +1,251 @@
-{% extends "base.html" %}
+{% extends "enseignant/base.html" %}
 
-{% block title %}Tableau de bord Enseignant - Edusco{% endblock %}
-{% block page_title %}Tableau de bord Enseignant{% endblock %}
-{% block breadcrumb %}Tableau de bord{% endblock %}
+{% block title %}Tableau de bord - Enseignant{% endblock %}
+
+{% block page_title %}Tableau de bord{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-info">
-            <div class="inner">
-                <h3>4</h3>
-                <p>Mes groupes</p>
-            </div>
-            <div class="icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <a href="#" class="small-box-footer">
-                Voir mes groupes <i class="fas fa-arrow-circle-right"></i>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-tachometer-alt me-2"></i>Tableau de bord
+        </h1>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('enseignant.saisir_notes') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus me-1"></i>Saisir des notes
+            </a>
+            <a href="{{ url_for('enseignant.saisir_absences') }}" class="btn btn-warning btn-sm">
+                <i class="fas fa-user-times me-1"></i>Saisir des absences
             </a>
         </div>
     </div>
-    
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
-            <div class="inner">
-                <h3>120</h3>
-                <p>Étudiants</p>
+
+    <!-- Statistiques -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Matières enseignées
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_matieres }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="icon">
-                <i class="fas fa-user-graduate"></i>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Groupes
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_groupes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <a href="#" class="small-box-footer">
-                Voir mes étudiants <i class="fas fa-arrow-circle-right"></i>
-            </a>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Étudiants
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_etudiants }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Notes saisies
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.notes_saisies }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-warning">
-            <div class="inner">
-                <h3>8</h3>
-                <p>Matières</p>
+
+    <!-- Contenu principal -->
+    <div class="row">
+        <!-- Activités récentes -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-history me-2"></i>Activités récentes
+                    </h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
+                            <a class="dropdown-item" href="{{ url_for('enseignant.notes') }}">Voir toutes les notes</a>
+                            <a class="dropdown-item" href="{{ url_for('enseignant.absences') }}">Voir toutes les absences</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if activites_recentes %}
+                        <div class="timeline">
+                            {% for activite in activites_recentes %}
+                            <div class="timeline-item mb-3">
+                                <div class="d-flex">
+                                    <div class="timeline-icon me-3">
+                                        {% if activite.type == 'note' %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% elif activite.type == 'absence' %}
+                                            <i class="fas fa-user-times text-danger"></i>
+                                        {% else %}
+                                            <i class="fas fa-info-circle text-info"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6 class="mb-1">{{ activite.titre }}</h6>
+                                        <p class="text-muted small mb-1">{{ activite.description }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>{{ activite.date_creation }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-muted">Aucune activité récente</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="icon">
-                <i class="fas fa-book"></i>
-            </div>
-            <a href="#" class="small-box-footer">
-                Voir mes matières <i class="fas fa-arrow-circle-right"></i>
-            </a>
         </div>
-    </div>
-    
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-danger">
-            <div class="inner">
-                <h3>15</h3>
-                <p>Notes à saisir</p>
+
+        <!-- Actions rapides -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bolt me-2"></i>Actions rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('enseignant.saisir_notes') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Saisir des notes
+                        </a>
+                        <a href="{{ url_for('enseignant.saisir_absences') }}" class="btn btn-warning">
+                            <i class="fas fa-user-times me-2"></i>Saisir des absences
+                        </a>
+                        <a href="{{ url_for('enseignant.emploi_du_temps') }}" class="btn btn-info">
+                            <i class="fas fa-calendar me-2"></i>Voir l'emploi du temps
+                        </a>
+                        <a href="{{ url_for('enseignant.rapport_notes') }}" class="btn btn-success">
+                            <i class="fas fa-chart-bar me-2"></i>Rapport des notes
+                        </a>
+                        <a href="{{ url_for('enseignant.rapport_absences') }}" class="btn btn-danger">
+                            <i class="fas fa-chart-pie me-2"></i>Rapport des absences
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="icon">
-                <i class="fas fa-edit"></i>
+
+            <!-- Notifications récentes -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bell me-2"></i>Notifications récentes
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="notifications-list">
+                        <!-- Les notifications seront chargées via AJAX -->
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('enseignant.liste_notifications') }}" class="btn btn-outline-primary btn-sm">
+                            Voir toutes les notifications
+                        </a>
+                    </div>
+                </div>
             </div>
-            <a href="#" class="small-box-footer">
-                Saisir les notes <i class="fas fa-arrow-circle-right"></i>
-            </a>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-calendar mr-1"></i>
-                    Mon emploi du temps
-                </h3>
-            </div>
-            <div class="card-body">
-                <p>Votre emploi du temps sera affiché ici.</p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-tasks mr-1"></i>
-                    Tâches à faire
-                </h3>
-            </div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Saisir les notes du groupe A</li>
-                    <li class="list-group-item">Justifier les absences</li>
-                    <li class="list-group-item">Préparer les évaluations</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+.timeline-item {
+    border-left: 2px solid #e3e6f0;
+    padding-left: 20px;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4e73df;
+}
+
+.timeline-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f8f9fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notifications-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+
+<script>
+// Charger les notifications récentes
+document.addEventListener('DOMContentLoaded', function() {
+    // Ici on pourrait charger les notifications via AJAX
+    console.log('Dashboard enseignant chargé');
+});
+</script>
 {% endblock %} 

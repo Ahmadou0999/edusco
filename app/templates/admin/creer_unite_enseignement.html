@@ -2,11 +2,22 @@
 
 {% block title %}Créer une unité d'enseignement - Administration{% endblock %}
 
-{% block page_title %}Nouvelle unité d'enseignement{% endblock %}
+{% block page_title %}
+    {% if semestre_predefini %}
+        Nouvelle UE pour {{ semestre_predefini.nom }}
+    {% else %}
+        Nouvelle unité d'enseignement
+    {% endif %}
+{% endblock %}
 
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{{ url_for('admin.unites_enseignement') }}">Unités d'enseignement</a></li>
+{% if semestre_predefini %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.semestres') }}">Semestres</a></li>
+<li class="breadcrumb-item active">Nouvelle UE - {{ semestre_predefini.nom }}</li>
+{% else %}
 <li class="breadcrumb-item active">Nouvelle UE</li>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -14,7 +25,13 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Informations de l'unité d'enseignement</h3>
+                <h3 class="card-title">
+                    {% if semestre_predefini %}
+                        Informations de l'unité d'enseignement pour {{ semestre_predefini.nom }}
+                    {% else %}
+                        Informations de l'unité d'enseignement
+                    {% endif %}
+                </h3>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -36,17 +53,25 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.semestre_id.label(class="form-label") }}
-                                {{ formulaire.semestre_id(class="form-control" + (" is-invalid" if formulaire.semestre_id.errors else "")) }}
-                                {% if formulaire.semestre_id.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.semestre_id.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
+                            {% if semestre_predefini %}
+                                <div class="form-group">
+                                    <label class="form-label">Semestre</label>
+                                    <input type="text" class="form-control" value="{{ semestre_predefini.nom }} ({{ semestre_predefini.code }})" readonly>
+                                    <small class="form-text text-muted">Semestre pré-sélectionné</small>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    {{ formulaire.semestre_id.label(class="form-label") }}
+                                    {{ formulaire.semestre_id(class="form-control" + (" is-invalid" if formulaire.semestre_id.errors else "")) }}
+                                    {% if formulaire.semestre_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.semestre_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -101,7 +126,11 @@
                     
                     <div class="form-group">
                         {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
-                        <a href="{{ url_for('admin.unites_enseignement') }}" class="btn btn-secondary">Annuler</a>
+                        {% if semestre_predefini %}
+                            <a href="{{ url_for('admin.semestres') }}" class="btn btn-secondary">Annuler</a>
+                        {% else %}
+                            <a href="{{ url_for('admin.unites_enseignement') }}" class="btn btn-secondary">Annuler</a>
+                        {% endif %}
                     </div>
                 </form>
             </div>
@@ -114,6 +143,13 @@
                 <h3 class="card-title">Informations</h3>
             </div>
             <div class="card-body">
+                {% if semestre_predefini %}
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> Semestre sélectionné</h5>
+                        <p class="mb-0">Cette UE sera créée pour le semestre <strong>{{ semestre_predefini.nom }}</strong></p>
+                    </div>
+                {% endif %}
+                
                 <div class="alert alert-info">
                     <h5><i class="fas fa-info-circle"></i> Création d'une UE</h5>
                     <p>Une unité d'enseignement regroupe plusieurs matières connexes.</p>

@@ -3,71 +3,145 @@
 {% block title %}Connexion - Edusco{% endblock %}
 
 {% block content %}
-<div class="login-box">
-    <div class="login-logo">
-        <a href="{{ url_for('principal.accueil') }}">
-            <i class="fas fa-graduation-cap"></i> <b>Edusco</b>
-        </a>
-    </div>
-    
-    <div class="card">
-        <div class="card-body login-card-body">
-            <p class="login-box-msg">Connectez-vous pour accéder à la plateforme</p>
-            
-            <form method="post">
-                {{ formulaire.hidden_tag() }}
-                
-                <div class="input-group mb-3">
-                    {{ formulaire.email(class="form-control", placeholder="Email") }}
-                    <div class="input-group-append">
-                        <div class="input-group-text">
-                            <span class="fas fa-envelope"></span>
-                        </div>
-                    </div>
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        Edusco
+                    </h3>
+                    <p class="mb-0 mt-2">Plateforme de gestion académique</p>
                 </div>
-                {% if formulaire.email.errors %}
-                    <div class="text-danger mb-2">
-                        {% for error in formulaire.email.errors %}
-                            <small>{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                
-                <div class="input-group mb-3">
-                    {{ formulaire.mot_de_passe(class="form-control", placeholder="Mot de passe") }}
-                    <div class="input-group-append">
-                        <div class="input-group-text">
-                            <span class="fas fa-lock"></span>
+                <div class="card-body p-4">
+                    <h4 class="text-center mb-4">Connexion</h4>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" action="{{ url_for('authentification.connexion') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id }}" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </label>
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="votre@email.com") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
-                    </div>
-                </div>
-                {% if formulaire.mot_de_passe.errors %}
-                    <div class="text-danger mb-2">
-                        {% for error in formulaire.mot_de_passe.errors %}
-                            <small>{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                
-                <div class="row">
-                    <div class="col-8">
-                        <div class="icheck-primary">
-                            {{ formulaire.se_souvenir() }}
-                            <label for="{{ formulaire.se_souvenir.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.mot_de_passe.id }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Mot de passe
+                            </label>
+                            <div class="input-group">
+                                {{ form.mot_de_passe(class="form-control" + (" is-invalid" if form.mot_de_passe.errors else ""), placeholder="Votre mot de passe", id="password") }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.mot_de_passe.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.mot_de_passe.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ form.se_souvenir(class="form-check-input") }}
+                            <label class="form-check-label" for="{{ form.se_souvenir.id }}">
                                 Se souvenir de moi
                             </label>
                         </div>
+                        
+                        <div class="d-grid mb-3">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('authentification.mot_de_passe_oublie') }}" class="text-decoration-none">
+                            <i class="fas fa-question-circle me-1"></i>Mot de passe oublié ?
+                        </a>
                     </div>
-                    <div class="col-4">
-                        {{ formulaire.bouton_connexion(class="btn btn-primary btn-block") }}
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-2">Nouveau sur Edusco ?</p>
+                        <a href="{{ url_for('authentification.inscription') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus me-2"></i>Créer un compte
+                        </a>
                     </div>
                 </div>
-            </form>
+            </div>
             
-            <p class="mb-1">
-                <a href="#">Mot de passe oublié ?</a>
-            </p>
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <a href="{{ url_for('principal.accueil') }}" class="text-decoration-none">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à l'accueil
+                    </a>
+                </small>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+    
+    togglePassword.addEventListener('click', function() {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+    
+    // Auto-focus on email field
+    document.getElementById('{{ form.email.id }}').focus();
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const email = document.getElementById('{{ form.email.id }}');
+        const password = document.getElementById('password');
+        
+        if (!email.value.trim()) {
+            e.preventDefault();
+            email.classList.add('is-invalid');
+            email.focus();
+            return;
+        }
+        
+        if (!password.value.trim()) {
+            e.preventDefault();
+            password.classList.add('is-invalid');
+            password.focus();
+            return;
+        }
+    });
+});
+</script>
 {% endblock %} 

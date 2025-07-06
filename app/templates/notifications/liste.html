@@ -42,13 +42,13 @@
                                 {% endif %}
                                 <div class="btn-group" role="group">
                                     {% if not notification.lue %}
-                                        <a href="{{ url_for('principal.marquer_notification_lue', notification_id=notification.id) }}" 
+                                        <a href="{{ url_for('notifications.marquer_lue', notification_id=notification.id) }}" 
                                            class="btn btn-sm btn-outline-success" 
                                            title="Marquer comme lue">
                                             <i class="fas fa-check"></i>
                                         </a>
                                     {% endif %}
-                                    <a href="{{ url_for('principal.supprimer_notification', notification_id=notification.id) }}" 
+                                    <a href="{{ url_for('notifications.supprimer', notification_id=notification.id) }}" 
                                        class="btn btn-sm btn-outline-danger" 
                                        title="Supprimer"
                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette notification ?')">

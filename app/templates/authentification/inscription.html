@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Inscription - Edusco{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Créer un compte
+                    </h3>
+                    <p class="mb-0 mt-2">Rejoignez la communauté Edusco</p>
+                </div>
+                <div class="card-body p-4">
+                    <h4 class="text-center mb-4">Inscription</h4>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" action="{{ url_for('authentification.inscription') }}" id="inscriptionForm">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.nom.id }}" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Nom *
+                                </label>
+                                {{ form.nom(class="form-control" + (" is-invalid" if form.nom.errors else ""), placeholder="Votre nom") }}
+                                {% if form.nom.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.nom.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.prenom.id }}" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Prénom *
+                                </label>
+                                {{ form.prenom(class="form-control" + (" is-invalid" if form.prenom.errors else ""), placeholder="Votre prénom") }}
+                                {% if form.prenom.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.prenom.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id }}" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email *
+                            </label>
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="votre@email.com") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.mot_de_passe.id }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Mot de passe *
+                            </label>
+                            <div class="input-group">
+                                {{ form.mot_de_passe(class="form-control" + (" is-invalid" if form.mot_de_passe.errors else ""), placeholder="Votre mot de passe", id="password") }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.mot_de_passe.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.mot_de_passe.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                <small>Le mot de passe doit contenir au moins 6 caractères</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.confirmation_mot_de_passe.id }}" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Confirmer le mot de passe *
+                            </label>
+                            <div class="input-group">
+                                {{ form.confirmation_mot_de_passe(class="form-control" + (" is-invalid" if form.confirmation_mot_de_passe.errors else ""), placeholder="Confirmez votre mot de passe", id="confirmPassword") }}
+                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.confirmation_mot_de_passe.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.confirmation_mot_de_passe.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="acceptTerms" required>
+                            <label class="form-check-label" for="acceptTerms">
+                                J'accepte les <a href="{{ url_for('principal.conditions_utilisation') }}" target="_blank">conditions d'utilisation</a> 
+                                et la <a href="{{ url_for('principal.politique_confidentialite') }}" target="_blank">politique de confidentialité</a> *
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid mb-3">
+                            {{ form.submit(class="btn btn-primary btn-lg", disabled="disabled", id="submitBtn") }}
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <p class="mb-2">Vous avez déjà un compte ?</p>
+                        <a href="{{ url_for('authentification.connexion') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <a href="{{ url_for('principal.accueil') }}" class="text-decoration-none">
+                        <i class="fas fa-arrow-left me-1"></i>Retour à l'accueil
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const togglePassword = document.getElementById('togglePassword');
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    const acceptTerms = document.getElementById('acceptTerms');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('inscriptionForm');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+
+    toggleConfirmPassword.addEventListener('click', function() {
+        const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+        confirmPassword.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+
+    // Enable/disable submit button based on terms acceptance
+    acceptTerms.addEventListener('change', function() {
+        submitBtn.disabled = !this.checked;
+    });
+
+    // Password strength validation
+    password.addEventListener('input', function() {
+        const value = this.value;
+        const isValid = value.length >= 6;
+        
+        if (isValid) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+        
+        checkPasswordMatch();
+    });
+
+    // Password confirmation validation
+    confirmPassword.addEventListener('input', checkPasswordMatch);
+
+    function checkPasswordMatch() {
+        const passwordValue = password.value;
+        const confirmValue = confirmPassword.value;
+        
+        if (confirmValue && passwordValue !== confirmValue) {
+            confirmPassword.classList.remove('is-valid');
+            confirmPassword.classList.add('is-invalid');
+        } else if (confirmValue && passwordValue === confirmValue) {
+            confirmPassword.classList.remove('is-invalid');
+            confirmPassword.classList.add('is-valid');
+        } else {
+            confirmPassword.classList.remove('is-valid', 'is-invalid');
+        }
+    }
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const passwordValue = password.value;
+        const confirmValue = confirmPassword.value;
+        
+        if (passwordValue !== confirmValue) {
+            e.preventDefault();
+            alert('Les mots de passe ne correspondent pas');
+            return;
+        }
+        
+        if (passwordValue.length < 6) {
+            e.preventDefault();
+            alert('Le mot de passe doit contenir au moins 6 caractères');
+            return;
+        }
+        
+        if (!acceptTerms.checked) {
+            e.preventDefault();
+            alert('Vous devez accepter les conditions d\'utilisation');
+            return;
+        }
+    });
+
+    // Auto-focus on first field
+    document.getElementById('{{ form.nom.id }}').focus();
+});
+</script>
+
+<style>
+.card {
+    border-radius: 15px;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.form-control:focus {
+    border-color: #4e73df;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2653d4;
+}
+
+.form-check-input:checked {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+</style>
+{% endblock %} 

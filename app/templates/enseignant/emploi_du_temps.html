@@ -1,28 +1,193 @@
-{% extends 'base.html' %}
+{% extends "enseignant/base.html" %}
+
+{% block title %}Emploi du temps - Enseignant{% endblock %}
+
+{% block page_title %}Emploi du temps{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Emploi du temps</li>
+{% endblock %}
+
 {% block content %}
-<h2>Mon emploi du temps</h2>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Jour</th>
-            <th>Matière</th>
-            <th>Groupe</th>
-            <th>Heure</th>
-            <th>Salle</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for jour, edt_list in emplois_par_jour.items() %}
-            {% for edt in edt_list %}
-            <tr>
-                <td>{{ jour }}</td>
-                <td>{{ edt.matiere.nom }}</td>
-                <td>{{ edt.groupe.nom }}</td>
-                <td>{{ edt.heure_debut.strftime('%H:%M') }} - {{ edt.heure_fin.strftime('%H:%M') }}</td>
-                <td>{{ edt.salle }}</td>
-            </tr>
-            {% endfor %}
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-calendar me-2"></i>Mon emploi du temps
+        </h1>
+        <div>
+            <button class="btn btn-success btn-sm" onclick="exporterEmploiDuTemps()">
+                <i class="fas fa-download me-1"></i>Exporter
+            </button>
+            <button class="btn btn-info btn-sm" onclick="imprimerEmploiDuTemps()">
+                <i class="fas fa-print me-1"></i>Imprimer
+            </button>
+        </div>
+    </div>
+
+    <!-- Emploi du temps -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-calendar-alt me-2"></i>Emploi du temps de la semaine
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if emploi_du_temps %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th width="10%">Heure</th>
+                            <th width="18%">Lundi</th>
+                            <th width="18%">Mardi</th>
+                            <th width="18%">Mercredi</th>
+                            <th width="18%">Jeudi</th>
+                            <th width="18%">Vendredi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for heure in ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00'] %}
+                        <tr>
+                            <td class="text-center fw-bold bg-light">
+                                {{ heure }}
+                            </td>
+                            {% for jour in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'] %}
+                            <td class="text-center">
+                                {% set cours_trouve = false %}
+                                {% for cours in emploi_du_temps %}
+                                    {% if cours.jour_semaine == jour and cours.heure_debut.strftime('%H:%M') == heure.split('-')[0] %}
+                                        <div class="cours-item p-2 mb-1 rounded">
+                                            <strong>{{ cours.matiere.nom }}</strong><br>
+                                            <small>{{ cours.groupe.nom }}</small><br>
+                                            <small class="text-muted">{{ cours.salle }}</small>
+                                        </div>
+                                        {% set cours_trouve = true %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if not cours_trouve %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Légende -->
+            <div class="mt-4">
+                <h6 class="fw-bold">Légende :</h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <span class="badge bg-primary me-2">Cours magistral</span>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="badge bg-success me-2">Travaux pratiques</span>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="badge bg-warning me-2">Travaux dirigés</span>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="badge bg-info me-2">Évaluation</span>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-3x text-gray-300 mb-3"></i>
+                <h5 class="text-muted">Aucun emploi du temps disponible</h5>
+                <p class="text-muted">Votre emploi du temps sera affiché ici une fois configuré</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Détails des cours -->
+    {% if emploi_du_temps %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list me-2"></i>Détails des cours
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for cours in emploi_du_temps %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card border-left-primary h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="fw-bold text-primary">{{ cours.matiere.nom }}</h6>
+                                    <p class="mb-1">
+                                        <i class="fas fa-users me-1"></i>{{ cours.groupe.nom }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <i class="fas fa-clock me-1"></i>{{ cours.heure_debut.strftime('%H:%M') }} - {{ cours.heure_fin.strftime('%H:%M') }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <i class="fas fa-calendar me-1"></i>{{ cours.jour_semaine|title }}
+                                    </p>
+                                    <p class="mb-0">
+                                        <i class="fas fa-map-marker-alt me-1"></i>{{ cours.salle }}
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-{{ 'primary' if cours.type_cours == 'cm' else 'success' if cours.type_cours == 'tp' else 'warning' }}">
+                                        {{ cours.type_cours|upper }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.cours-item {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    transition: all 0.3s ease;
+}
+
+.cours-item:hover {
+    background-color: #bbdefb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+</style>
+
+<script>
+function exporterEmploiDuTemps() {
+    window.open('/enseignant/emploi-du-temps/export', '_blank');
+}
+
+function imprimerEmploiDuTemps() {
+    window.print();
+}
+
+// Actualiser l'emploi du temps toutes les 5 minutes
+setInterval(function() {
+    // Optionnel : recharger les données
+    // location.reload();
+}, 300000);
+</script>
 {% endblock %} 

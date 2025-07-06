@@ -2,11 +2,22 @@
 
 {% block title %}Créer un groupe - Administration{% endblock %}
 
-{% block page_title %}Nouveau groupe{% endblock %}
+{% block page_title %}
+    {% if ue_predefinie %}
+        Nouveau groupe pour {{ ue_predefinie.code }}
+    {% else %}
+        Nouveau groupe
+    {% endif %}
+{% endblock %}
 
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{{ url_for('admin.groupes') }}">Groupes</a></li>
+{% if ue_predefinie %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.unites_enseignement') }}">Unités d'enseignement</a></li>
+<li class="breadcrumb-item active">Nouveau groupe - {{ ue_predefinie.code }}</li>
+{% else %}
 <li class="breadcrumb-item active">Nouveau groupe</li>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -14,7 +25,13 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Informations du groupe</h3>
+                <h3 class="card-title">
+                    {% if ue_predefinie %}
+                        Informations du groupe pour {{ ue_predefinie.code }}
+                    {% else %}
+                        Informations du groupe
+                    {% endif %}
+                </h3>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -36,17 +53,25 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.unite_enseignement_id.label(class="form-label") }}
-                                {{ formulaire.unite_enseignement_id(class="form-control" + (" is-invalid" if formulaire.unite_enseignement_id.errors else "")) }}
-                                {% if formulaire.unite_enseignement_id.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.unite_enseignement_id.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
+                            {% if ue_predefinie %}
+                                <div class="form-group">
+                                    <label class="form-label">Unité d'enseignement</label>
+                                    <input type="text" class="form-control" value="{{ ue_predefinie.code }} - {{ ue_predefinie.nom }}" readonly>
+                                    <small class="form-text text-muted">UE pré-sélectionnée</small>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    {{ formulaire.unite_enseignement_id.label(class="form-label") }}
+                                    {{ formulaire.unite_enseignement_id(class="form-control" + (" is-invalid" if formulaire.unite_enseignement_id.errors else "")) }}
+                                    {% if formulaire.unite_enseignement_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.unite_enseignement_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -102,7 +127,11 @@
                     
                     <div class="form-group">
                         {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
-                        <a href="{{ url_for('admin.groupes') }}" class="btn btn-secondary">Annuler</a>
+                        {% if ue_predefinie %}
+                            <a href="{{ url_for('admin.unites_enseignement') }}" class="btn btn-secondary">Annuler</a>
+                        {% else %}
+                            <a href="{{ url_for('admin.groupes') }}" class="btn btn-secondary">Annuler</a>
+                        {% endif %}
                     </div>
                 </form>
             </div>
@@ -115,6 +144,13 @@
                 <h3 class="card-title">Informations</h3>
             </div>
             <div class="card-body">
+                {% if ue_predefinie %}
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> UE sélectionnée</h5>
+                        <p class="mb-0">Ce groupe sera créé pour l'UE <strong>{{ ue_predefinie.code }}</strong></p>
+                    </div>
+                {% endif %}
+                
                 <div class="alert alert-info">
                     <h5><i class="fas fa-info-circle"></i> Création d'un groupe</h5>
                     <p>Un groupe permet d'organiser les étudiants par UE.</p>

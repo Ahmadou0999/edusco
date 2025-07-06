@@ -1,0 +1,224 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Créer un Groupe Générique - Administration{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête de la page -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-plus"></i> Créer un Groupe Générique
+        </h1>
+        <a href="{{ url_for('admin.groupes_generiques') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <!-- Informations -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                <i class="fas fa-info-circle"></i> À propos des groupes génériques
+                            </div>
+                            <div class="text-gray-800">
+                                Les groupes génériques sont des groupes réutilisables qui peuvent être liés à plusieurs unités d'enseignement. 
+                                Cela permet d'éviter la duplication de groupes et facilite la gestion des inscriptions.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations du Groupe Générique</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.nom.label(class="form-control-label") }}
+                                    {{ form.nom(class="form-control" + (" is-invalid" if form.nom.errors else "")) }}
+                                    {% if form.nom.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.nom.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Ex: Groupe A, Groupe B, etc.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.code.label(class="form-control-label") }}
+                                    {{ form.code(class="form-control" + (" is-invalid" if form.code.errors else "")) }}
+                                    {% if form.code.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.code.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Ex: GA, GB, GC, etc.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.capacite_max.label(class="form-control-label") }}
+                                    {{ form.capacite_max(class="form-control" + (" is-invalid" if form.capacite_max.errors else "")) }}
+                                    {% if form.capacite_max.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.capacite_max.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Nombre maximum d'étudiants dans ce groupe</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.enseignant_responsable_id.label(class="form-control-label") }}
+                                    {{ form.enseignant_responsable_id(class="form-control" + (" is-invalid" if form.enseignant_responsable_id.errors else "")) }}
+                                    {% if form.enseignant_responsable_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.enseignant_responsable_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Enseignant responsable de ce groupe (optionnel)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.description.label(class="form-control-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3) }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Description optionnelle du groupe</small>
+                        </div>
+
+                        <div class="form-group mb-0">
+                            {{ form.bouton_sauvegarder(class="btn btn-primary") }}
+                            <a href="{{ url_for('admin.groupes_generiques') }}" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar avec informations -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-lightbulb"></i> Conseils
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="fas fa-check-circle text-success"></i> Bonnes pratiques
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-primary"></i>
+                                Utilisez des codes courts et mémorisables (GA, GB, GC...)
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-primary"></i>
+                                Choisissez une capacité adaptée à vos besoins
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-primary"></i>
+                                Désignez un enseignant responsable si nécessaire
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="font-weight-bold text-warning">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> Important
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-info-circle text-info"></i>
+                                Le code doit être unique
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-info-circle text-info"></i>
+                                La capacité ne peut pas être modifiée après création
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-magic"></i>
+                        <strong>Astuce :</strong> Vous pouvez créer plusieurs groupes automatiquement depuis la liste des groupes génériques.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Validation en temps réel du code
+    $('#code').on('input', function() {
+        var code = $(this).val();
+        if (code.length > 0) {
+            // Vérifier si le code contient seulement des lettres et chiffres
+            if (!/^[A-Za-z0-9]+$/.test(code)) {
+                $(this).addClass('is-invalid');
+                if (!$(this).next('.invalid-feedback').length) {
+                    $(this).after('<div class="invalid-feedback">Le code ne peut contenir que des lettres et des chiffres</div>');
+                }
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).next('.invalid-feedback').remove();
+            }
+        }
+    });
+
+    // Validation de la capacité
+    $('#capacite_max').on('input', function() {
+        var capacite = parseInt($(this).val());
+        if (capacite < 1) {
+            $(this).addClass('is-invalid');
+            if (!$(this).next('.invalid-feedback').length) {
+                $(this).after('<div class="invalid-feedback">La capacité doit être supérieure à 0</div>');
+            }
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).next('.invalid-feedback').remove();
+        }
+    });
+});
+</script>
+{% endblock %} 

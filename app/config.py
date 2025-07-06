@@ -11,9 +11,9 @@ if os.path.exists('.env'):
 
 class Config:
     """Configuration de base"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///edusco.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') 
     
     # Configuration email
     MAIL_SERVER = os.environ.get('MAIL_SERVER')

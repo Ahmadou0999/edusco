@@ -1,0 +1,211 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Mon profil - Administrateur{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user me-2"></i>Mon profil
+        </h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Retour au dashboard
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Informations personnelles -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-circle me-2"></i>Informations personnelles
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Nom complet</label>
+                            <p class="form-control-plaintext">{{ utilisateur.nom }} {{ utilisateur.prenom }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Nom d'utilisateur</label>
+                            <p class="form-control-plaintext">{{ utilisateur.nom_utilisateur }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <p class="form-control-plaintext">{{ utilisateur.email if utilisateur.email else 'Non renseigné' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Téléphone</label>
+                            <p class="form-control-plaintext">{{ utilisateur.telephone if utilisateur.telephone else 'Non renseigné' }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Rôle</label>
+                            <span class="badge bg-primary">{{ utilisateur.role|title if utilisateur.role else 'Administrateur' }}</span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Statut</label>
+                            <span class="badge bg-{{ 'success' if utilisateur.actif else 'danger' }}">
+                                {{ 'Actif' if utilisateur.actif else 'Inactif' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations du compte -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle me-2"></i>Informations du compte
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Date de création</label>
+                            <p class="form-control-plaintext">{{ utilisateur.date_creation.strftime('%d/%m/%Y') if utilisateur.date_creation else 'Non renseigné' }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Dernière connexion</label>
+                            <p class="form-control-plaintext">{{ utilisateur.derniere_connexion.strftime('%d/%m/%Y %H:%M') if utilisateur.derniere_connexion else 'Jamais' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire de modification -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-edit me-2"></i>Modifier mes informations
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.modifier_profil') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nom" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="nom" name="nom" 
+                                       value="{{ utilisateur.nom }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="prenom" class="form-label">Prénom</label>
+                                <input type="text" class="form-control" id="prenom" name="prenom" 
+                                       value="{{ utilisateur.prenom }}" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ utilisateur.email }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="telephone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="telephone" name="telephone" 
+                                       value="{{ utilisateur.telephone or '' }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Enregistrer les modifications
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques et actions -->
+        <div class="col-lg-4">
+            <!-- Statistiques -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar me-2"></i>Statistiques
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{ stats.total_etudiants if stats else 0 }}</h4>
+                                <small class="text-muted">Étudiants</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success">{{ stats.total_enseignants if stats else 0 }}</h4>
+                            <small class="text-muted">Enseignants</small>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h4 class="text-info">{{ stats.total_groupes if stats else 0 }}</h4>
+                            <small class="text-muted">Groupes</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-warning">{{ stats.total_matieres if stats else 0 }}</h4>
+                            <small class="text-muted">Matières</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Changer mot de passe -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-key me-2"></i>Changer mot de passe
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.changer_mot_de_passe') }}">
+                        <div class="mb-3">
+                            <label for="ancien_mdp" class="form-label">Ancien mot de passe</label>
+                            <input type="password" class="form-control" id="ancien_mdp" name="ancien_mdp" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nouveau_mdp" class="form-label">Nouveau mot de passe</label>
+                            <input type="password" class="form-control" id="nouveau_mdp" name="nouveau_mdp" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmer_mdp" class="form-label">Confirmer le nouveau mot de passe</label>
+                            <input type="password" class="form-control" id="confirmer_mdp" name="confirmer_mdp" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="fas fa-key me-1"></i>Changer le mot de passe
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs me-2"></i>Actions rapides
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.notifications') }}" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-bell me-1"></i>Gérer les notifications
+                        </a>
+                        <a href="{{ url_for('admin.statistiques') }}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-chart-line me-1"></i>Voir les statistiques
+                        </a>
+                        <a href="{{ url_for('admin.pedagogique_dashboard') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-graduation-cap me-1"></i>Dashboard pédagogique
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

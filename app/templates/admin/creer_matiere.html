@@ -2,11 +2,22 @@
 
 {% block title %}Créer une matière - Administration{% endblock %}
 
-{% block page_title %}Nouvelle matière{% endblock %}
+{% block page_title %}
+    {% if ue_predefinie %}
+        Nouvelle matière pour {{ ue_predefinie.code }}
+    {% else %}
+        Nouvelle matière
+    {% endif %}
+{% endblock %}
 
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{{ url_for('admin.matieres') }}">Matières</a></li>
+{% if ue_predefinie %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.unites_enseignement') }}">Unités d'enseignement</a></li>
+<li class="breadcrumb-item active">Nouvelle matière - {{ ue_predefinie.code }}</li>
+{% else %}
 <li class="breadcrumb-item active">Nouvelle matière</li>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -14,7 +25,13 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Informations de la matière</h3>
+                <h3 class="card-title">
+                    {% if ue_predefinie %}
+                        Informations de la matière pour {{ ue_predefinie.code }}
+                    {% else %}
+                        Informations de la matière
+                    {% endif %}
+                </h3>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -36,17 +53,25 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
-                                {{ formulaire.unite_enseignement_id.label(class="form-label") }}
-                                {{ formulaire.unite_enseignement_id(class="form-control" + (" is-invalid" if formulaire.unite_enseignement_id.errors else "")) }}
-                                {% if formulaire.unite_enseignement_id.errors %}
-                                    <div class="invalid-feedback">
-                                        {% for error in formulaire.unite_enseignement_id.errors %}
-                                            {{ error }}
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
+                            {% if ue_predefinie %}
+                                <div class="form-group">
+                                    <label class="form-label">Unité d'enseignement</label>
+                                    <input type="text" class="form-control" value="{{ ue_predefinie.code }} - {{ ue_predefinie.nom }}" readonly>
+                                    <small class="form-text text-muted">UE pré-sélectionnée</small>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    {{ formulaire.unite_enseignement_id.label(class="form-label") }}
+                                    {{ formulaire.unite_enseignement_id(class="form-control" + (" is-invalid" if formulaire.unite_enseignement_id.errors else "")) }}
+                                    {% if formulaire.unite_enseignement_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in formulaire.unite_enseignement_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -115,7 +140,11 @@
                     
                     <div class="form-group">
                         {{ formulaire.bouton_sauvegarder(class="btn btn-primary") }}
-                        <a href="{{ url_for('admin.matieres') }}" class="btn btn-secondary">Annuler</a>
+                        {% if ue_predefinie %}
+                            <a href="{{ url_for('admin.unites_enseignement') }}" class="btn btn-secondary">Annuler</a>
+                        {% else %}
+                            <a href="{{ url_for('admin.matieres') }}" class="btn btn-secondary">Annuler</a>
+                        {% endif %}
                     </div>
                 </form>
             </div>
@@ -128,6 +157,13 @@
                 <h3 class="card-title">Informations</h3>
             </div>
             <div class="card-body">
+                {% if ue_predefinie %}
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> UE sélectionnée</h5>
+                        <p class="mb-0">Cette matière sera créée pour l'UE <strong>{{ ue_predefinie.code }}</strong></p>
+                    </div>
+                {% endif %}
+                
                 <div class="alert alert-info">
                     <h5><i class="fas fa-info-circle"></i> Création d'une matière</h5>
                     <p>Une matière représente un cours spécifique dans une UE.</p>

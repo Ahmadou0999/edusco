@@ -1,0 +1,216 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Profil de l'étudiant - {{ etudiant.nom_complet }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title">
+                            <i class="fas fa-user-graduate me-2"></i>
+                            Profil de l'étudiant : {{ etudiant.nom_complet }}
+                        </h4>
+                        <div>
+                            <a href="{{ url_for('admin.modifier_etudiant', etudiant_id=etudiant.id) }}" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit me-1"></i>Modifier
+                            </a>
+                            <a href="{{ url_for('admin.etudiants') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>Retour
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Informations personnelles -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-info-circle me-2"></i>Informations personnelles
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Matricule :</strong></td>
+                                            <td>{{ etudiant.matricule }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Nom complet :</strong></td>
+                                            <td>{{ etudiant.nom_complet }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Date de naissance :</strong></td>
+                                            <td>{{ etudiant.date_naissance.strftime('%d/%m/%Y') if etudiant.date_naissance else 'Non renseigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Sexe :</strong></td>
+                                            <td>{{ etudiant.sexe|title if etudiant.sexe else 'Non renseigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Lieu de naissance :</strong></td>
+                                            <td>{{ etudiant.lieu_naissance or 'Non renseigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email :</strong></td>
+                                            <td>{{ etudiant.email or 'Non renseigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Téléphone :</strong></td>
+                                            <td>{{ etudiant.telephone or 'Non renseigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Adresse :</strong></td>
+                                            <td>{{ etudiant.adresse or 'Non renseigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Statut :</strong></td>
+                                            <td>
+                                                {% if etudiant.statut == 'actif' %}
+                                                    <span class="badge bg-success">Actif</span>
+                                                {% elif etudiant.statut == 'inactif' %}
+                                                    <span class="badge bg-danger">Inactif</span>
+                                                {% elif etudiant.statut == 'diplome' %}
+                                                    <span class="badge bg-warning">Diplômé</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ etudiant.statut|title }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informations académiques -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-graduation-cap me-2"></i>Informations académiques
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Année académique :</strong></td>
+                                            <td>{{ etudiant.annee_academique.nom if etudiant.annee_academique else 'Non assigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Groupe :</strong></td>
+                                            <td>{{ etudiant.groupe.nom if etudiant.groupe else 'Non assigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Date d'inscription :</strong></td>
+                                            <td>{{ etudiant.date_creation.strftime('%d/%m/%Y') if etudiant.date_creation else 'Non renseigné' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Dernière modification :</strong></td>
+                                            <td>{{ etudiant.date_modification.strftime('%d/%m/%Y %H:%M') if etudiant.date_modification else 'Non renseigné' }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes récentes -->
+                    {% if notes %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-chart-line me-2"></i>Notes récentes
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Matière</th>
+                                                    <th>Note</th>
+                                                    <th>Coefficient</th>
+                                                    <th>Type</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for note in notes[:10] %}
+                                                <tr>
+                                                    <td>{{ note.matiere.nom if note.matiere else 'N/A' }}</td>
+                                                    <td>
+                                                        <span class="badge {% if note.note >= 10 %}bg-success{% elif note.note >= 8 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                            {{ note.note }}/20
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ note.coefficient }}</td>
+                                                    <td>{{ note.type_evaluation|title }}</td>
+                                                    <td>{{ note.date_evaluation.strftime('%d/%m/%Y') if note.date_evaluation else 'N/A' }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Absences récentes -->
+                    {% if absences %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-calendar-times me-2"></i>Absences récentes
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Matière</th>
+                                                    <th>Enseignant</th>
+                                                    <th>Justifiée</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for absence in absences[:10] %}
+                                                <tr>
+                                                    <td>{{ absence.date_absence.strftime('%d/%m/%Y') }}</td>
+                                                    <td>{{ absence.matiere.nom if absence.matiere else 'N/A' }}</td>
+                                                    <td>{{ absence.enseignant.nom_complet if absence.enseignant else 'N/A' }}</td>
+                                                    <td>
+                                                        {% if absence.justifiee %}
+                                                            <span class="badge bg-success">Oui</span>
+                                                        {% else %}
+                                                            <span class="badge bg-danger">Non</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

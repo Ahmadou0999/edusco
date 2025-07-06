@@ -1,0 +1,205 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Modifier un étudiant{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <i class="fas fa-user-edit me-2"></i>
+                        Modifier l'étudiant : {{ etudiant.nom_complet }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ formulaire.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.matricule.label(class="form-label") }}
+                                    {{ formulaire.matricule(class="form-control") }}
+                                    {% if formulaire.matricule.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.matricule.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.email.label(class="form-label") }}
+                                    {{ formulaire.email(class="form-control") }}
+                                    {% if formulaire.email.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.email.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.nom.label(class="form-label") }}
+                                    {{ formulaire.nom(class="form-control") }}
+                                    {% if formulaire.nom.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.nom.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.prenom.label(class="form-label") }}
+                                    {{ formulaire.prenom(class="form-control") }}
+                                    {% if formulaire.prenom.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.prenom.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.date_naissance.label(class="form-label") }}
+                                    {{ formulaire.date_naissance(class="form-control", type="date") }}
+                                    {% if formulaire.date_naissance.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.date_naissance.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.sexe.label(class="form-label") }}
+                                    {{ formulaire.sexe(class="form-select") }}
+                                    {% if formulaire.sexe.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.sexe.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.lieu_naissance.label(class="form-label") }}
+                                    {{ formulaire.lieu_naissance(class="form-control") }}
+                                    {% if formulaire.lieu_naissance.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.lieu_naissance.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.telephone.label(class="form-label") }}
+                                    {{ formulaire.telephone(class="form-control") }}
+                                    {% if formulaire.telephone.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.telephone.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ formulaire.adresse.label(class="form-label") }}
+                            {{ formulaire.adresse(class="form-control", rows="3") }}
+                            {% if formulaire.adresse.errors %}
+                                <div class="text-danger">
+                                    {% for error in formulaire.adresse.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ formulaire.statut.label(class="form-label") }}
+                            {{ formulaire.statut(class="form-select") }}
+                            {% if formulaire.statut.errors %}
+                                <div class="text-danger">
+                                    {% for error in formulaire.statut.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.mot_de_passe.label(class="form-label") }}
+                                    {{ formulaire.mot_de_passe(class="form-control", type="password") }}
+                                    {% if formulaire.mot_de_passe.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.mot_de_passe.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Laissez vide pour conserver le mot de passe actuel</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ formulaire.confirmer_mot_de_passe.label(class="form-label") }}
+                                    {{ formulaire.confirmer_mot_de_passe(class="form-control", type="password") }}
+                                    {% if formulaire.confirmer_mot_de_passe.errors %}
+                                        <div class="text-danger">
+                                            {% for error in formulaire.confirmer_mot_de_passe.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Confirmez le nouveau mot de passe</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.etudiants') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
